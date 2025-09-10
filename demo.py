@@ -9,9 +9,9 @@ import json
 
 
 def demo():
-    """Demonstrate the PDF to JSON conversion"""
-    print("PDF to Modento Forms JSON Converter Demo")
-    print("=" * 50)
+    """Demonstrate the PDF to JSON conversion with Docling"""
+    print("PDF to Modento Forms JSON Converter Demo (Enhanced with Docling)")
+    print("=" * 65)
     
     converter = PDFToJSONConverter()
     
@@ -35,7 +35,14 @@ def demo():
         
         print(f"\nResults for {sample_pdf.name}:")
         print(f"  - Fields detected: {result['field_count']}")
+        print(f"  - Sections detected: {result['section_count']}")
         print(f"  - Schema valid: {result['is_valid']}")
+        
+        # Show pipeline info
+        pipeline = result['pipeline_info']
+        print(f"  - Pipeline: {pipeline['pipeline']}")
+        print(f"  - Backend: {pipeline['backend']}")
+        print(f"  - OCR Engine: {pipeline['ocr_engine']} ({'enabled' if pipeline['ocr_enabled'] else 'disabled'})")
         
         if result['errors']:
             print(f"  - Warnings: {len(result['errors'])}")
@@ -44,7 +51,7 @@ def demo():
         spec = result['spec']
         print(f"\nSample fields (first 3):")
         for i, field in enumerate(spec[:3]):
-            print(f"  {i+1}. {field['title']} [{field['type']}]")
+            print(f"  {i+1}. {field['title']} [{field['type']}] - {field['section']}")
         
         # Show sections
         sections = set(field['section'] for field in spec)
@@ -56,7 +63,7 @@ def demo():
             json.dump(spec, f, indent=2)
         print(f"\nFull output saved to: {demo_output}")
         
-        print("\nConversion completed successfully! ✓")
+        print("\n✓ Conversion completed successfully with Docling's advanced capabilities!")
         
     except Exception as e:
         print(f"\nError during conversion: {e}")

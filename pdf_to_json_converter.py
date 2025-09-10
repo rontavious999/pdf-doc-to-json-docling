@@ -16,8 +16,12 @@ import sys
 import unicodedata
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
-import pdfplumber
 from dataclasses import dataclass
+
+# Docling imports for advanced PDF processing
+from docling.document_converter import DocumentConverter
+from docling.datamodel.pipeline_options import PdfPipelineOptions
+from docling.datamodel.base_models import InputFormat
 
 
 @dataclass
@@ -143,7 +147,7 @@ class ModentoSchemaValidator:
 
 
 class PDFFormFieldExtractor:
-    """Extract form fields from PDF documents"""
+    """Extract form fields from PDF documents using Docling's advanced capabilities"""
     
     def __init__(self):
         self.field_patterns = {
@@ -165,22 +169,58 @@ class PDFFormFieldExtractor:
             'consent': re.compile(r'consent|terms|agreement', re.IGNORECASE),
             'signature': re.compile(r'signature', re.IGNORECASE),
         }
+        
+        # Initialize Docling converter with maximum accuracy settings
+        self._setup_docling_converter()
     
-    def extract_text_from_pdf(self, pdf_path: Path) -> List[str]:
-        """Extract text from all pages of PDF"""
-        all_text = []
+    def _setup_docling_converter(self):
+        """Configure Docling for maximum form scanning accuracy"""
+        # Configure pipeline for maximum accuracy
+        self.pipeline_options = PdfPipelineOptions()
+        self.pipeline_options.do_ocr = True  # Enable OCR for scanned forms
+        self.pipeline_options.do_table_structure = True  # Detect table structures
+        self.pipeline_options.images_scale = 2.0  # Higher resolution for better OCR
+        self.pipeline_options.generate_page_images = False  # Don't need page images
+        self.pipeline_options.generate_table_images = False  # Don't need table images
+        self.pipeline_options.generate_picture_images = False  # Don't need picture images
         
+        # Force full page OCR for maximum field detection
+        if hasattr(self.pipeline_options.ocr_options, 'force_full_page_ocr'):
+            self.pipeline_options.ocr_options.force_full_page_ocr = True
+        
+        # Create converter with optimized settings
+        self.converter = DocumentConverter()
+        
+        # Store pipeline info for reporting
+        self.pipeline_info = {
+            'pipeline': 'StandardPdfPipeline',
+            'backend': 'DoclingParseDocumentBackend', 
+            'ocr_enabled': self.pipeline_options.do_ocr,
+            'ocr_engine': 'EasyOCR',  # Docling's default OCR engine
+            'table_structure': self.pipeline_options.do_table_structure,
+            'images_scale': self.pipeline_options.images_scale
+        }
+    
+    def extract_text_from_pdf(self, pdf_path: Path) -> Tuple[List[str], Dict[str, Any]]:
+        """Extract text from PDF using Docling's advanced capabilities"""
         try:
-            with pdfplumber.open(pdf_path) as pdf:
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        all_text.extend(text.split('\n'))
+            # Convert PDF using Docling
+            result = self.converter.convert(str(pdf_path))
+            
+            # Extract text with superior layout preservation
+            full_text = result.document.export_to_text()
+            text_lines = [line.strip() for line in full_text.split('\n') if line.strip()]
+            
+            # Update pipeline info with actual conversion details
+            pipeline_info = self.pipeline_info.copy()
+            pipeline_info['document_name'] = result.document.name
+            pipeline_info['elements_extracted'] = len(list(result.document.texts))
+            
+            return text_lines, pipeline_info
+            
         except Exception as e:
-            print(f"Error reading PDF {pdf_path}: {e}")
-            return []
-        
-        return [line.strip() for line in all_text if line.strip()]
+            print(f"Error reading PDF {pdf_path} with Docling: {e}")
+            return [], self.pipeline_info
     
     def detect_field_type(self, text: str) -> str:
         """Detect field type based on text content"""
@@ -391,26 +431,24 @@ class PDFFormFieldExtractor:
 
 
 class PDFToJSONConverter:
-    """Main converter class"""
+    """Main converter class with enhanced Docling integration"""
     
     def __init__(self):
         self.extractor = PDFFormFieldExtractor()
         self.validator = ModentoSchemaValidator()
     
     def convert_pdf_to_json(self, pdf_path: Path, output_path: Optional[Path] = None) -> Dict[str, Any]:
-        """Convert a PDF to Modento Forms JSON"""
-        print(f"Processing PDF: {pdf_path}")
+        """Convert a PDF to Modento Forms JSON with enhanced processing"""
+        # Start processing message
+        print(f"[+] Processing {pdf_path.name} ...")
         
-        # Extract text from PDF
-        text_lines = self.extractor.extract_text_from_pdf(pdf_path)
+        # Extract text from PDF using Docling
+        text_lines, pipeline_info = self.extractor.extract_text_from_pdf(pdf_path)
         if not text_lines:
             raise ValueError(f"Could not extract text from PDF: {pdf_path}")
         
-        print(f"Extracted {len(text_lines)} lines of text")
-        
         # Extract form fields
         fields = self.extractor.extract_fields_from_text(text_lines)
-        print(f"Detected {len(fields)} form fields")
         
         # Convert to Modento format
         json_spec = []
@@ -428,28 +466,36 @@ class PDFToJSONConverter:
         # Validate and normalize
         is_valid, errors, normalized_spec = self.validator.validate_and_normalize(json_spec)
         
-        if errors:
-            print("Validation warnings:")
-            for error in errors:
-                print(f"  - {error}")
+        # Count sections
+        sections = set(field.get("section", "Unknown") for field in normalized_spec)
+        section_count = len(sections)
         
         # Save to file if output path provided
         if output_path:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
             with open(output_path, 'w', encoding='utf-8') as f:
                 json.dump(normalized_spec, f, indent=2, ensure_ascii=False)
-            print(f"Saved JSON to: {output_path}")
+            
+            # Success message with requested format
+            print(f"[✓] Wrote JSON: {output_path.parent.name}/{output_path.name}")
+            print(f"[i] Sections: {section_count} | Fields: {len(fields)}")
+            print(f"[i] Pipeline/Model/Backend used: {pipeline_info['pipeline']}/{pipeline_info['backend']}")
+            ocr_status = "used" if pipeline_info['ocr_enabled'] else "not used"
+            print(f"[x] OCR ({pipeline_info['ocr_engine']}): {ocr_status}")
         
         return {
             "spec": normalized_spec,
             "is_valid": is_valid,
             "errors": errors,
-            "field_count": len(fields)
+            "field_count": len(fields),
+            "section_count": section_count,
+            "pipeline_info": pipeline_info
         }
 
 
 def main():
     """Command line interface"""
-    parser = argparse.ArgumentParser(description="Convert PDF forms to Modento JSON format")
+    parser = argparse.ArgumentParser(description="Convert PDF forms to Modento JSON format using Docling")
     parser.add_argument("pdf_path", help="Path to the PDF file")
     parser.add_argument("--output", "-o", help="Output JSON file path")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
@@ -470,14 +516,20 @@ def main():
         converter = PDFToJSONConverter()
         result = converter.convert_pdf_to_json(pdf_path, output_path)
         
-        print(f"\nConversion complete!")
-        print(f"Fields detected: {result['field_count']}")
-        print(f"Validation passed: {result['is_valid']}")
-        
-        if result['errors'] and args.verbose:
-            print("\nValidation issues:")
-            for error in result['errors']:
-                print(f"  - {error}")
+        if args.verbose:
+            print(f"\nConversion complete!")
+            print(f"Fields detected: {result['field_count']}")
+            print(f"Sections detected: {result['section_count']}")
+            print(f"Validation passed: {result['is_valid']}")
+            
+            if result['errors']:
+                print("\nValidation issues:")
+                for error in result['errors']:
+                    print(f"  - {error}")
+            
+            print(f"\nPipeline details:")
+            for key, value in result['pipeline_info'].items():
+                print(f"  - {key}: {value}")
         
     except Exception as e:
         print(f"Error: {e}")
