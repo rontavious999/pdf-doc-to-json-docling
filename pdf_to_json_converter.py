@@ -493,46 +493,139 @@ class PDFToJSONConverter:
         }
 
 
+def process_directory(input_dir: Path, output_dir: Path = None, verbose: bool = False):
+    """Process all PDFs in a directory (batch mode)"""
+    if output_dir is None:
+        output_dir = input_dir / "json_output"
+    
+    output_dir.mkdir(exist_ok=True)
+    
+    converter = PDFToJSONConverter()
+    pdf_files = list(input_dir.glob("*.pdf"))
+    
+    if not pdf_files:
+        print(f"No PDF files found in {input_dir}")
+        return
+    
+    print(f"Found {len(pdf_files)} PDF files to process\n")
+    
+    results = []
+    
+    for pdf_path in pdf_files:
+        try:
+            output_path = output_dir / f"{pdf_path.stem}.json"
+            result = converter.convert_pdf_to_json(pdf_path, output_path)
+            
+            results.append({
+                "file": pdf_path.name,
+                "success": True,
+                "fields": result["field_count"],
+                "sections": result["section_count"],
+                "valid": result["is_valid"],
+                "output": str(output_path),
+                "pipeline_info": result["pipeline_info"]
+            })
+            
+            if verbose and result['errors']:
+                print(f"  Validation warnings:")
+                for error in result['errors']:
+                    print(f"    - {error}")
+        
+        except Exception as e:
+            print(f"Error processing {pdf_path.name}: {e}")
+            results.append({
+                "file": pdf_path.name,
+                "success": False,
+                "error": str(e)
+            })
+    
+    # Save summary
+    summary_path = output_dir / "conversion_summary.json"
+    with open(summary_path, 'w') as f:
+        json.dump(results, f, indent=2)
+    
+    print(f"\n[✓] Summary saved to: {summary_path}")
+    
+    successful = sum(1 for r in results if r.get("success", False))
+    print(f"[i] Successfully processed: {successful}/{len(results)} files")
+    
+    if verbose:
+        print(f"\n[i] Pipeline details:")
+        if results and results[0].get("pipeline_info"):
+            pipeline = results[0]["pipeline_info"]
+            print(f"    Pipeline/Backend: {pipeline.get('pipeline', 'Unknown')}/{pipeline.get('backend', 'Unknown')}")
+            print(f"    OCR Engine: {pipeline.get('ocr_engine', 'Unknown')} ({'enabled' if pipeline.get('ocr_enabled') else 'disabled'})")
+
+
 def main():
-    """Command line interface"""
+    """Command line interface with batch functionality"""
     parser = argparse.ArgumentParser(description="Convert PDF forms to Modento JSON format using Docling")
-    parser.add_argument("pdf_path", help="Path to the PDF file")
-    parser.add_argument("--output", "-o", help="Output JSON file path")
+    parser.add_argument("path", nargs='?', default=None, help="Path to PDF file or directory (defaults to 'pdfs' directory)")
+    parser.add_argument("--output", "-o", help="Output JSON file path (for single file) or output directory (for batch)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     
     args = parser.parse_args()
     
-    pdf_path = Path(args.pdf_path)
-    if not pdf_path.exists():
-        print(f"Error: PDF file not found: {pdf_path}")
-        sys.exit(1)
-    
-    if args.output:
-        output_path = Path(args.output)
+    # Default to 'pdfs' directory if no path provided
+    if args.path is None:
+        input_path = Path("pdfs")
+        if not input_path.exists():
+            print(f"Error: Default input directory 'pdfs' not found")
+            sys.exit(1)
     else:
-        output_path = pdf_path.with_suffix('.json')
+        input_path = Path(args.path)
+        if not input_path.exists():
+            print(f"Error: Path not found: {input_path}")
+            sys.exit(1)
     
-    try:
-        converter = PDFToJSONConverter()
-        result = converter.convert_pdf_to_json(pdf_path, output_path)
+    # Check if input is a directory (batch mode) or file (single mode)
+    if input_path.is_dir():
+        # Batch processing mode
+        if args.output:
+            output_dir = Path(args.output)
+        elif args.path is None:  # Default mode with no path specified
+            output_dir = Path("output")
+        else:
+            output_dir = input_path / "json_output"
         
-        if args.verbose:
-            print(f"\nConversion complete!")
-            print(f"Fields detected: {result['field_count']}")
-            print(f"Sections detected: {result['section_count']}")
-            print(f"Validation passed: {result['is_valid']}")
-            
-            if result['errors']:
-                print("\nValidation issues:")
-                for error in result['errors']:
-                    print(f"  - {error}")
-            
-            print(f"\nPipeline details:")
-            for key, value in result['pipeline_info'].items():
-                print(f"  - {key}: {value}")
+        try:
+            process_directory(input_path, output_dir, args.verbose)
+        except Exception as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+    
+    elif input_path.is_file():
+        # Single file processing mode
+        if args.output:
+            output_path = Path(args.output)
+        else:
+            output_path = input_path.with_suffix('.json')
         
-    except Exception as e:
-        print(f"Error: {e}")
+        try:
+            converter = PDFToJSONConverter()
+            result = converter.convert_pdf_to_json(input_path, output_path)
+            
+            if args.verbose:
+                print(f"\nConversion complete!")
+                print(f"Fields detected: {result['field_count']}")
+                print(f"Sections detected: {result['section_count']}")
+                print(f"Validation passed: {result['is_valid']}")
+                
+                if result['errors']:
+                    print("\nValidation issues:")
+                    for error in result['errors']:
+                        print(f"  - {error}")
+                
+                print(f"\nPipeline details:")
+                for key, value in result['pipeline_info'].items():
+                    print(f"  - {key}: {value}")
+            
+        except Exception as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+    
+    else:
+        print(f"Error: Path is neither a file nor directory: {input_path}")
         sys.exit(1)
 
 
