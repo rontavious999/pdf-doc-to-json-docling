@@ -1,0 +1,740 @@
+Modento Forms JSON — Visual Guide & Checklist (Plain Text)
+Generated: 2025-09-09 05:19:55
+
+===============================================================================
+OVERVIEW
+===============================================================================
+This document summarizes the JSON shape expected by the forms.modento.io editor,
+the client-side validation rules it enforces, and a minimal starter spec that
+passes validation. It is written for both humans and AIs to parse easily.
+
+===============================================================================
+VALIDATION RULES (Client-side)
+===============================================================================
+1) Duplicate keys
+   - Every question's "key" must be globally unique, including nested questions
+     under a "multiradio" item.
+
+2) Signature rules
+   - Only one signature control in the entire form (types: "signature",
+     editor variant "block_signature").
+   - Its key must be exactly "signature".
+
+3) Options must be filled
+   - Wherever "control.options" (or "control.extra.options") is used, every
+     option must have a non-null, non-empty "value".
+
+===============================================================================
+UNIVERSAL QUESTION OBJECT
+===============================================================================
+Each item of the top-level spec array is a "question" object:
+{
+  "key": "unique_key_here",
+  "title": "Visible question text",
+  "section": "Grouping header (can be empty)",
+  "optional": false,
+  "type": "<see type list below>",
+  "control": { /* type-specific fields */ }
+}
+
+Required vs Optional fields for the object above:
+- REQUIRED
+  - "key": string. Must be globally unique across the entire form (including nested).
+  - "type": string. One of the supported types below.
+  - "control": object. May be empty for some types (e.g., "signature"), but the "control" field itself must exist.
+- RECOMMENDED
+  - "title": string. Shown to the user. May be empty for content-only items like "text" or "link"
+    when the content itself provides context.
+- OPTIONAL
+  - "section": string. Used for grouping; can be an empty string if you don't want a visible group header.
+  - "optional": boolean. Defaults to false if omitted.
+
+===============================================================================
+TYPE DEFINITIONS & CHECKLISTS
+===============================================================================
+
+TYPE: "input"
+Control fields:
+- control.input_type (lowercase; lowercase and case-sensitive in the app):
+  name | email | phone | number | ssn | zip | initials
+- control.phone_prefix (optional, used with phone)
+
+Minimal example:
+{
+  "key": "patient_email",
+  "title": "Email",
+  "section": "Patient Info",
+  "optional": false,
+  "type": "input",
+  "control": { "input_type": "email" }
+}
+
+Checklist:
+- [ ] key unique
+- [ ] control.input_type is one of the lowercase values above
+- [ ] If phone, optional phone_prefix allowed
+
+-------------------------------------------------------------------------------
+
+TYPE: "date"
+Control fields:
+- control.input_type (optional, lowercase): past | future
+
+Minimal example:
+{
+  "key": "dob",
+  "title": "Date of Birth",
+  "section": "Patient Info",
+  "optional": false,
+  "type": "date",
+  "control": { "input_type": "past" }
+}
+
+Checklist:
+- [ ] input_type omitted or set to past/future (lowercase)
+
+-------------------------------------------------------------------------------
+
+TYPE: "dropdown"
+Control fields:
+- control.options: [{ "name": string, "value": string|number|boolean }, ...]
+- control.multi (optional): boolean (default single-select)
+
+Minimal example:
+{
+  "key": "insurance_provider",
+  "title": "Insurance Provider",
+  "section": "Insurance",
+  "optional": true,
+  "type": "dropdown",
+  "control": {
+    "multi": false,
+    "options": [
+      { "name": "Aetna", "value": "aetna" },
+      { "name": "Cigna", "value": "cigna" }
+    ]
+  }
+}
+
+Checklist:
+- [ ] Each option.value is non-empty
+- [ ] Set multi=true only for multi-select
+
+-------------------------------------------------------------------------------
+
+TYPE: "states"
+Control fields:
+- Specialized dropdown of US states
+- control.default (optional): e.g., "IN"
+- (Optional) you may supply control.options as usual
+
+Minimal example:
+{
+  "key": "mailing_state",
+  "title": "State",
+  "section": "Address",
+  "optional": false,
+  "type": "states",
+  "control": { "default": "IN" }
+}
+
+Checklist:
+- [ ] If provided, default is a valid state code/value
+
+-------------------------------------------------------------------------------
+
+TYPE: "radio"
+Control fields:
+- control.options: [{ "name": string, "value": string|number|boolean }, ...]
+- control.default (optional): must match an option.value
+- control.extra (optional):
+  - Input extra:
+    { "type": "Input", "value": true, "hint": "text", "optional": true }
+    • Use "hint" to add contextual guidance (e.g., “If yes, describe frequency.”).
+      This improves UX; it does not alter validation.
+  - MultiSelect extra:
+    {
+      "type": "MultiSelect",
+      "options": [{ "name": "Option A", "value": "a" }],
+      "popup_title": "Please select",
+      "optional": false,
+      "other": true
+    }
+
+Minimal example:
+{
+  "key": "tobacco_use",
+  "title": "Do you use tobacco?",
+  "section": "Medical History",
+  "optional": false,
+  "type": "radio",
+  "control": {
+    "options": [
+      { "name": "Yes", "value": true },
+      { "name": "No",  "value": false }
+    ],
+    "extra": {
+      "type": "Input",
+      "value": true,
+      "hint": "If yes, how often?",
+      "optional": true
+    }
+  }
+}
+
+Checklist:
+- [ ] Each option.value is non-empty
+- [ ] If extra.options is used (MultiSelect), same options rules apply
+- [ ] "hint" is ideal for contextual instructions; UI only, not a validator
+
+-------------------------------------------------------------------------------
+
+TYPE: "multiradio"
+Control fields:
+- control.options: [{ "name": string, "value": string|number|boolean }, ...]
+- control.default (optional)
+- control.questions: array of nested question objects (same shape as top level)
+
+Minimal example:
+{
+  "key": "prior_surgeries",
+  "title": "Have you had any prior surgeries?",
+  "section": "Medical History",
+  "optional": false,
+  "type": "multiradio",
+  "control": {
+    "options": [
+      { "name": "Yes", "value": true },
+      { "name": "No",  "value": false }
+    ],
+    "questions": [
+      {
+        "key": "surgery_list",
+        "title": "List surgeries",
+        "section": "Medical History",
+        "optional": true,
+        "type": "input",
+        "control": { "input_type": "name" }
+      }
+    ]
+  }
+}
+
+Checklist:
+- [ ] All nested question keys are globally unique
+- [ ] Each option.value is non-empty
+
+-------------------------------------------------------------------------------
+
+TYPE: "photo"
+Control fields:
+- control.preferred_camera (optional): "front" | "rear"
+- control.longer_size (optional): boolean
+
+Minimal example:
+{
+  "key": "id_photo",
+  "title": "Upload a photo of your ID",
+  "section": "Verification",
+  "optional": false,
+  "type": "photo",
+  "control": { "preferred_camera": "rear", "longer_size": true }
+}
+
+-------------------------------------------------------------------------------
+
+TYPE: "signature" (and editor "block_signature")
+Notes:
+- Only one signature control in the entire form.
+- Key must be exactly "signature".
+- Plain "signature" needs no special control fields.
+
+Minimal example:
+{
+  "key": "signature",
+  "title": "Signature",
+  "section": "Signature",
+  "optional": false,
+  "type": "signature",
+  "control": {}
+}
+
+Checklist:
+- [ ] Exactly one signature-type control
+- [ ] key must equal "signature"
+
+-------------------------------------------------------------------------------
+
+TYPE: "terms"
+Control fields:
+- control.agree_text: string (required)
+- Provide either control.text or control.html_text
+- Optional: control.decline_text, control.ask_decline_reason
+
+Minimal example:
+{
+  "key": "consent_terms",
+  "title": "Terms of Treatment",
+  "section": "Consents",
+  "optional": false,
+  "type": "terms",
+  "control": {
+    "agree_text": "I have read and agree to the terms.",
+    "html_text": "<p>Long form consent text...</p>",
+    "decline_text": "I do not agree",
+    "ask_decline_reason": true
+  }
+}
+
+-------------------------------------------------------------------------------
+
+TYPE: "text"
+Control fields:
+- control.text or control.html_text
+- Optional: control.action, control.link
+
+Minimal example:
+{
+  "key": "welcome_text",
+  "title": "",
+  "section": "Intro",
+  "optional": true,
+  "type": "text",
+  "control": { "html_text": "<p>Welcome to our practice!</p>" }
+}
+
+-------------------------------------------------------------------------------
+
+TYPE: "link"
+Control fields:
+- control.link: URL string
+- Optional: control.text (label), control.html_text, control.action
+
+Minimal example:
+{
+  "key": "privacy_policy_link",
+  "title": "Privacy Policy",
+  "section": "Intro",
+  "optional": true,
+  "type": "link",
+  "control": {
+    "text": "Read our Privacy Policy",
+    "link": "https://example.com/privacy"
+  }
+}
+
+===============================================================================
+IMPORTER TIPS
+===============================================================================
+- The importer expects a raw JSON array of question objects (no outer wrapper).
+- On preview/import, the validator runs; fix duplicate keys or empty option values.
+- Signature: include at most one item with type "signature" and key "signature".
+
+===============================================================================
+STARTER SPEC (passes client-side validation)
+===============================================================================
+Below is a starter "spec" you can import directly. A copy is also saved as
+starter_form_spec.json alongside this .txt.
+
+[
+  {
+    "key": "patient_name",
+    "title": "Full Name",
+    "section": "Patient Info",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "patient_email",
+    "title": "Email",
+    "section": "Patient Info",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "email"
+    }
+  },
+  {
+    "key": "patient_phone",
+    "title": "Mobile Phone",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "phone_prefix": "+1"
+    }
+  },
+  {
+    "key": "dob",
+    "title": "Date of Birth",
+    "section": "Patient Info",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "past"
+    }
+  },
+  {
+    "key": "mailing_state",
+    "title": "State",
+    "section": "Address",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "default": "IN"
+    }
+  },
+  {
+    "key": "insurance_provider",
+    "title": "Insurance Provider",
+    "section": "Insurance",
+    "optional": true,
+    "type": "dropdown",
+    "control": {
+      "multi": false,
+      "options": [
+        {
+          "name": "Aetna",
+          "value": "aetna"
+        },
+        {
+          "name": "Cigna",
+          "value": "cigna"
+        },
+        {
+          "name": "Blue Cross Blue Shield",
+          "value": "bcbs"
+        }
+      ]
+    }
+  },
+  {
+    "key": "tobacco_use",
+    "title": "Do you use tobacco?",
+    "section": "Medical History",
+    "optional": false,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ],
+      "extra": {
+        "type": "Input",
+        "value": true,
+        "hint": "If yes, how often?",
+        "optional": true
+      }
+    }
+  },
+  {
+    "key": "prior_surgeries",
+    "title": "Have you had any prior surgeries?",
+    "section": "Medical History",
+    "optional": false,
+    "type": "multiradio",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ],
+      "questions": [
+        {
+          "key": "surgery_list",
+          "title": "List surgeries",
+          "section": "Medical History",
+          "optional": true,
+          "type": "input",
+          "control": {
+            "input_type": "name"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "key": "id_photo",
+    "title": "Upload a photo of your ID",
+    "section": "Verification",
+    "optional": false,
+    "type": "photo",
+    "control": {
+      "preferred_camera": "rear",
+      "longer_size": true
+    }
+  },
+  {
+    "key": "consent_terms",
+    "title": "Terms of Treatment",
+    "section": "Consents",
+    "optional": false,
+    "type": "terms",
+    "control": {
+      "agree_text": "I have read and agree to the terms.",
+      "html_text": "<p>By signing, I consent to treatment and acknowledge the privacy policy.</p>",
+      "decline_text": "I do not agree",
+      "ask_decline_reason": true
+    }
+  },
+  {
+    "key": "welcome_text",
+    "title": "",
+    "section": "Intro",
+    "optional": true,
+    "type": "text",
+    "control": {
+      "html_text": "<p>Welcome to our practice! Please complete the form below.</p>"
+    }
+  },
+  {
+    "key": "privacy_policy_link",
+    "title": "Privacy Policy",
+    "section": "Intro",
+    "optional": true,
+    "type": "link",
+    "control": {
+      "text": "Read our Privacy Policy",
+      "link": "https://example.com/privacy"
+    }
+  },
+  {
+    "key": "signature",
+    "title": "Signature",
+    "section": "Signature",
+    "optional": false,
+    "type": "signature",
+    "control": {}
+  }
+]
+
+===============================================================================
+LINT & FIXES — Pre‑Flight Validator and Auto‑Fixer (Copy‑Paste Ready)
+===============================================================================
+Use this section to quickly check and correct your JSON before importing it into
+forms.modento.io. It flags the most common causes of preview/save failures and
+and optionally normalizes the spec to match the app’s expectations.
+
+What this linter checks
+- Duplicate keys (including nested multiradio questions)
+- Signature rules (exactly one; key must be "signature")
+- Empty option values (in control.options and in control.extra.options)
+- Casing/enums for input/input_type and date/control.input_type
+- Overall shape (top‑level must be a raw array, not { "spec": [...] })
+
+What the auto‑fixer does
+- Makes keys globally unique (including nested)
+- Converts basic "checkbox" items into radio Yes/No (or use your own grouping logic)
+- Enforces single signature with key must equal "signature"
+- Fills missing/empty option.value using a slug of option.name
+- Normalizes input types to lowercase: name|email|phone|number|ssn|zip|initials
+  and date input_type to past|future (or removes it if unknown)
+
+----------------------------------
+PYTHON: validator + auto‑fixer
+----------------------------------
+Copy/paste into your project (standard library only).
+
+```python
+import json, re, unicodedata
+
+# ---------- Utilities ----------
+def _slug(s, fallback="field"):
+    s = (s or "").strip()
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(ch for ch in s if not unicodedata.combining(ch))
+    s = re.sub(r"[^a-zA-Z0-9]+", "_", s).strip("_").lower()
+    return s or fallback
+
+# ---------- Validator ----------
+def validate_modento_spec(spec):
+    """Validate a Modento-style spec (raw list). Returns (ok: bool, errors: list[str])."""
+    errors = []
+    if not isinstance(spec, list):
+        return False, ["Spec must be a top-level JSON array."]
+
+    # 1) Duplicate keys (including nested under multiradio)
+    seen = {}
+    def walk(items):
+        for q in items or []:
+            k = q.get("key")
+            if not k or not isinstance(k, str):
+                errors.append("Every question must have a non-empty string 'key'.")
+            else:
+                seen[k] = seen.get(k, 0) + 1
+            if (q.get("type") == "multiradio"):
+                sub = (q.get("control") or {}).get("questions") or []
+                walk(sub)
+    walk(spec)
+    dups = [k for k, c in seen.items() if c > 1]
+    if dups:
+        errors.append("Duplicate keys: " + ", ".join(sorted(dups)))
+
+    # 2) Signature rules
+    sigs = [q for q in spec if q.get("type") in ("signature", "block_signature")]
+    if len(sigs) > 1:
+        errors.append("There can be only one signature control in whole form.")
+    if sigs and sigs[0].get("key") != "signature":
+        errors.append("Signature control Key must be exactly 'signature'.")
+
+    # 3) Options must have non-empty values
+    def check_options(options, ctx):
+        for opt in options or []:
+            v = opt.get("value", None)
+            if v is None or (isinstance(v, str) and v.strip() == ""):
+                name = opt.get("name", "")
+                errors.append(f"Option '{name}' of question key '{ctx}' has empty value.")
+    for q in spec:
+        ctx = q.get("key", "?")
+        ctrl = q.get("control") or {}
+        if isinstance(ctrl, dict) and "options" in ctrl:
+            check_options(ctrl.get("options"), ctx)
+        extra = ctrl.get("extra")
+        if isinstance(extra, dict) and "options" in extra:
+            check_options(extra.get("options"), ctx)
+
+    # 4) Shape sanity for multiradio.questions
+    for q in spec:
+        if q.get("type") == "multiradio":
+            sub = (q.get("control") or {}).get("questions")
+            if sub is not None and not isinstance(sub, list):
+                errors.append(f"Question '{q.get('key')}' has non-list 'control.questions'.")
+
+    return (len(errors) == 0), errors
+
+# ---------- Auto-fixer ----------
+def convert_checkboxes(spec):
+    """Convert basic checkbox items to radio Yes/No (heuristic)."""
+    for q in spec:
+        if q.get("type") == "checkbox":
+            q["type"] = "radio"
+            q["control"] = {
+                "options": [
+                    {"name": "Yes", "value": True},
+                    {"name": "No",  "value": False},
+                ]
+            }
+        if q.get("type") == "multiradio":
+            sub = (q.get("control") or {}).get("questions") or []
+            convert_checkboxes(sub)
+
+def uniquify_keys_globally(spec):
+    seen = set()
+    def ensure_unique(key):
+        base = key or "field"
+        if base not in seen:
+            seen.add(base); return base
+        i = 2
+        while f"{base}_{i}" in seen:
+            i += 1
+        final = f"{base}_{i}"; seen.add(final); return final
+    def walk(items):
+        for q in items or []:
+            k = q.get("key") or _slug(q.get("title") or q.get("section") or "field")
+            q["key"] = ensure_unique(k)
+            if q.get("type") == "multiradio":
+                sub = (q.get("control") or {}).get("questions") or []
+                walk(sub)
+    walk(spec)
+
+def enforce_signature_key(spec):
+    idxs = [i for i,q in enumerate(spec) if q.get("type") in ("signature","block_signature")]
+    if not idxs:
+        spec.append({"key":"signature","title":"Signature","section":"Signature","optional":False,"type":"signature","control":{}})
+        return
+    keep = idxs[0]
+    spec[keep]["type"] = "signature"
+    spec[keep]["key"]  = "signature"
+    for i in reversed(idxs[1:]):
+        spec.pop(i)
+
+def ensure_option_values(spec):
+    def fix(opts):
+        for o in opts or []:
+            v = o.get("value")
+            if v is None or (isinstance(v, str) and not v.strip()):
+                o["value"] = _slug(o.get("name"), fallback="opt")
+    def walk(items):
+        for q in items or []:
+            ctrl = q.get("control") or {}
+            if "options" in ctrl:
+                fix(ctrl.get("options"))
+            extra = ctrl.get("extra")
+            if isinstance(extra, dict) and "options" in extra:
+                fix(extra.get("options"))
+            if q.get("type") == "multiradio":
+                sub = (ctrl or {}).get("questions") or []
+                walk(sub)
+    walk(spec)
+
+def normalize_controls(spec):
+    """Normalize input types casing; constrain date input_type."""
+    INPUTS = {"name","email","phone","number","ssn","zip","initials"}
+    for q in spec:
+        t = (q.get("type") or "").lower()
+        ctrl = q.get("control") or {}
+        if t == "input":
+            it = ctrl.get("input_type")
+            if isinstance(it, str):
+                it = it.strip().lower()
+                ctrl["input_type"] = it if it in INPUTS else "name"
+        elif t == "date":
+            it = ctrl.get("input_type")
+            if isinstance(it, str):
+                it = it.strip().lower()
+                if it not in {"past","future"}:
+                    ctrl.pop("input_type", None)
+        for k in list(ctrl.keys()):
+            if ctrl[k] is None:
+                ctrl.pop(k, None)
+        q["control"] = ctrl
+        if t == "multiradio":
+            sub = (ctrl or {}).get("questions") or []
+            normalize_controls(sub)
+
+def normalize_for_import(spec):
+    """Run all normalizations suitable for Modento import."""
+    convert_checkboxes(spec)
+    uniquify_keys_globally(spec)
+    enforce_signature_key(spec)
+    ensure_option_values(spec)
+    normalize_controls(spec)
+    return spec
+
+# ---------- Example CLI usage ----------
+if __name__ == "__main__":
+    import sys, pathlib
+    if len(sys.argv) < 2:
+        print("Usage: python lint_modento.py input.json [output.json]")
+        sys.exit(2)
+    inp = pathlib.Path(sys.argv[1])
+    out = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else inp.with_name(inp.stem + ".normalized.json")
+    spec = json.loads(inp.read_text(encoding="utf-8"))
+    spec = normalize_for_import(spec)
+    ok, errs = validate_modento_spec(spec)
+    if not ok:
+        print("Validation FAILED:")
+        for e in errs: print(" -", e)
+        sys.exit(1)
+    out.write_text(json.dumps(spec, indent=2), encoding="utf-8")
+    print(f"Validation OK. Wrote normalized spec to {out}")
+```
+
+Notes
+- The "hint" field inside radio.control.extra is perfect for contextual guidance (e.g., “If yes, describe frequency”). It improves UX only; it does not affect validation.
+- If you need checkbox groups (not simple toggles), aggregate them upstream into one "dropdown" with "multi": true and normalized {name,value} pairs.

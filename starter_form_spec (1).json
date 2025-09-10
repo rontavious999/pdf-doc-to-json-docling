@@ -1,0 +1,186 @@
+[
+  {
+    "key": "patient_name",
+    "title": "Full Name",
+    "section": "Patient Info",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "patient_email",
+    "title": "Email",
+    "section": "Patient Info",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "email"
+    }
+  },
+  {
+    "key": "patient_phone",
+    "title": "Mobile Phone",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "phone_prefix": "+1"
+    }
+  },
+  {
+    "key": "dob",
+    "title": "Date of Birth",
+    "section": "Patient Info",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "past"
+    }
+  },
+  {
+    "key": "mailing_state",
+    "title": "State",
+    "section": "Address",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "default": "IN"
+    }
+  },
+  {
+    "key": "insurance_provider",
+    "title": "Insurance Provider",
+    "section": "Insurance",
+    "optional": true,
+    "type": "dropdown",
+    "control": {
+      "multi": false,
+      "options": [
+        {
+          "name": "Aetna",
+          "value": "aetna"
+        },
+        {
+          "name": "Cigna",
+          "value": "cigna"
+        },
+        {
+          "name": "Blue Cross Blue Shield",
+          "value": "bcbs"
+        }
+      ]
+    }
+  },
+  {
+    "key": "tobacco_use",
+    "title": "Do you use tobacco?",
+    "section": "Medical History",
+    "optional": false,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ],
+      "extra": {
+        "type": "Input",
+        "value": true,
+        "hint": "If yes, how often?",
+        "optional": true
+      }
+    }
+  },
+  {
+    "key": "prior_surgeries",
+    "title": "Have you had any prior surgeries?",
+    "section": "Medical History",
+    "optional": false,
+    "type": "multiradio",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ],
+      "questions": [
+        {
+          "key": "surgery_list",
+          "title": "List surgeries",
+          "section": "Medical History",
+          "optional": true,
+          "type": "input",
+          "control": {
+            "input_type": "name"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "key": "id_photo",
+    "title": "Upload a photo of your ID",
+    "section": "Verification",
+    "optional": false,
+    "type": "photo",
+    "control": {
+      "preferred_camera": "rear",
+      "longer_size": true
+    }
+  },
+  {
+    "key": "consent_terms",
+    "title": "Terms of Treatment",
+    "section": "Consents",
+    "optional": false,
+    "type": "terms",
+    "control": {
+      "agree_text": "I have read and agree to the terms.",
+      "html_text": "<p>By signing, I consent to treatment and acknowledge the privacy policy.</p>",
+      "decline_text": "I do not agree",
+      "ask_decline_reason": true
+    }
+  },
+  {
+    "key": "welcome_text",
+    "title": "",
+    "section": "Intro",
+    "optional": true,
+    "type": "text",
+    "control": {
+      "html_text": "<p>Welcome to our practice! Please complete the form below.</p>"
+    }
+  },
+  {
+    "key": "privacy_policy_link",
+    "title": "Privacy Policy",
+    "section": "Intro",
+    "optional": true,
+    "type": "link",
+    "control": {
+      "text": "Read our Privacy Policy",
+      "link": "https://example.com/privacy"
+    }
+  },
+  {
+    "key": "signature",
+    "title": "Signature",
+    "section": "Signature",
+    "optional": false,
+    "type": "signature",
+    "control": {}
+  }
+]
