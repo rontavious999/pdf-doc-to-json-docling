@@ -289,26 +289,179 @@ class PDFFormFieldExtractor:
         
         return "General Information"
     
-    def parse_inline_fields(self, line: str) -> List[Tuple[str, str]]:
-        """Parse multiple fields from a single line"""
-        fields = []
+    def normalize_field_name(self, field_name: str, context_line: str = "") -> str:
+        """Normalize field names to match expected patterns"""
+        field_lower = field_name.lower().strip()
         
-        # Common patterns for inline fields
-        patterns = [
-            # "Field Name_______ Field2_______ Field3_______"
-            r'([A-Za-z][A-Za-z\s\#\/]{2,30}?)(?:_+|:+|\s{3,})',
-            # "Name: First_____ MI___ Last_____"
-            r'([A-Za-z][A-Za-z\s\#\/]{1,20}?)(?:_+|:)',
+        # Handle common abbreviations and variations
+        name_mappings = {
+            'first': 'First Name',
+            'last': 'Last Name', 
+            'mi': 'MI',
+            'middle initial': 'MI',
+            'middle init': 'MI',
+            'apt/unit/suite': 'Apt/Unit/Suite',
+            'social security no': 'Social Security No.',
+            'social security number': 'Social Security No.',
+            'ssn': 'Social Security No.',
+            'drivers license': 'Drivers License #',
+            'driver license': 'Drivers License #',
+            'dl': 'Drivers License #',
+            'date of birth': 'Date of Birth',
+            'dob': 'Date of Birth',
+            'birthdate': 'Birthdate',
+            'birth date': 'Date of Birth',
+            'today\'s date': 'Today\'s Date',
+            'todays date': 'Today\'s Date',
+            'date': 'Today\'s Date' if 'today' in context_line.lower() else 'Date',
+            'e-mail': 'E-Mail',
+            'email': 'E-Mail',
+            'mobile phone': 'Mobile Phone',
+            'home phone': 'Home Phone',
+            'work phone': 'Work Phone',
+            'cell phone': 'Mobile Phone',
+            'patient name': 'Patient Name',
+            'name of insured': 'Name of Insured',
+            'insurance company': 'Insurance Company',
+            'dental plan name': 'Dental Plan Name',
+            'plan/group number': 'Plan/Group Number',
+            'group number': 'Plan/Group Number',
+            'id number': 'ID Number',
+            'relationship to patient': 'Relationship to Patient',
+            'patient relationship to insured': 'Patient Relationship to Insured',
+            'name of school': 'Name of School',
+            'patient employed by': 'Patient Employed By',
+            'employer': 'Patient Employed By',
+            'in case of emergency, who should be notified': 'In case of emergency, who should be notified',
+            'emergency contact': 'In case of emergency, who should be notified',
+        }
+        
+        # Check direct mappings first
+        if field_lower in name_mappings:
+            return name_mappings[field_lower]
+        
+        # Special cases for keys that need specific handling
+        if field_lower == 'mi':
+            return 'MI'  # This will generate key "mi" via slugify
+        
+        # Handle variations with context
+        if field_lower == 'first' and any(word in context_line.lower() for word in ['name', 'patient']):
+            return 'First Name'
+        if field_lower == 'last' and any(word in context_line.lower() for word in ['name', 'patient']):
+            return 'Last Name'
+        
+        return field_name
+    
+    def detect_radio_question(self, line: str) -> Optional[Tuple[str, List[Dict[str, Any]]]]:
+        """Detect radio button questions and extract options"""
+        line_lower = line.lower()
+        
+        # Common radio button patterns
+        radio_patterns = [
+            # Sex/Gender selection
+            {
+                'pattern': r'sex.*?(?:male|female)',
+                'title': 'Sex',
+                'options': [
+                    {"name": "Male", "value": "male"},
+                    {"name": "Female", "value": "female"}
+                ]
+            },
+            # Marital status
+            {
+                'pattern': r'marital.*?status',
+                'title': 'Marital Status',
+                'options': [
+                    {"name": "Married", "value": "Married"},
+                    {"name": "Single", "value": "Single"},
+                    {"name": "Divorced", "value": "Divorced"},
+                    {"name": "Separated", "value": "Separated"},
+                    {"name": "Widowed", "value": "Widowed"}
+                ]
+            },
+            # Yes/No questions
+            {
+                'pattern': r'is.*?patient.*?minor',
+                'title': 'Is the Patient a Minor?',
+                'options': [
+                    {"name": "Yes", "value": True},
+                    {"name": "No", "value": False}
+                ]
+            },
+            {
+                'pattern': r'full.*?time.*?student',
+                'title': 'Full-time Student',
+                'options': [
+                    {"name": "Yes", "value": True},
+                    {"name": "No", "value": False}
+                ]
+            },
+            # Contact preference
+            {
+                'pattern': r'preferred.*?method.*?contact',
+                'title': 'What Is Your Preferred Method Of Contact',
+                'options': [
+                    {"name": "Mobile Phone", "value": "Mobile Phone"},
+                    {"name": "Home Phone", "value": "Home Phone"},
+                    {"name": "Work Phone", "value": "Work Phone"},
+                    {"name": "E-mail", "value": "E-mail"}
+                ]
+            },
+            # Relationship to patient
+            {
+                'pattern': r'relationship.*?to.*?patient',
+                'title': 'Relationship To Patient',
+                'options': [
+                    {"name": "Self", "value": "Self"},
+                    {"name": "Spouse", "value": "Spouse"},
+                    {"name": "Parent", "value": "Parent"},
+                    {"name": "Other", "value": "Other"}
+                ]
+            },
+            # Primary residence for minors
+            {
+                'pattern': r'primary.*?residence',
+                'title': 'If Patient Is A Minor, Primary Residence',
+                'options': [
+                    {"name": "Both Parents", "value": "Both Parents"},
+                    {"name": "Mom", "value": "Mom"},
+                    {"name": "Dad", "value": "Dad"},
+                    {"name": "Step Parent", "value": "Step Parent"},
+                    {"name": "Shared Custody", "value": "Shared Custody"},
+                    {"name": "Guardian", "value": "Guardian"}
+                ]
+            }
         ]
         
-        for pattern in patterns:
-            matches = re.finditer(pattern, line)
-            for match in matches:
-                field_name = match.group(1).strip()
-                if len(field_name) > 1 and not field_name.isupper():
-                    # Check if it's not just a separator word
-                    if field_name.lower() not in ['and', 'or', 'the', 'of', 'to', 'for', 'in', 'with']:
-                        fields.append((field_name, line))
+        for pattern_info in radio_patterns:
+            if re.search(pattern_info['pattern'], line_lower):
+                return pattern_info['title'], pattern_info['options']
+        
+        return None
+    
+    def parse_inline_fields(self, line: str) -> List[Tuple[str, str]]:
+        fields = []
+        seen_fields = set()
+        
+        # Single comprehensive pattern to avoid duplicates
+        # Matches field names followed by underscores, colons, or multiple spaces
+        pattern = r'([A-Za-z][A-Za-z\s\#\/\(\)\-]{0,35}?)(?:_+|:+|\s{3,})'
+        
+        matches = re.finditer(pattern, line)
+        for match in matches:
+            field_name = match.group(1).strip()
+            
+            # Filter out invalid field names
+            if (len(field_name) > 1 and 
+                field_name.lower() not in ['and', 'or', 'the', 'of', 'to', 'for', 'in', 'with', 'if', 'is', 'are'] and
+                field_name not in seen_fields and
+                # Allow meaningful uppercase abbreviations like MI, SSN
+                (not field_name.isupper() or field_name.lower() in ['mi', 'ssn', 'id', 'dl', 'dob'])):
+                
+                # Normalize the field name
+                normalized_name = self.normalize_field_name(field_name, line)
+                fields.append((normalized_name, line))
+                seen_fields.add(field_name)
         
         return fields
     
@@ -323,10 +476,14 @@ class PDFFormFieldExtractor:
         """Extract form fields from text lines"""
         fields = []
         current_section = "Patient Information Form"
+        i = 0
         
-        for i, line in enumerate(text_lines):
+        while i < len(text_lines):
+            line = text_lines[i]
+            
             # Skip very short lines
             if len(line) < 3:
+                i += 1
                 continue
             
             # Detect section headers
@@ -339,7 +496,12 @@ class PDFFormFieldExtractor:
                 'SECONDARY DENTAL'
             ]):
                 if 'DENTAL PLAN' in line_upper or 'INSURANCE' in line_upper:
-                    current_section = "Insurance"
+                    if 'SECONDARY' in line_upper:
+                        current_section = "Secondary Dental Plan"
+                    elif 'PRIMARY' in line_upper:
+                        current_section = "Primary Dental Plan"
+                    else:
+                        current_section = "Primary Dental Plan"
                 elif 'MEDICAL' in line_upper or 'HEALTH' in line_upper:
                     current_section = "Medical History"
                 elif 'MINOR' in line_upper or 'CHILDREN' in line_upper:
@@ -348,12 +510,83 @@ class PDFFormFieldExtractor:
                     current_section = "Emergency Contact"
                 elif 'SIGNATURE' in line_upper or 'CONSENT' in line_upper:
                     current_section = "Signature"
-                elif 'SECONDARY' in line_upper:
-                    current_section = "Secondary Dental Plan"
-                elif 'PRIMARY' in line_upper:
-                    current_section = "Primary Dental Plan"
                 else:
                     current_section = "Patient Information Form"
+                i += 1
+                continue
+
+            # Handle standalone single-word fields (like "SSN", "Sex")
+            standalone_fields = {
+                'SSN': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
+                'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}], 'hint': None}),
+                'Social Security No.': ('ssn_2', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
+                'Today \'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any', 'hint': None}),
+                'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
+                'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past', 'hint': None}),
+            }
+            
+            line_stripped = line.strip()
+            if line_stripped in standalone_fields:
+                key, title, field_type, control = standalone_fields[line_stripped]
+                
+                field = FieldInfo(
+                    key=key,
+                    title=title,
+                    field_type=field_type,
+                    section=current_section,
+                    control=control
+                )
+                fields.append(field)
+                i += 1
+                continue
+            
+            # Handle large text blocks (like terms and conditions)
+            if (len(line) > 100 and 
+                any(keyword in line.lower() for keyword in ['responsibility', 'payment', 'benefit', 'authorize', 'consent']) and
+                current_section == "Signature"):
+                
+                # Collect multi-line text block
+                text_content = [line]
+                j = i + 1
+                while j < len(text_lines) and len(text_lines[j]) > 50:
+                    text_content.append(text_lines[j])
+                    j += 1
+                
+                # Create text field
+                full_text = ' '.join(text_content)
+                key = f"text_{len([f for f in fields if f.field_type == 'text']) + 1}"
+                
+                field = FieldInfo(
+                    key=key,
+                    title="",
+                    field_type='text',
+                    section=current_section,
+                    optional=False,
+                    control={
+                        'html_text': f"<p>{full_text}</p>",
+                        'temporary_html_text': f"<p>{full_text}</p>",
+                        'text': ""
+                    }
+                )
+                fields.append(field)
+                i = j
+                continue
+            
+            # Check for radio button questions first
+            radio_result = self.detect_radio_question(line)
+            if radio_result:
+                title, options = radio_result
+                key = ModentoSchemaValidator.slugify(title)
+                
+                field = FieldInfo(
+                    key=key,
+                    title=title,
+                    field_type='radio',
+                    section=current_section,
+                    control={'options': options, 'hint': None}
+                )
+                fields.append(field)
+                i += 1
                 continue
             
             # Handle checkbox questions (radio buttons)
@@ -379,9 +612,10 @@ class PDFFormFieldExtractor:
                         title=question_part,
                         field_type='radio',
                         section=current_section,
-                        control={'options': options}
+                        control={'options': options, 'hint': None}
                     )
                     fields.append(field)
+                i += 1
                 continue
             
             # Parse inline fields from the line
@@ -426,6 +660,8 @@ class PDFFormFieldExtractor:
                     control=control
                 )
                 fields.append(field)
+            
+            i += 1
         
         return fields
 
