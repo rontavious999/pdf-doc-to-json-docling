@@ -1,0 +1,180 @@
+[
+  {
+    "key": "today_s_date",
+    "title": "Today’s Date",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "any"
+    }
+  },
+  {
+    "key": "patient_name",
+    "title": "Patient Name",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "address",
+    "title": "Address",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "city",
+    "title": "City",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "zip"
+    }
+  },
+  {
+    "key": "phone",
+    "title": "Phone",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "phone_prefix": "+1"
+    }
+  },
+  {
+    "key": "e_mail",
+    "title": "E-Mail",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "email"
+    }
+  },
+  {
+    "key": "social_security_no",
+    "title": "Social Security No.",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past"
+    }
+  },
+  {
+    "key": "patient_employed_by",
+    "title": "Patient Employed By",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "work_address",
+    "title": "Work Address",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "zip"
+    }
+  },
+  {
+    "key": "in_case_of_emergency_who_should_be_notified",
+    "title": "In case of emergency, who should be notified?",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": "no"
+        }
+      ]
+    }
+  },
+  {
+    "key": "relationship_to_patient",
+    "title": "Relationship to Patient",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "phone_prefix": "+1"
+    }
+  },
+  {
+    "key": "is_the_patient_a_minor_yes_no_full_time_student_yes_no_name_of_school",
+    "title": "Is the patient a Minor? □ Yes □ No Full-time Student □ Yes □ No Name of School",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": "no"
+        }
+      ]
+    }
+  },
+  {
+    "key": "name_of_responsible_party",
+    "title": "Name of Responsible Party",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "date_of_birth",
+    "title": "Date of Birth",
+    "section": "Patient Info",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past"
+    }
+  },
+  {
+    "key": "scheduling_of_appointments",
+    "title": " Scheduling of Appointments",
+    "section": "Insurance",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "signature",
+    "title": "Signature",
+    "section": "Signature",
+    "optional": false,
+    "type": "signature",
+    "control": {}
+  }
+]
