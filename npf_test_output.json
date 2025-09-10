@@ -413,7 +413,7 @@
     "type": "input",
     "control": {
       "input_type": "name",
-      "hint": null
+      "hint": "Name of Responsible Party"
     }
   },
   {
@@ -424,7 +424,7 @@
     "type": "input",
     "control": {
       "input_type": "name",
-      "hint": null
+      "hint": "Name of Responsible Party"
     }
   },
   {
@@ -661,18 +661,18 @@
     }
   },
   {
-    "key": "city_5",
+    "key": "city_2",
     "title": "City",
     "section": "Primary Dental Plan",
     "optional": true,
     "type": "input",
     "control": {
       "input_type": "name",
-      "hint": null
+      "hint": "Insurance Company"
     }
   },
   {
-    "key": "state_5",
+    "key": "state_2",
     "title": "State",
     "section": "Primary Dental Plan",
     "optional": true,
@@ -683,14 +683,14 @@
     }
   },
   {
-    "key": "zip_5",
+    "key": "zip_2",
     "title": "Zip",
     "section": "Primary Dental Plan",
     "optional": true,
     "type": "input",
     "control": {
       "input_type": "zip",
-      "hint": null
+      "hint": "Insurance Company"
     }
   },
   {
@@ -794,18 +794,18 @@
     }
   },
   {
-    "key": "city_6",
+    "key": "city_5",
     "title": "City",
     "section": "Secondary Dental Plan",
     "optional": true,
     "type": "input",
     "control": {
       "input_type": "name",
-      "hint": null
+      "hint": "Insurance Company"
     }
   },
   {
-    "key": "state_6",
+    "key": "state_5",
     "title": "State",
     "section": "Secondary Dental Plan",
     "optional": true,
@@ -816,14 +816,14 @@
     }
   },
   {
-    "key": "zip_6",
+    "key": "zip_5",
     "title": "Zip",
     "section": "Secondary Dental Plan",
     "optional": true,
     "type": "input",
     "control": {
       "input_type": "zip",
-      "hint": null
+      "hint": "Insurance Company"
     }
   },
   {

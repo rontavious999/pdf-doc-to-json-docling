@@ -491,6 +491,8 @@ class PDFFormFieldExtractor:
                     return "Secondary Dental Plan"
                 else:
                     return "Primary Dental Plan"
+            elif 'work address' in context_lower:
+                return "Patient Information Form"  # Work address is part of patient info
             else:
                 return "Patient Information Form"
         
@@ -701,7 +703,15 @@ class PDFFormFieldExtractor:
                 ('Street', 'Street'),
                 ('Apt/Unit/Suite', 'Apt/Unit/Suite')
             ],
+            # Context-aware city/state/zip patterns
             r'City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
+                ('City', 'City'),
+                ('State', 'State'),
+                ('Zip', 'Zip')
+            ],
+            # Work address specific pattern
+            r'Street\s*_{8,}.*?City\s*_{5,}.*?State\s*_{3,}.*?Zip\s*_{3,}': [
+                ('Street', 'Street'),
                 ('City', 'City'),
                 ('State', 'State'),
                 ('Zip', 'Zip')
@@ -1038,49 +1048,66 @@ class PDFFormFieldExtractor:
                 i += 1
                 continue
             
-            # Handle consent questions with YES/NO checkboxes - improved pattern
-            if re.search(r'YES\s+N?O?\s*\(Check One\)', line, re.IGNORECASE):
-                # Extract the question part
-                question_match = re.match(r'^(.*?)\s+YES\s+N?O?\s*\(Check One\)', line, re.IGNORECASE)
-                if question_match:
-                    question = question_match.group(1).strip()
-                    key = ModentoSchemaValidator.slugify(question)
-                    
-                    field = FieldInfo(
-                        key=key,
-                        title=question,
-                        field_type='radio',
-                        section=current_section,
-                        optional=False,
-                        control={
-                            'options': [
-                                {"name": "Yes", "value": True},
-                                {"name": "No", "value": False}
-                            ],
-                            'hint': None,
-                            'text': "",
-                            'html_text': f"<p>{question}</p>",
-                            'temporary_html_text': f"<p>{question}</p>"
-                        }
-                    )
-                    fields.append(field)
-                    
-                    # Add initials field
-                    if 'initials' in field_counters:
-                        field_counters['initials'] += 1
-                        initials_key = f"initials_{field_counters['initials']}"
-                    else:
-                        field_counters['initials'] = 1
-                        initials_key = "initials"
-                    
-                    field = FieldInfo(
-                        key=initials_key,
-                        title="Initial",
-                        field_type='input',
-                        section=current_section,
-                        control={'input_type': 'initials'}
-                    )
-                    fields.append(field)
+            # Handle consent questions with YES/NO checkboxes - improved pattern for both formats
+            consent_patterns = [
+                r'(.+?)\s+YES\s+N?O?\s*\(Check One\)',  # Standard format
+                r'(.+?)\.\s+YES\s+N\s*O\s*\(Check One\)'  # Format with period before YES
+            ]
+            
+            consent_found = False
+            for pattern in consent_patterns:
+                if re.search(pattern, line, re.IGNORECASE):
+                    # Extract the question part
+                    question_match = re.match(pattern, line, re.IGNORECASE)
+                    if question_match:
+                        question = question_match.group(1).strip()
+                        # Truncate very long questions for the key
+                        if len(question) > 200:
+                            question_short = question[:197] + "..."
+                        else:
+                            question_short = question
+                        
+                        key = ModentoSchemaValidator.slugify(question_short)
+                        
+                        field = FieldInfo(
+                            key=key,
+                            title=question,
+                            field_type='radio',
+                            section=current_section,
+                            optional=False,
+                            control={
+                                'options': [
+                                    {"name": "Yes", "value": True},
+                                    {"name": "No", "value": False}
+                                ],
+                                'hint': None,
+                                'text': "",
+                                'html_text': f"<p>{question}</p>",
+                                'temporary_html_text': f"<p>{question}</p>"
+                            }
+                        )
+                        fields.append(field)
+                        
+                        # Add initials field
+                        if 'initials' in field_counters:
+                            field_counters['initials'] += 1
+                            initials_key = f"initials_{field_counters['initials']}"
+                        else:
+                            field_counters['initials'] = 1
+                            initials_key = "initials"
+                        
+                        field = FieldInfo(
+                            key=initials_key,
+                            title="Initial",
+                            field_type='input',
+                            section=current_section,
+                            control={'input_type': 'initials'}
+                        )
+                        fields.append(field)
+                        consent_found = True
+                        break
+            
+            if consent_found:
                 i += 1
                 continue
             
@@ -1173,21 +1200,20 @@ class PDFFormFieldExtractor:
                     if input_type == 'phone':
                         control['phone_prefix'] = '+1'
                     
-                    # Add hints for specific contexts
+                    # Add hints for specific contexts with better detection
                     hint = None
+                    context_check = ' '.join(text_lines[max(0, i-5):i+5]).lower()
+                    
                     if 'if different from patient' in full_line.lower():
                         hint = 'If different from patient'
                     elif 'if different from above' in full_line.lower():
                         hint = '(if different from above)'
-                    elif 'insurance company' in full_line.lower() and field_name.lower() in ['phone', 'street', 'city', 'zip']:
+                    elif 'insurance company' in context_check and field_name.lower() in ['phone', 'street', 'city', 'zip']:
                         hint = 'Insurance Company'
-                    elif 'responsible party' in full_line.lower() and field_name.lower() in ['first name', 'last name', 'date of birth']:
-                        if field_name.lower() == 'first name':
-                            hint = 'Name of Responsible Party'
-                        elif field_name.lower() == 'last name':
-                            hint = 'Name of Responsible Party'
-                        elif field_name.lower() == 'date of birth':
-                            hint = 'Responsible Party'
+                    elif 'responsible party' in context_check and field_name.lower() in ['first name', 'last name']:
+                        hint = 'Name of Responsible Party'
+                    elif 'responsible party' in context_check and 'date of birth' in field_name.lower():
+                        hint = 'Responsible Party'
                     
                     control['hint'] = hint
                 elif field_type == 'date':
@@ -1204,21 +1230,45 @@ class PDFFormFieldExtractor:
                 # Handle special cases
                 if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                     field_type = 'states'
-                    control = {'hint': None, 'input_type': 'name'}
+                    control = {'hint': control.get('hint'), 'input_type': 'name'}
                 
-                # Create unique key with numbering for duplicates
+                # Create unique key with numbering for duplicates with better context awareness
                 base_key = ModentoSchemaValidator.slugify(field_name)
                 
-                # Check for existing field with same base name and section
-                existing_same_field = [f for f in fields if f.key.startswith(base_key) and f.section == detected_section]
+                # Context-aware field numbering
+                context_lines_text = ' '.join(text_lines[max(0, i-5):i+5]).lower()
+                existing_fields_in_section = [f for f in fields if f.section == detected_section]
+                same_type_in_section = [f for f in existing_fields_in_section if f.key.startswith(base_key)]
                 
-                if existing_same_field or base_key in field_counters:
+                # Determine if this should be numbered based on context
+                should_number = False
+                
+                # Check for work address context
+                if 'work address' in context_lines_text and field_name.lower() in ['street', 'city', 'state', 'zip']:
+                    should_number = True
+                
+                # Check for secondary dental plan
+                elif detected_section == "Secondary Dental Plan" and any(existing_field.key == base_key for existing_field in fields):
+                    should_number = True
+                
+                # Check for children/minors section address variations  
+                elif (detected_section == "FOR CHILDREN/MINORS ONLY" and 
+                      field_name.lower() in ['street', 'city', 'state', 'zip'] and
+                      'if different' in context_lines_text):
+                    should_number = True
+                
+                # Check for any duplicate in same section
+                elif same_type_in_section:
+                    should_number = True
+                
+                if should_number:
                     if base_key not in field_counters:
                         field_counters[base_key] = len([f for f in fields if f.key.startswith(base_key)])
                     field_counters[base_key] += 1
                     key = f"{base_key}_{field_counters[base_key]}"
                 else:
-                    field_counters[base_key] = 1
+                    if base_key not in field_counters:
+                        field_counters[base_key] = 1
                     key = base_key
                 
                 # Create field with improved required detection
