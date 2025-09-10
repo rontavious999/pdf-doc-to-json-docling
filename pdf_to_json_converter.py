@@ -487,7 +487,7 @@ class PDFFormFieldExtractor:
                 ('State', 'State'),
                 ('Zip', 'Zip')
             ],
-            r'E-Mail\s*_{10,}.*?Drivers License #\s*_{5,}': [
+            r'E-Mail\s*_{10,}.*?Drivers License #': [
                 ('E-Mail', 'E-Mail'),
                 ('Drivers License #', 'Drivers License #')
             ],
@@ -505,23 +505,23 @@ class PDFFormFieldExtractor:
                 ('Name of Insured', 'Name of Insured'),
                 ('Birthdate', 'Birthdate')
             ],
-            r'Insurance Company\s*_{10,}.*?Phone\s*_{5,}': [
+            r'Insurance Company\s*_{10,}.*?Phone': [
                 ('Insurance Company', 'Insurance Company'),
                 ('Phone', 'Phone')
             ],
-            r'Dental Plan Name\s*_{10,}.*?Plan/Group Number\s*_{10,}': [
+            r'Dental Plan Name\s*_{10,}.*?Plan/Group Number': [
                 ('Dental Plan Name', 'Dental Plan Name'),
                 ('Plan/Group Number', 'Plan/Group Number')
             ],
-            r'ID Number\s*_{10,}.*?Patient Relationship to Insured\s*_{5,}': [
+            r'ID Number\s*_{10,}.*?Patient Relationship to Insured': [
                 ('ID Number', 'ID Number'),
                 ('Patient Relationship to Insured', 'Patient Relationship to Insured')
             ],
-            r'In case of emergency, who should be notified\?\s*_{10,}.*?Relationship to Patient\s*_{5,}': [
+            r'In case of emergency, who should be notified\?\s*_{10,}.*?Relationship to Patient': [
                 ('In case of emergency, who should be notified', 'In case of emergency, who should be notified'),
                 ('Relationship to Patient', 'Relationship to Patient')
             ],
-            r'Mobile Phone\s*_{5,}.*?Home Phone\s*_{5,}': [
+            r'Mobile Phone\s*_{5,}.*?Home Phone': [
                 ('Mobile Phone', 'Mobile Phone'),
                 ('Home Phone', 'Home Phone')
             ]
@@ -535,7 +535,9 @@ class PDFFormFieldExtractor:
                     if field_title not in seen_fields:
                         fields.append((normalized_name, line))
                         seen_fields.add(field_title)
-                return fields
+                # Don't return early - continue checking other patterns in case there are overlaps
+                if fields:  # If we found some fields from this pattern, we can return
+                    return fields
         
         # Handle specific individual field patterns that appear alone
         individual_patterns = {
