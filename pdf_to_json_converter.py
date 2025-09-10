@@ -271,9 +271,9 @@ class PDFFormFieldExtractor:
             return 'ssn'
         elif 'zip' in text_lower:
             return 'zip'
-        elif 'initial' in text_lower and len(text) < 20:
+        elif ('initial' in text_lower and len(text) < 20) or text_lower.strip() in ['mi', 'm.i.', 'middle initial', 'middle init']:
             return 'initials'
-        elif re.search(r'\bnumber\b', text_lower):
+        elif re.search(r'\bnumber\b', text_lower) and 'license' not in text_lower:
             return 'number'
         else:
             return 'name'
@@ -306,6 +306,7 @@ class PDFFormFieldExtractor:
             'ssn': 'Social Security No.',
             'drivers license': 'Drivers License #',
             'driver license': 'Drivers License #',
+            'drivers license #': 'Drivers License #',
             'dl': 'Drivers License #',
             'date of birth': 'Date of Birth',
             'dob': 'Date of Birth',
@@ -317,8 +318,11 @@ class PDFFormFieldExtractor:
             'e-mail': 'E-Mail',
             'email': 'E-Mail',
             'mobile phone': 'Mobile Phone',
+            'mobile': 'Mobile',
             'home phone': 'Home Phone',
+            'home': 'Home',
             'work phone': 'Work Phone',
+            'work': 'Work',
             'cell phone': 'Mobile Phone',
             'patient name': 'Patient Name',
             'name of insured': 'Name of Insured',
@@ -332,8 +336,14 @@ class PDFFormFieldExtractor:
             'name of school': 'Name of School',
             'patient employed by': 'Patient Employed By',
             'employer': 'Patient Employed By',
+            'occupation': 'Occupation',
             'in case of emergency, who should be notified': 'In case of emergency, who should be notified',
             'emergency contact': 'In case of emergency, who should be notified',
+            'nickname': 'Nickname',
+            'street': 'Street',
+            'city': 'City',
+            'state': 'State',
+            'zip': 'Zip',
         }
         
         # Check direct mappings first
@@ -443,6 +453,56 @@ class PDFFormFieldExtractor:
         fields = []
         seen_fields = set()
         
+        # Skip lines that are clearly section headers or questions
+        if any(keyword in line.lower() for keyword in ['patient information form', 'for children/minors only', 'primary dental plan', 'secondary dental plan']):
+            return fields
+        
+        # Handle specific known field patterns first
+        known_patterns = {
+            r'First\s*_{5,}.*?MI\s*_{2,}.*?Last\s*_{5,}.*?Nickname\s*_{5,}': [
+                ('First Name', 'First'),
+                ('MI', 'MI'), 
+                ('Last Name', 'Last'),
+                ('Nickname', 'Nickname')
+            ],
+            r'Mobile\s*_{5,}.*?Home\s*_{5,}.*?Work\s*_{5,}': [
+                ('Mobile', 'Mobile'),
+                ('Home', 'Home'),
+                ('Work', 'Work')
+            ],
+            r'Street\s*_{10,}.*?Apt/Unit/Suite\s*_{5,}': [
+                ('Street', 'Street'),
+                ('Apt/Unit/Suite', 'Apt/Unit/Suite')
+            ],
+            r'City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
+                ('City', 'City'),
+                ('State', 'State'),
+                ('Zip', 'Zip')
+            ],
+            r'E-Mail\s*_{10,}.*?Drivers License #\s*_{5,}': [
+                ('E-Mail', 'E-Mail'),
+                ('Drivers License #', 'Drivers License #')
+            ],
+            r'Patient Employed By\s*_{10,}.*?Occupation\s*_{10,}': [
+                ('Patient Employed By', 'Patient Employed By'),
+                ('Occupation', 'Occupation')
+            ]
+        }
+        
+        # Check for known patterns first
+        for pattern, field_tuples in known_patterns.items():
+            if re.search(pattern, line, re.IGNORECASE):
+                for field_title, field_key in field_tuples:
+                    normalized_name = self.normalize_field_name(field_title, line)
+                    if field_title not in seen_fields:
+                        fields.append((normalized_name, line))
+                        seen_fields.add(field_title)
+                return fields
+        
+        # Skip "Patient Name:" lines as they're usually section headers, not fields
+        if re.match(r'Patient Name\s*:', line):
+            return fields
+        
         # Single comprehensive pattern to avoid duplicates
         # Matches field names followed by underscores, colons, or multiple spaces
         pattern = r'([A-Za-z][A-Za-z\s\#\/\(\)\-]{0,35}?)(?:_+|:+|\s{3,})'
@@ -453,7 +513,7 @@ class PDFFormFieldExtractor:
             
             # Filter out invalid field names
             if (len(field_name) > 1 and 
-                field_name.lower() not in ['and', 'or', 'the', 'of', 'to', 'for', 'in', 'with', 'if', 'is', 'are'] and
+                field_name.lower() not in ['and', 'or', 'the', 'of', 'to', 'for', 'in', 'with', 'if', 'is', 'are', 'patient name'] and
                 field_name not in seen_fields and
                 # Allow meaningful uppercase abbreviations like MI, SSN
                 (not field_name.isupper() or field_name.lower() in ['mi', 'ssn', 'id', 'dl', 'dob'])):
@@ -493,9 +553,9 @@ class PDFFormFieldExtractor:
                 'EMERGENCY CONTACT', 'INSURANCE', 'DENTAL PLAN', 
                 'MEDICAL HISTORY', 'HEALTH HISTORY', 'CHILDREN/MINORS',
                 'RESPONSIBLE PARTY', 'CONSENT', 'SIGNATURE', 'PRIMARY DENTAL',
-                'SECONDARY DENTAL'
+                'SECONDARY DENTAL', 'DENTAL BENEFIT PLAN'
             ]):
-                if 'DENTAL PLAN' in line_upper or 'INSURANCE' in line_upper:
+                if 'DENTAL PLAN' in line_upper or 'INSURANCE' in line_upper or 'DENTAL BENEFIT' in line_upper:
                     if 'SECONDARY' in line_upper:
                         current_section = "Secondary Dental Plan"
                     elif 'PRIMARY' in line_upper:
@@ -570,6 +630,102 @@ class PDFFormFieldExtractor:
                 )
                 fields.append(field)
                 i = j
+                continue
+            
+            # Handle signature fields with initials
+            if '(initial)' in line.lower():
+                # Extract the text before (initial)
+                text_part = line.split('(initial)')[0].strip()
+                if text_part:
+                    # Create the text field
+                    key = f"text_{len([f for f in fields if f.field_type == 'text']) + 1}"
+                    field = FieldInfo(
+                        key=key,
+                        title="",
+                        field_type='text',
+                        section=current_section,
+                        optional=False,
+                        control={
+                            'html_text': f"<p>{text_part}</p>",
+                            'temporary_html_text': f"<p>{text_part}</p>",
+                            'text': ""
+                        }
+                    )
+                    fields.append(field)
+                    
+                    # Create the initial field
+                    initials_key = f"initials_{len([f for f in fields if f.key.startswith('initials')]) + 1}" if any(f.key.startswith('initials') for f in fields) else "initials"
+                    field = FieldInfo(
+                        key=initials_key,
+                        title="Initial",
+                        field_type='input',
+                        section=current_section,
+                        control={'input_type': 'initials'}
+                    )
+                    fields.append(field)
+                i += 1
+                continue
+            
+            # Handle consent questions with YES/NO checkboxes
+            if re.search(r'YES\s+N?O?\s*\(Check One\)', line, re.IGNORECASE):
+                # Extract the question part
+                question_match = re.match(r'^(.*?)\s+YES\s+N?O?\s*\(Check One\)', line, re.IGNORECASE)
+                if question_match:
+                    question = question_match.group(1).strip()
+                    key = ModentoSchemaValidator.slugify(question)
+                    
+                    field = FieldInfo(
+                        key=key,
+                        title=question,
+                        field_type='radio',
+                        section=current_section,
+                        optional=False,
+                        control={
+                            'options': [
+                                {"name": "Yes", "value": True},
+                                {"name": "No", "value": False}
+                            ],
+                            'hint': None
+                        }
+                    )
+                    fields.append(field)
+                    
+                    # Add initials field
+                    initials_key = f"initials_{len([f for f in fields if f.key.startswith('initials')]) + 1}"
+                    field = FieldInfo(
+                        key=initials_key,
+                        title="Initial",
+                        field_type='input',
+                        section=current_section,
+                        control={'input_type': 'initials'}
+                    )
+                    fields.append(field)
+                i += 1
+                continue
+            
+            # Handle signature and date fields
+            if re.search(r'Signature\s*_{10,}.*?Date\s*_{5,}', line, re.IGNORECASE):
+                # Add signature field
+                field = FieldInfo(
+                    key="signature",
+                    title="Signature",
+                    field_type='signature',
+                    section=current_section,
+                    optional=False,
+                    control={}
+                )
+                fields.append(field)
+                
+                # Add date signed field
+                field = FieldInfo(
+                    key="date_signed",
+                    title="Date Signed",
+                    field_type='date',
+                    section=current_section,
+                    control={'input_type': 'any', 'hint': None}
+                )
+                fields.append(field)
+                i += 1
                 continue
             
             # Check for radio button questions first

@@ -1,7 +1,18 @@
 [
   {
-    "key": "patient_name",
-    "title": "Patient Name",
+    "key": "todays_date",
+    "title": "Today's Date",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "any",
+      "hint": null
+    }
+  },
+  {
+    "key": "first_name",
+    "title": "First Name",
     "section": "Patient Information Form",
     "optional": true,
     "type": "input",
@@ -11,19 +22,19 @@
     }
   },
   {
-    "key": "first",
-    "title": "First",
+    "key": "mi",
+    "title": "MI",
     "section": "Patient Information Form",
     "optional": true,
     "type": "input",
     "control": {
-      "input_type": "name",
+      "input_type": "initials",
       "hint": null
     }
   },
   {
-    "key": "last",
-    "title": "Last",
+    "key": "last_name",
+    "title": "Last Name",
     "section": "Patient Information Form",
     "optional": true,
     "type": "input",
@@ -158,13 +169,52 @@
     }
   },
   {
-    "key": "street_2",
-    "title": "Street",
+    "key": "what_is_your_preferred_method_of_contact",
+    "title": "What Is Your Preferred Method Of Contact",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Mobile Phone",
+          "value": "Mobile Phone"
+        },
+        {
+          "name": "Home Phone",
+          "value": "Home Phone"
+        },
+        {
+          "name": "Work Phone",
+          "value": "Work Phone"
+        },
+        {
+          "name": "E-mail",
+          "value": "E-mail"
+        }
+      ],
+      "hint": null
+    }
+  },
+  {
+    "key": "ssn_2",
+    "title": "Social Security No.",
     "section": "Patient Information Form",
     "optional": true,
     "type": "input",
     "control": {
-      "input_type": "name",
+      "input_type": "ssn",
+      "hint": null
+    }
+  },
+  {
+    "key": "date_of_birth",
+    "title": "Date of Birth",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
       "hint": null
     }
   },
@@ -202,8 +252,128 @@
     }
   },
   {
-    "key": "first_2",
-    "title": "First",
+    "key": "sex",
+    "title": "Sex",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Male",
+          "value": "male"
+        },
+        {
+          "name": "Female",
+          "value": "female"
+        }
+      ],
+      "hint": null
+    }
+  },
+  {
+    "key": "marital_status",
+    "title": "Marital Status",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Married",
+          "value": "Married"
+        },
+        {
+          "name": "Single",
+          "value": "Single"
+        },
+        {
+          "name": "Divorced",
+          "value": "Divorced"
+        },
+        {
+          "name": "Separated",
+          "value": "Separated"
+        },
+        {
+          "name": "Widowed",
+          "value": "Widowed"
+        }
+      ],
+      "hint": null
+    }
+  },
+  {
+    "key": "relationship_to_patient",
+    "title": "Relationship To Patient",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Self",
+          "value": "Self"
+        },
+        {
+          "name": "Spouse",
+          "value": "Spouse"
+        },
+        {
+          "name": "Parent",
+          "value": "Parent"
+        },
+        {
+          "name": "Other",
+          "value": "Other"
+        }
+      ],
+      "hint": null
+    }
+  },
+  {
+    "key": "is_the_patient_a_minor",
+    "title": "Is the Patient a Minor?",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": true,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": "no"
+        }
+      ],
+      "hint": null
+    }
+  },
+  {
+    "key": "full_time_student",
+    "title": "Full-time Student",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": true,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": "no"
+        }
+      ],
+      "hint": null
+    }
+  },
+  {
+    "key": "first_name_2",
+    "title": "First Name",
     "section": "Patient Information Form",
     "optional": true,
     "type": "input",
@@ -213,13 +383,52 @@
     }
   },
   {
-    "key": "last_2",
-    "title": "Last",
+    "key": "last_name_2",
+    "title": "Last Name",
     "section": "Patient Information Form",
     "optional": true,
     "type": "input",
     "control": {
       "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "date_of_birth_2",
+    "title": "Date of Birth",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    }
+  },
+  {
+    "key": "relationship_to_patient_2",
+    "title": "Relationship To Patient",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Self",
+          "value": "Self"
+        },
+        {
+          "name": "Spouse",
+          "value": "Spouse"
+        },
+        {
+          "name": "Parent",
+          "value": "Parent"
+        },
+        {
+          "name": "Other",
+          "value": "Other"
+        }
+      ],
       "hint": null
     }
   },
@@ -236,7 +445,7 @@
   },
   {
     "key": "if_patient_is_a_minor_primary_residence",
-    "title": "If patient is a Minor, primary residence",
+    "title": "If Patient Is A Minor, Primary Residence",
     "section": "Patient Information Form",
     "optional": true,
     "type": "radio",
@@ -244,40 +453,29 @@
       "options": [
         {
           "name": "Both Parents",
-          "value": "both parents"
+          "value": "Both Parents"
         },
         {
           "name": "Mom",
-          "value": "mom"
+          "value": "Mom"
         },
         {
           "name": "Dad",
-          "value": "dad"
+          "value": "Dad"
         },
         {
           "name": "Step Parent",
-          "value": "step parent"
+          "value": "Step Parent"
         },
         {
           "name": "Shared Custody",
-          "value": "shared custody"
+          "value": "Shared Custody"
         },
         {
           "name": "Guardian",
-          "value": "guardian"
+          "value": "Guardian"
         }
       ],
-      "hint": null
-    }
-  },
-  {
-    "key": "street_3",
-    "title": "Street",
-    "section": "Patient Information Form",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
       "hint": null
     }
   },
@@ -363,17 +561,6 @@
     }
   },
   {
-    "key": "street_4",
-    "title": "Street",
-    "section": "Patient Information Form",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
     "key": "city_4",
     "title": "City",
     "section": "Patient Information Form",
@@ -407,13 +594,24 @@
     }
   },
   {
-    "key": "street_5",
-    "title": "Street",
-    "section": "Patient Information Form",
+    "key": "birthdate",
+    "title": "Birthdate",
+    "section": "Primary Dental Plan",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    }
+  },
+  {
+    "key": "ssn",
+    "title": "Social Security No.",
+    "section": "Primary Dental Plan",
     "optional": true,
     "type": "input",
     "control": {
-      "input_type": "name",
+      "input_type": "ssn",
       "hint": null
     }
   },
@@ -473,13 +671,24 @@
     }
   },
   {
-    "key": "street_6",
-    "title": "Street",
-    "section": "Patient Information Form",
+    "key": "birthdate_2",
+    "title": "Birthdate",
+    "section": "Secondary Dental Plan",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    }
+  },
+  {
+    "key": "ssn_3",
+    "title": "Social Security No.",
+    "section": "Secondary Dental Plan",
     "optional": true,
     "type": "input",
     "control": {
-      "input_type": "name",
+      "input_type": "ssn",
       "hint": null
     }
   },
@@ -573,6 +782,28 @@
   },
   {
     "key": "text_1",
+    "title": "",
+    "section": "Signature",
+    "optional": false,
+    "type": "text",
+    "control": {
+      "html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
+      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
+      "text": ""
+    }
+  },
+  {
+    "key": "initials",
+    "title": "Initial",
+    "section": "Signature",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "initials"
+    }
+  },
+  {
+    "key": "text_2",
     "title": "",
     "section": "Signature",
     "optional": false,
