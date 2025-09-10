@@ -1050,8 +1050,9 @@ class PDFFormFieldExtractor:
             
             # Handle consent questions with YES/NO checkboxes - improved pattern for both formats
             consent_patterns = [
-                r'(.+?)\s+YES\s+N?O?\s*\(Check One\)',  # Standard format
-                r'(.+?)\.\s+YES\s+N\s*O\s*\(Check One\)'  # Format with period before YES
+                r'(.+?)\s+YES\s+N\s*O?\s*\(Check One\)',  # Standard format with flexible N O spacing
+                r'(.+?)\.\s+YES\s+N\s*O\s*\(Check One\)',  # Format with period before YES
+                r'(.+?)\s+YES\s+N\s+O\s*\(Check One\)'  # Format with space between N and O
             ]
             
             consent_found = False
