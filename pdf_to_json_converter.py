@@ -62,8 +62,9 @@ class ModentoSchemaValidator:
     
     @staticmethod
     def ensure_unique_keys(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Ensure all keys are globally unique"""
+        """Ensure all keys are globally unique with context-aware deduplication"""
         seen = set()
+        to_remove = []  # Track indices to remove
         
         def make_unique(key: str) -> str:
             base = key
@@ -73,6 +74,59 @@ class ModentoSchemaValidator:
                 counter += 1
             seen.add(key)
             return key
+        
+        def should_merge_or_remove(current_idx: int, spec: List[Dict[str, Any]]) -> Optional[int]:
+            """Check if current field should be merged with or removed in favor of a previous field"""
+            current = spec[current_idx]
+            current_key = current.get("key", "")
+            current_title = current.get("title", "")
+            current_section = current.get("section", "")
+            
+            # Look for existing field with same title in reasonable section
+            for prev_idx in range(current_idx):
+                prev = spec[prev_idx]
+                prev_title = prev.get("title", "")
+                prev_section = prev.get("section", "")
+                
+                # If same title and compatible section, consider merging/removing
+                if (prev_title == current_title and 
+                    current_title and  # Don't merge empty titles
+                    prev_title and
+                    len(current_title) > 2):  # Don't merge very short titles
+                    
+                    # Same section - likely duplicate
+                    if prev_section == current_section:
+                        return prev_idx
+                    
+                    # Related sections that could indicate same logical field
+                    patient_sections = ["Patient Information", "Patient Info", "Patient Information Form"]
+                    if (prev_section in patient_sections and current_section in patient_sections):
+                        return prev_idx
+                        
+            return None
+        
+        # First pass: identify and mark duplicates for removal
+        i = 0
+        while i < len(spec):
+            merge_with = should_merge_or_remove(i, spec)
+            if merge_with is not None:
+                # Keep the one in the better section, or the first one if same section
+                current = spec[i]
+                prev = spec[merge_with]
+                
+                # Prefer "Patient Information" over "Patient Information Form"
+                if (current.get("section") == "Patient Information" and 
+                    prev.get("section") == "Patient Information Form"):
+                    # Remove previous, keep current
+                    to_remove.append(merge_with)
+                else:
+                    # Remove current, keep previous
+                    to_remove.append(i)
+            i += 1
+        
+        # Remove duplicates (in reverse order to maintain indices)
+        for idx in sorted(to_remove, reverse=True):
+            spec.pop(idx)
         
         def process_questions(questions: List[Dict[str, Any]]):
             for q in questions:
@@ -173,6 +227,45 @@ class PDFFormFieldExtractor:
         # Initialize Docling converter with maximum accuracy settings
         self._setup_docling_converter()
     
+    def is_field_required(self, field_name: str, section: str, context: str = "") -> bool:
+        """Determine if a field should be required based on dental form conventions"""
+        field_lower = field_name.lower()
+        context_lower = context.lower()
+        
+        # Essential patient identification fields
+        if any(keyword in field_lower for keyword in ['first name', 'last name', 'date of birth', 'birthdate']):
+            return True
+        
+        # Required contact information
+        if field_lower in ['phone', 'mobile phone'] or 'e-mail' in field_lower:
+            return True
+        
+        # Required address fields
+        if field_lower in ['street', 'city', 'state', 'zip'] and 'if different' not in context_lower:
+            return True
+        
+        # Signature is always required
+        if 'signature' in field_lower:
+            return True
+        
+        # Optional fields
+        if any(keyword in field_lower for keyword in [
+            'nickname', 'mi', 'middle initial', 'apt/unit/suite', 'work phone', 'home phone',
+            'occupation', 'employer', 'school'
+        ]):
+            return False
+        
+        # Context-specific optional fields
+        if 'if different' in context_lower or 'optional' in context_lower:
+            return False
+        
+        # Secondary insurance fields are typically optional
+        if section == "Secondary Dental Plan":
+            return False
+        
+        # Default to optional for unknown fields
+        return False
+    
     def _setup_docling_converter(self):
         """Configure Docling for maximum form scanning accuracy"""
         # Configure pipeline for maximum accuracy
@@ -263,18 +356,34 @@ class PDFFormFieldExtractor:
         """Detect specific input type for input fields"""
         text_lower = text.lower()
         
-        if self.field_patterns['email'].search(text):
+        # Email detection
+        if self.field_patterns['email'].search(text) or 'e-mail' in text_lower:
             return 'email'
-        elif self.field_patterns['phone'].search(text):
+        
+        # Phone detection  
+        elif self.field_patterns['phone'].search(text) or any(word in text_lower for word in ['mobile', 'home phone', 'work phone', 'cell']):
             return 'phone'
+        
+        # SSN detection
         elif 'ssn' in text_lower or 'social security' in text_lower:
             return 'ssn'
+        
+        # Zip code detection
         elif 'zip' in text_lower:
             return 'zip'
-        elif ('initial' in text_lower and len(text) < 20) or text_lower.strip() in ['mi', 'm.i.', 'middle initial', 'middle init']:
+        
+        # Initials detection - be more specific
+        elif (('initial' in text_lower or text_lower.strip() in ['mi', 'm.i.', 'middle initial', 'middle init']) 
+              and len(text) < 25):
             return 'initials'
-        elif re.search(r'\bnumber\b', text_lower) and 'license' not in text_lower:
+        
+        # Number detection - for IDs, license numbers, etc.
+        elif (any(word in text_lower for word in ['number', 'id', '#']) 
+              and 'license' not in text_lower 
+              and 'phone' not in text_lower):
             return 'number'
+        
+        # Default to name for most other fields
         else:
             return 'name'
     
@@ -283,11 +392,55 @@ class PDFFormFieldExtractor:
         # Check current line and surrounding context
         all_text = ' '.join([text] + context_lines[:5])
         
+        # More specific section detection for dental forms
+        text_lower = text.lower()
+        context_lower = ' '.join(context_lines[:5]).lower()
+        
+        # Insurance/dental plan related fields
+        if any(keyword in text_lower for keyword in ['insurance', 'dental plan', 'group number', 'id number', 'plan/group', 'name of insured', 'patient relationship to insured']):
+            if 'secondary' in context_lower or 'second' in context_lower:
+                return "Secondary Dental Plan"
+            else:
+                return "Primary Dental Plan"
+        
+        # Medical history related
+        if any(keyword in text_lower for keyword in ['medical', 'health', 'history', 'condition', 'medication', 'allerg', 'surgery']):
+            return "Medical History"
+        
+        # Emergency contact
+        if any(keyword in text_lower for keyword in ['emergency', 'notify', 'emergency contact']):
+            return "Emergency Contact"
+        
+        # Children/minors section
+        if any(keyword in text_lower for keyword in ['minor', 'children', 'parent', 'guardian', 'custody', 'school']):
+            return "FOR CHILDREN/MINORS ONLY"
+        
+        # Signature and consent
+        if any(keyword in text_lower for keyword in ['signature', 'consent', 'terms', 'agree', 'initial']):
+            return "Signature"
+        
+        # Address fields
+        if any(keyword in text_lower for keyword in ['street', 'city', 'state', 'zip', 'address']):
+            return "Patient Information"
+        
+        # Contact information
+        if any(keyword in text_lower for keyword in ['phone', 'mobile', 'home', 'work', 'e-mail', 'email']):
+            return "Patient Information"
+        
+        # Employment information
+        if any(keyword in text_lower for keyword in ['employed', 'employer', 'occupation', 'student']):
+            return "Patient Information"
+        
+        # Basic patient info
+        if any(keyword in text_lower for keyword in ['first name', 'last name', 'nickname', 'date of birth', 'birthdate', 'sex', 'marital']):
+            return "Patient Information"
+        
+        # Check surrounding context for section headers
         for section, pattern in self.section_patterns.items():
             if pattern.search(all_text):
                 return section.replace('_', ' ').title()
         
-        return "General Information"
+        return "Patient Information"
     
     def normalize_field_name(self, field_name: str, context_line: str = "") -> str:
         """Normalize field names to match expected patterns"""
@@ -465,7 +618,11 @@ class PDFFormFieldExtractor:
         if any(keyword in line.lower() for keyword in ['patient information form', 'for children/minors only', 'primary dental plan', 'secondary dental plan']):
             return fields
         
-        # Handle specific known field patterns first
+        # Skip lines that are just separators or decorative
+        if re.match(r'^[_\-\s]*$', line) or len(line.strip()) < 3:
+            return fields
+        
+        # Handle specific known field patterns first - these are comprehensive line patterns
         known_patterns = {
             r'First\s*_{5,}.*?MI\s*_{2,}.*?Last\s*_{5,}.*?Nickname\s*_{5,}': [
                 ('First Name', 'First'),
@@ -495,12 +652,6 @@ class PDFFormFieldExtractor:
                 ('Patient Employed By', 'Patient Employed By'),
                 ('Occupation', 'Occupation')
             ],
-            r'Street\s*_{10,}.*?City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
-                ('Street', 'Street'),
-                ('City', 'City'),
-                ('State', 'State'),
-                ('Zip', 'Zip')
-            ],
             r'Name of Insured\s*_{10,}.*?Birthdate\s*_{5,}': [
                 ('Name of Insured', 'Name of Insured'),
                 ('Birthdate', 'Birthdate')
@@ -527,7 +678,7 @@ class PDFFormFieldExtractor:
             ]
         }
         
-        # Check for known patterns first
+        # Check for known patterns first - these take precedence
         for pattern, field_tuples in known_patterns.items():
             if re.search(pattern, line, re.IGNORECASE):
                 for field_title, field_key in field_tuples:
@@ -535,9 +686,7 @@ class PDFFormFieldExtractor:
                     if field_title not in seen_fields:
                         fields.append((normalized_name, line))
                         seen_fields.add(field_title)
-                # Don't return early - continue checking other patterns in case there are overlaps
-                if fields:  # If we found some fields from this pattern, we can return
-                    return fields
+                return fields  # Return early for known patterns to avoid duplicates
         
         # Handle specific individual field patterns that appear alone
         individual_patterns = {
@@ -564,24 +713,45 @@ class PDFFormFieldExtractor:
                 fields.append((normalized_name, line))
                 return fields
         
-        # Skip "Patient Name:" lines as they're usually section headers, not fields
-        if re.match(r'Patient Name\s*:', line):
-            return fields
+        # Skip common non-field patterns that could be mistaken for fields
+        skip_patterns = [
+            r'Patient Name\s*:',
+            r'Responsible Party\s*:',
+            r'Insurance Information\s*:',
+            r'Address\s*:',
+            r'[A-Z][A-Z\s]{20,}',  # All caps long text (likely headers)
+            r'^\d+\.\s',  # Numbered lists
+            r'Please\s+',  # Instructions
+            r'Check\s+all\s+that\s+apply',  # Instructions
+        ]
         
-        # Single comprehensive pattern to avoid duplicates
-        # Matches field names followed by underscores, colons, or multiple spaces
-        pattern = r'([A-Za-z][A-Za-z\s\#\/\(\)\-]{0,35}?)(?:_+|:+|\s{3,})'
+        for skip_pattern in skip_patterns:
+            if re.search(skip_pattern, line, re.IGNORECASE):
+                return fields
+        
+        # Improved pattern to avoid over-detection of fields
+        # Only match if there's a clear field structure with sufficient underscores
+        pattern = r'([A-Za-z][A-Za-z\s\#\/\(\)\-\.]{1,35}?)(?:_{4,}|:\s*_{2,})'
         
         matches = re.finditer(pattern, line)
         for match in matches:
             field_name = match.group(1).strip()
             
-            # Filter out invalid field names
-            if (len(field_name) > 1 and 
-                field_name.lower() not in ['and', 'or', 'the', 'of', 'to', 'for', 'in', 'with', 'if', 'is', 'are', 'patient name'] and
+            # More restrictive filtering to avoid false positives
+            if (len(field_name) >= 2 and 
+                len(field_name) <= 35 and
+                field_name.lower() not in [
+                    'and', 'or', 'the', 'of', 'to', 'for', 'in', 'with', 'if', 'is', 'are', 
+                    'patient name', 'please', 'check', 'all', 'that', 'apply', 'form',
+                    'information', 'section', 'date', 'time', 'page'
+                ] and
                 field_name not in seen_fields and
-                # Allow meaningful uppercase abbreviations like MI, SSN
-                (not field_name.isupper() or field_name.lower() in ['mi', 'ssn', 'id', 'dl', 'dob'])):
+                # Allow meaningful uppercase abbreviations
+                (not field_name.isupper() or field_name.lower() in ['mi', 'ssn', 'id', 'dl', 'dob']) and
+                # Avoid detecting repeated characters as fields
+                not re.match(r'^(.)\1+$', field_name.replace(' ', '')) and
+                # Must contain at least one letter
+                re.search(r'[A-Za-z]', field_name)):
                 
                 # Normalize the field name
                 normalized_name = self.normalize_field_name(field_name, line)
@@ -846,6 +1016,9 @@ class PDFFormFieldExtractor:
                 # Determine field type
                 field_type = self.detect_field_type(field_name)
                 
+                # Better section detection using field content
+                current_section = self.detect_section(field_name, text_lines[max(0, i-5):i+5])
+                
                 # Create control based on type
                 control = {}
                 if field_type == 'input':
@@ -887,14 +1060,16 @@ class PDFFormFieldExtractor:
                     field_type = 'states'
                     control = {'hint': None, 'input_type': 'name'}
                 
-                # Create field
+                # Create field with improved required detection
                 key = ModentoSchemaValidator.slugify(field_name)
+                is_required = self.is_field_required(field_name, current_section, full_line)
                 
                 field = FieldInfo(
                     key=key,
                     title=field_name,
                     field_type=field_type,
                     section=current_section,
+                    optional=not is_required,
                     control=control
                 )
                 fields.append(field)
