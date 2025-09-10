@@ -1,12 +1,12 @@
 [
   {
-    "key": "patient_name",
-    "title": "Patient Name",
+    "key": "todays_date",
+    "title": "Today's Date",
     "section": "Patient Information Form",
     "optional": true,
-    "type": "input",
+    "type": "date",
     "control": {
-      "input_type": "name",
+      "input_type": "any",
       "hint": null
     }
   },
@@ -18,6 +18,17 @@
     "type": "input",
     "control": {
       "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "mi",
+    "title": "MI",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "initials",
       "hint": null
     }
   },
@@ -186,13 +197,24 @@
     }
   },
   {
-    "key": "street_2",
-    "title": "Street",
+    "key": "ssn_2",
+    "title": "Social Security No.",
     "section": "Patient Information Form",
     "optional": true,
     "type": "input",
     "control": {
-      "input_type": "name",
+      "input_type": "ssn",
+      "hint": null
+    }
+  },
+  {
+    "key": "date_of_birth",
+    "title": "Date of Birth",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
       "hint": null
     }
   },
@@ -226,6 +248,26 @@
     "type": "input",
     "control": {
       "input_type": "zip",
+      "hint": null
+    }
+  },
+  {
+    "key": "sex",
+    "title": "Sex",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Male",
+          "value": "male"
+        },
+        {
+          "name": "Female",
+          "value": "female"
+        }
+      ],
       "hint": null
     }
   },
@@ -352,6 +394,17 @@
     }
   },
   {
+    "key": "date_of_birth_2",
+    "title": "Date of Birth",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    }
+  },
+  {
     "key": "relationship_to_patient_2",
     "title": "Relationship To Patient",
     "section": "Patient Information Form",
@@ -423,17 +476,6 @@
           "value": "Guardian"
         }
       ],
-      "hint": null
-    }
-  },
-  {
-    "key": "street_3",
-    "title": "Street",
-    "section": "Patient Information Form",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
       "hint": null
     }
   },
@@ -519,17 +561,6 @@
     }
   },
   {
-    "key": "street_4",
-    "title": "Street",
-    "section": "Patient Information Form",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
     "key": "city_4",
     "title": "City",
     "section": "Patient Information Form",
@@ -563,13 +594,24 @@
     }
   },
   {
-    "key": "street_5",
-    "title": "Street",
-    "section": "Patient Information Form",
+    "key": "birthdate",
+    "title": "Birthdate",
+    "section": "Primary Dental Plan",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    }
+  },
+  {
+    "key": "ssn",
+    "title": "Social Security No.",
+    "section": "Primary Dental Plan",
     "optional": true,
     "type": "input",
     "control": {
-      "input_type": "name",
+      "input_type": "ssn",
       "hint": null
     }
   },
@@ -629,13 +671,24 @@
     }
   },
   {
-    "key": "street_6",
-    "title": "Street",
-    "section": "Patient Information Form",
+    "key": "birthdate_2",
+    "title": "Birthdate",
+    "section": "Secondary Dental Plan",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    }
+  },
+  {
+    "key": "ssn_3",
+    "title": "Social Security No.",
+    "section": "Secondary Dental Plan",
     "optional": true,
     "type": "input",
     "control": {
-      "input_type": "name",
+      "input_type": "ssn",
       "hint": null
     }
   },
@@ -729,6 +782,28 @@
   },
   {
     "key": "text_1",
+    "title": "",
+    "section": "Signature",
+    "optional": false,
+    "type": "text",
+    "control": {
+      "html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
+      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
+      "text": ""
+    }
+  },
+  {
+    "key": "initials",
+    "title": "Initial",
+    "section": "Signature",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "initials"
+    }
+  },
+  {
+    "key": "text_2",
     "title": "",
     "section": "Signature",
     "optional": false,

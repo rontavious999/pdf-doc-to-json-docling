@@ -336,14 +336,17 @@ class PDFFormFieldExtractor:
             'name of school': 'Name of School',
             'patient employed by': 'Patient Employed By',
             'employer': 'Patient Employed By',
+            'employer (if different from above)': 'Employer (if different from above)',
             'occupation': 'Occupation',
             'in case of emergency, who should be notified': 'In case of emergency, who should be notified',
+            'in case of emergency, who should be notified?': 'In case of emergency, who should be notified',
             'emergency contact': 'In case of emergency, who should be notified',
             'nickname': 'Nickname',
             'street': 'Street',
             'city': 'City',
             'state': 'State',
             'zip': 'Zip',
+            'phone': 'Phone',
         }
         
         # Check direct mappings first
@@ -359,6 +362,11 @@ class PDFFormFieldExtractor:
             return 'First Name'
         if field_lower == 'last' and any(word in context_line.lower() for word in ['name', 'patient']):
             return 'Last Name'
+        
+        # Handle context-sensitive field names for different from patient
+        if 'if different from patient' in context_line.lower():
+            if field_lower == 'street':
+                return 'Street'  # Will be disambiguated by hint
         
         return field_name
     
@@ -486,6 +494,36 @@ class PDFFormFieldExtractor:
             r'Patient Employed By\s*_{10,}.*?Occupation\s*_{10,}': [
                 ('Patient Employed By', 'Patient Employed By'),
                 ('Occupation', 'Occupation')
+            ],
+            r'Street\s*_{10,}.*?City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
+                ('Street', 'Street'),
+                ('City', 'City'),
+                ('State', 'State'),
+                ('Zip', 'Zip')
+            ],
+            r'Name of Insured\s*_{10,}.*?Birthdate\s*_{5,}': [
+                ('Name of Insured', 'Name of Insured'),
+                ('Birthdate', 'Birthdate')
+            ],
+            r'Insurance Company\s*_{10,}.*?Phone\s*_{5,}': [
+                ('Insurance Company', 'Insurance Company'),
+                ('Phone', 'Phone')
+            ],
+            r'Dental Plan Name\s*_{10,}.*?Plan/Group Number\s*_{10,}': [
+                ('Dental Plan Name', 'Dental Plan Name'),
+                ('Plan/Group Number', 'Plan/Group Number')
+            ],
+            r'ID Number\s*_{10,}.*?Patient Relationship to Insured\s*_{5,}': [
+                ('ID Number', 'ID Number'),
+                ('Patient Relationship to Insured', 'Patient Relationship to Insured')
+            ],
+            r'In case of emergency, who should be notified\?\s*_{10,}.*?Relationship to Patient\s*_{5,}': [
+                ('In case of emergency, who should be notified', 'In case of emergency, who should be notified'),
+                ('Relationship to Patient', 'Relationship to Patient')
+            ],
+            r'Mobile Phone\s*_{5,}.*?Home Phone\s*_{5,}': [
+                ('Mobile Phone', 'Mobile Phone'),
+                ('Home Phone', 'Home Phone')
             ]
         }
         
@@ -497,6 +535,31 @@ class PDFFormFieldExtractor:
                     if field_title not in seen_fields:
                         fields.append((normalized_name, line))
                         seen_fields.add(field_title)
+                return fields
+        
+        # Handle specific individual field patterns that appear alone
+        individual_patterns = {
+            r'^Patient Employed By\s*$': 'Patient Employed By',
+            r'^Occupation\s*$': 'Occupation', 
+            r'^Name of Insured\s*$': 'Name of Insured',
+            r'^Birthdate\s*$': 'Birthdate',
+            r'^Insurance Company\s*$': 'Insurance Company',
+            r'^Dental Plan Name\s*$': 'Dental Plan Name',
+            r'^Plan/Group Number\s*$': 'Plan/Group Number',
+            r'^ID Number\s*$': 'ID Number',
+            r'^Patient Relationship to Insured\s*$': 'Patient Relationship to Insured',
+            r'^In case of emergency, who should be notified\?\s*$': 'In case of emergency, who should be notified',
+            r'^Relationship to Patient\s*$': 'Relationship to Patient',
+            r'^Mobile Phone\s*$': 'Mobile Phone',
+            r'^Home Phone\s*$': 'Home Phone',
+            r'^Name of School\s*$': 'Name of School',
+            r'^Employer \(if different from above\)\s*$': 'Employer (if different from above)',
+        }
+        
+        for pattern, field_title in individual_patterns.items():
+            if re.search(pattern, line, re.IGNORECASE):
+                normalized_name = self.normalize_field_name(field_title, line)
+                fields.append((normalized_name, line))
                 return fields
         
         # Skip "Patient Name:" lines as they're usually section headers, not fields
@@ -788,7 +851,24 @@ class PDFFormFieldExtractor:
                     control['input_type'] = input_type
                     if input_type == 'phone':
                         control['phone_prefix'] = '+1'
-                    control['hint'] = None
+                    
+                    # Add hints for specific contexts
+                    hint = None
+                    if 'if different from patient' in full_line.lower():
+                        hint = 'If different from patient'
+                    elif 'if different from above' in full_line.lower():
+                        hint = '(if different from above)'
+                    elif 'insurance company' in full_line.lower() and field_name.lower() in ['phone', 'street', 'city', 'zip']:
+                        hint = 'Insurance Company'
+                    elif 'responsible party' in full_line.lower() and field_name.lower() in ['first name', 'last name', 'date of birth']:
+                        if field_name.lower() == 'first name':
+                            hint = 'Name of Responsible Party'
+                        elif field_name.lower() == 'last name':
+                            hint = 'Name of Responsible Party'
+                        elif field_name.lower() == 'date of birth':
+                            hint = 'Responsible Party'
+                    
+                    control['hint'] = hint
                 elif field_type == 'date':
                     if 'birth' in field_name.lower() or 'dob' in field_name.lower():
                         control['input_type'] = 'past'
