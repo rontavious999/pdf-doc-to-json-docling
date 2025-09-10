@@ -1,0 +1,356 @@
+[
+  {
+    "pdf_name": "CFGingivectomy",
+    "ocr_on_score": 80.0,
+    "ocr_off_score": 80.0,
+    "better": "TIE",
+    "score_difference": 0.0,
+    "ocr_on_fields": 5,
+    "ocr_off_fields": 5,
+    "ocr_on_sections": 1,
+    "ocr_off_sections": 1,
+    "content_diff": {
+      "common_fields": 4,
+      "only_in_ocr_on": 0,
+      "only_in_ocr_off": 0,
+      "ocr_on_total": 4,
+      "ocr_off_total": 4,
+      "fields_only_ocr_on": [],
+      "fields_only_ocr_off": []
+    },
+    "detailed_scores": {
+      "ocr_on": {
+        "total_fields": 5,
+        "filled_fields": 5,
+        "field_types": {
+          "input": 4,
+          "signature": 1
+        },
+        "sections": "{'Signature'}",
+        "extraction_score": 80.0,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": true,
+          "has_contact_info": false,
+          "duplicate_keys": 0,
+          "unique_sections": 1
+        }
+      },
+      "ocr_off": {
+        "total_fields": 5,
+        "filled_fields": 5,
+        "field_types": {
+          "input": 4,
+          "signature": 1
+        },
+        "sections": "{'Signature'}",
+        "extraction_score": 80.0,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": true,
+          "has_contact_info": false,
+          "duplicate_keys": 0,
+          "unique_sections": 1
+        }
+      }
+    }
+  },
+  {
+    "pdf_name": "npf",
+    "ocr_on_score": 95.0,
+    "ocr_off_score": 95.0,
+    "better": "TIE",
+    "score_difference": 0.0,
+    "ocr_on_fields": 98,
+    "ocr_off_fields": 98,
+    "ocr_on_sections": 3,
+    "ocr_off_sections": 3,
+    "content_diff": {
+      "common_fields": 26,
+      "only_in_ocr_on": 0,
+      "only_in_ocr_off": 0,
+      "ocr_on_total": 26,
+      "ocr_off_total": 26,
+      "fields_only_ocr_on": [],
+      "fields_only_ocr_off": []
+    },
+    "detailed_scores": {
+      "ocr_on": {
+        "total_fields": 98,
+        "filled_fields": 98,
+        "field_types": {
+          "input": 84,
+          "states": 12,
+          "radio": 1,
+          "signature": 1
+        },
+        "sections": "{'Signature', 'Patient Information Form', 'Insurance'}",
+        "extraction_score": 95.0,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": true,
+          "has_contact_info": true,
+          "duplicate_keys": 0,
+          "unique_sections": 3
+        }
+      },
+      "ocr_off": {
+        "total_fields": 98,
+        "filled_fields": 98,
+        "field_types": {
+          "input": 84,
+          "states": 12,
+          "radio": 1,
+          "signature": 1
+        },
+        "sections": "{'Signature', 'Patient Information Form', 'Insurance'}",
+        "extraction_score": 95.0,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": true,
+          "has_contact_info": true,
+          "duplicate_keys": 0,
+          "unique_sections": 3
+        }
+      }
+    }
+  },
+  {
+    "pdf_name": "Chicago-Dental-Solutions_Form",
+    "ocr_on_score": 98.6,
+    "ocr_off_score": 98.6,
+    "better": "TIE",
+    "score_difference": 0.0,
+    "ocr_on_fields": 85,
+    "ocr_off_fields": 85,
+    "ocr_on_sections": 4,
+    "ocr_off_sections": 4,
+    "content_diff": {
+      "common_fields": 32,
+      "only_in_ocr_on": 0,
+      "only_in_ocr_off": 0,
+      "ocr_on_total": 32,
+      "ocr_off_total": 32,
+      "fields_only_ocr_on": [],
+      "fields_only_ocr_off": []
+    },
+    "detailed_scores": {
+      "ocr_on": {
+        "total_fields": 85,
+        "filled_fields": 83,
+        "field_types": {
+          "input": 70,
+          "date": 4,
+          "states": 6,
+          "radio": 4,
+          "signature": 1
+        },
+        "sections": "{'Emergency Contact', 'Signature', 'Patient Information Form', 'Insurance'}",
+        "extraction_score": 98.6,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": true,
+          "has_contact_info": true,
+          "duplicate_keys": 0,
+          "unique_sections": 4
+        }
+      },
+      "ocr_off": {
+        "total_fields": 85,
+        "filled_fields": 83,
+        "field_types": {
+          "input": 70,
+          "date": 4,
+          "states": 6,
+          "radio": 4,
+          "signature": 1
+        },
+        "sections": "{'Emergency Contact', 'Signature', 'Patient Information Form', 'Insurance'}",
+        "extraction_score": 98.6,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": true,
+          "has_contact_info": true,
+          "duplicate_keys": 0,
+          "unique_sections": 4
+        }
+      }
+    }
+  },
+  {
+    "pdf_name": "npf1",
+    "ocr_on_score": 100.0,
+    "ocr_off_score": 100.0,
+    "better": "TIE",
+    "score_difference": 0.0,
+    "ocr_on_fields": 103,
+    "ocr_off_fields": 103,
+    "ocr_on_sections": 5,
+    "ocr_off_sections": 5,
+    "content_diff": {
+      "common_fields": 53,
+      "only_in_ocr_on": 0,
+      "only_in_ocr_off": 0,
+      "ocr_on_total": 53,
+      "ocr_off_total": 53,
+      "fields_only_ocr_on": [],
+      "fields_only_ocr_off": []
+    },
+    "detailed_scores": {
+      "ocr_on": {
+        "total_fields": 103,
+        "filled_fields": 103,
+        "field_types": {
+          "input": 88,
+          "date": 10,
+          "states": 2,
+          "radio": 2,
+          "signature": 1
+        },
+        "sections": "{'Medical History', 'Signature', 'Patient Information Form', 'Insurance', 'Emergency Contact'}",
+        "extraction_score": 100.0,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": true,
+          "has_contact_info": true,
+          "duplicate_keys": 0,
+          "unique_sections": 5
+        }
+      },
+      "ocr_off": {
+        "total_fields": 103,
+        "filled_fields": 103,
+        "field_types": {
+          "input": 88,
+          "date": 10,
+          "states": 2,
+          "radio": 2,
+          "signature": 1
+        },
+        "sections": "{'Medical History', 'Signature', 'Patient Information Form', 'Insurance', 'Emergency Contact'}",
+        "extraction_score": 100.0,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": true,
+          "has_contact_info": true,
+          "duplicate_keys": 0,
+          "unique_sections": 5
+        }
+      }
+    }
+  },
+  {
+    "pdf_name": "consent_crown_bridge_prosthetics",
+    "ocr_on_score": 80.0,
+    "ocr_off_score": 80.0,
+    "better": "TIE",
+    "score_difference": 0.0,
+    "ocr_on_fields": 10,
+    "ocr_off_fields": 10,
+    "ocr_on_sections": 1,
+    "ocr_off_sections": 1,
+    "content_diff": {
+      "common_fields": 6,
+      "only_in_ocr_on": 0,
+      "only_in_ocr_off": 0,
+      "ocr_on_total": 6,
+      "ocr_off_total": 6,
+      "fields_only_ocr_on": [],
+      "fields_only_ocr_off": []
+    },
+    "detailed_scores": {
+      "ocr_on": {
+        "total_fields": 10,
+        "filled_fields": 10,
+        "field_types": {
+          "input": 5,
+          "date": 4,
+          "signature": 1
+        },
+        "sections": "{'Signature'}",
+        "extraction_score": 80.0,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": true,
+          "has_contact_info": false,
+          "duplicate_keys": 0,
+          "unique_sections": 1
+        }
+      },
+      "ocr_off": {
+        "total_fields": 10,
+        "filled_fields": 10,
+        "field_types": {
+          "input": 5,
+          "date": 4,
+          "signature": 1
+        },
+        "sections": "{'Signature'}",
+        "extraction_score": 80.0,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": true,
+          "has_contact_info": false,
+          "duplicate_keys": 0,
+          "unique_sections": 1
+        }
+      }
+    }
+  },
+  {
+    "pdf_name": "tooth20removal20consent20form",
+    "ocr_on_score": 75.0,
+    "ocr_off_score": 75.0,
+    "better": "TIE",
+    "score_difference": 0.0,
+    "ocr_on_fields": 5,
+    "ocr_off_fields": 5,
+    "ocr_on_sections": 1,
+    "ocr_off_sections": 1,
+    "content_diff": {
+      "common_fields": 4,
+      "only_in_ocr_on": 0,
+      "only_in_ocr_off": 0,
+      "ocr_on_total": 4,
+      "ocr_off_total": 4,
+      "fields_only_ocr_on": [],
+      "fields_only_ocr_off": []
+    },
+    "detailed_scores": {
+      "ocr_on": {
+        "total_fields": 5,
+        "filled_fields": 5,
+        "field_types": {
+          "input": 4,
+          "signature": 1
+        },
+        "sections": "{'Signature'}",
+        "extraction_score": 75.0,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": false,
+          "has_contact_info": false,
+          "duplicate_keys": 0,
+          "unique_sections": 1
+        }
+      },
+      "ocr_off": {
+        "total_fields": 5,
+        "filled_fields": 5,
+        "field_types": {
+          "input": 4,
+          "signature": 1
+        },
+        "sections": "{'Signature'}",
+        "extraction_score": 75.0,
+        "quality_indicators": {
+          "has_signature": true,
+          "has_patient_info": false,
+          "has_contact_info": false,
+          "duplicate_keys": 0,
+          "unique_sections": 1
+        }
+      }
+    }
+  }
+]

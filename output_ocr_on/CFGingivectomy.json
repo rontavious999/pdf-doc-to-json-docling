@@ -1,0 +1,54 @@
+[
+  {
+    "key": "sult_in_permanent_loss_of_teeth",
+    "title": "sult in permanent loss of teeth",
+    "section": "Signature",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "rmanent_loss_of_teeth",
+    "title": "rmanent loss of teeth",
+    "section": "Signature",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "name_of_patient",
+    "title": "Name of Patient",
+    "section": "Signature",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "name_of_patient_2",
+    "title": "Name of Patient",
+    "section": "Signature",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "signature",
+    "title": "Signature",
+    "section": "Signature",
+    "optional": false,
+    "type": "signature",
+    "control": {}
+  }
+]
