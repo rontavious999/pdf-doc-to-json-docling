@@ -1,0 +1,108 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<div style=\"text-align:center\"></div>"
+    },
+    "section": "Form",
+    "optional": true
+  },
+  {
+    "key": "the_hub_dental_practice_2",
+    "type": "input",
+    "title": "The Hub Dental",
+    "control": {
+      "input_type": "text"
+    },
+    "section": "The Hub Dental Practice",
+    "optional": true
+  },
+  {
+    "key": "side_effects_3",
+    "type": "input",
+    "title": "Side Effects",
+    "control": {
+      "input_type": "text"
+    },
+    "section": "Side Effects",
+    "optional": true
+  },
+  {
+    "key": "gums_heal_this_ma",
+    "type": "radio",
+    "title": "gums heal this ma",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ]
+    },
+    "section": "Aims of Gingivectomy",
+    "optional": true
+  },
+  {
+    "key": "reduce_bacteria_and_tartar_under_the_gum_line_with_the_expectation_that_this_ma",
+    "type": "radio",
+    "title": "reduce bacteria and tartar under the gum-line with the expectation that this ma",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ]
+    },
+    "section": "Aims of Gingivectomy",
+    "optional": true
+  },
+  {
+    "key": "ma",
+    "type": "radio",
+    "title": "ma",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ]
+    },
+    "section": "Aims of Gingivectomy",
+    "optional": true
+  },
+  {
+    "key": "signature",
+    "type": "block_signature",
+    "title": "",
+    "control": {
+      "language": "en",
+      "variant": "adult_no_guardian_details"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {},
+    "section": "Signature",
+    "optional": true
+  }
+]

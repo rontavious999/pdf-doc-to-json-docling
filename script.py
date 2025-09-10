@@ -96,8 +96,21 @@ def _warn_if_ocr_unavailable(requested_mode: str):
 from typing import List, Dict, Optional, Tuple
 from pathlib import Path
 import io
-import kreuzberg.extraction as kreuzberg_extract
-from kreuzberg._types import ExtractionConfig
+try:
+    from docling.document_converter import DocumentConverter
+    from docling.datamodel.pipeline_options import PdfPipelineOptions
+    DOCLING_AVAILABLE = True
+except ImportError:
+    DocumentConverter = None
+    PdfPipelineOptions = None
+    DOCLING_AVAILABLE = False
+    
+try:
+    import fitz  # PyMuPDF
+    PYMUPDF_AVAILABLE = True
+except ImportError:
+    fitz = None
+    PYMUPDF_AVAILABLE = False
 try:
     from PIL import Image
 except ImportError:
@@ -717,7 +730,7 @@ def needs_ocr(native_txt: str) -> bool:
 
 def extract_text(pdf_path: str, ocr_mode: str = "off") -> Tuple[str, int, int, bool]:
     """
-    Extract text with kreuzberg using tri-state OCR:
+    Extract text with Docling using tri-state OCR:
       - ocr_mode="off": native text only
       - ocr_mode="auto": first try native, then OCR if quality is poor
       - ocr_mode="on": force OCR
@@ -726,71 +739,214 @@ def extract_text(pdf_path: str, ocr_mode: str = "off") -> Tuple[str, int, int, b
     ocr_used = False
     total_pages = 0
     
-    # For kreuzberg, we need to estimate page count for compatibility
-    # We'll use a simple heuristic based on file size or set a default
-    try:
-        # Get page count from kreuzberg if possible (estimate for return value)
-        total_pages = 1  # Default fallback, will be updated if possible
-    except Exception:
-        total_pages = 1
+    # Try Docling first for maximum accuracy
+    if DOCLING_AVAILABLE:
+        try:
+            return _extract_text_with_docling(pdf_path, ocr_mode)
+        except Exception as e:
+            print(f"[Warning] Docling extraction failed ({e}), falling back to pypdfium2")
+    
+    # Fallback to PyMuPDF if Docling is not available or fails
+    if PYMUPDF_AVAILABLE:
+        try:
+            return _extract_text_with_pymupdf(pdf_path, ocr_mode)
+        except Exception as e:
+            print(f"[Warning] PyMuPDF extraction failed ({e})")
+    
+    # Final fallback - return empty
+    return "", 0, 0, False
 
+
+def _extract_text_with_docling(pdf_path: str, ocr_mode: str) -> Tuple[str, int, int, bool]:
+    """Extract text using Docling with optimal accuracy settings."""
+    
+    from docling.datamodel.base_models import InputFormat
+    
+    # Configure pipeline for maximum accuracy (regardless of speed)
+    pipeline_options = PdfPipelineOptions()
+    
     if ocr_mode == "off":
-        # Native text extraction only
-        try:
-            config = ExtractionConfig(force_ocr=False, enable_quality_processing=False)
-            result = kreuzberg_extract.extract_file_sync(pdf_path, config=config)
-            text = result.content or ""
-            return text, 0, total_pages, False
-        except Exception:
-            return "", 0, total_pages, False
-    
+        # Native text extraction only - still enable advanced features for accuracy
+        pipeline_options.do_ocr = False
+        pipeline_options.do_table_structure = True  # Enable for better structure
+        pipeline_options.do_picture_classification = False
+        pipeline_options.do_picture_description = False
+        pipeline_options.generate_page_images = False
+        pipeline_options.generate_picture_images = False
     elif ocr_mode == "on":
-        # Force OCR
-        try:
-            config = ExtractionConfig(force_ocr=True, enable_quality_processing=False)
-            result = kreuzberg_extract.extract_file_sync(pdf_path, config=config)
-            text = result.content or ""
-            return text, total_pages, total_pages, True
-        except Exception:
-            # Fallback to native if OCR fails
-            try:
-                config = ExtractionConfig(force_ocr=False, enable_quality_processing=False)
-                result = kreuzberg_extract.extract_file_sync(pdf_path, config=config)
-                text = result.content or ""
-                return text, 0, total_pages, False
-            except Exception:
-                return "", 0, total_pages, False
-    
+        # Force OCR with all accuracy features enabled
+        pipeline_options.do_ocr = True
+        pipeline_options.do_table_structure = True
+        pipeline_options.do_picture_classification = True
+        pipeline_options.do_picture_description = True  # Enhanced image understanding
+        pipeline_options.generate_page_images = True
+        pipeline_options.generate_picture_images = True
     elif ocr_mode == "auto":
-        # Try native first, then OCR if quality is poor
+        # Start with native, enable OCR if needed (handled below)
+        pipeline_options.do_ocr = False
+        pipeline_options.do_table_structure = True
+        pipeline_options.do_picture_classification = False
+        pipeline_options.do_picture_description = False
+        pipeline_options.generate_page_images = False
+        pipeline_options.generate_picture_images = False
+    
+    # Enable all accuracy-enhancing features available
+    pipeline_options.do_code_enrichment = True
+    pipeline_options.do_formula_enrichment = True
+    pipeline_options.force_backend_text = False  # Use best available backend
+    
+    # Configure table structure for maximum accuracy
+    if hasattr(pipeline_options, 'table_structure_options'):
+        from docling.datamodel.pipeline_options import TableFormerMode
+        pipeline_options.table_structure_options.mode = TableFormerMode.ACCURATE
+        pipeline_options.table_structure_options.do_cell_matching = True
+    
+    # Configure OCR for maximum accuracy  
+    if hasattr(pipeline_options, 'ocr_options'):
+        pipeline_options.ocr_options.lang = ['en', 'fr', 'de', 'es']  # Multi-language support
+        pipeline_options.ocr_options.confidence_threshold = 0.3  # Lower threshold for better recall
+        pipeline_options.ocr_options.force_full_page_ocr = (ocr_mode == "on")
+        pipeline_options.ocr_options.bitmap_area_threshold = 0.02  # Lower threshold for better coverage
+    
+    # Configure accelerator options for accuracy (not speed)
+    if hasattr(pipeline_options, 'accelerator_options'):
+        pipeline_options.accelerator_options.device = 'auto'  # Use best available device
+    
+    # Enable external services for maximum accuracy (if available)
+    pipeline_options.enable_remote_services = False  # Keep offline for now
+    pipeline_options.allow_external_plugins = True
+    
+    # Create converter with format-specific options
+    converter = DocumentConverter(
+        format_options={
+            InputFormat.PDF: pipeline_options
+        }
+    )
+    
+    if ocr_mode == "auto":
+        # Try native first
         try:
-            config = ExtractionConfig(force_ocr=False, enable_quality_processing=False)
-            result = kreuzberg_extract.extract_file_sync(pdf_path, config=config)
-            native_text = result.content or ""
+            result = converter.convert(pdf_path)
+            native_text = result.document.export_to_text()
             
-            # Check if native text quality is poor using existing logic
+            # Check if native text quality is poor
             if needs_ocr(native_text) or score_text(native_text) < 1.2:
-                # Try OCR
-                try:
-                    config = ExtractionConfig(force_ocr=True, enable_quality_processing=False)
-                    result = kreuzberg_extract.extract_file_sync(pdf_path, config=config)
-                    ocr_text = result.content or ""
-                    
-                    # Choose better text based on quality score
-                    if score_text(ocr_text) > score_text(native_text):
-                        return ocr_text, total_pages, total_pages, True
-                    else:
-                        return native_text, 0, total_pages, False
-                except Exception:
-                    # OCR failed, use native text
+                # Try with OCR enabled for better accuracy
+                pipeline_options_ocr = PdfPipelineOptions()
+                pipeline_options_ocr.do_ocr = True
+                pipeline_options_ocr.do_table_structure = True
+                pipeline_options_ocr.do_picture_classification = True
+                pipeline_options_ocr.do_picture_description = True
+                pipeline_options_ocr.generate_page_images = True
+                pipeline_options_ocr.generate_picture_images = True
+                pipeline_options_ocr.do_code_enrichment = True
+                pipeline_options_ocr.do_formula_enrichment = True
+                
+                # Configure OCR options for accuracy
+                if hasattr(pipeline_options_ocr, 'ocr_options'):
+                    pipeline_options_ocr.ocr_options.lang = ['en', 'fr', 'de', 'es']
+                    pipeline_options_ocr.ocr_options.confidence_threshold = 0.3
+                    pipeline_options_ocr.ocr_options.force_full_page_ocr = True
+                    pipeline_options_ocr.ocr_options.bitmap_area_threshold = 0.02
+                
+                # Configure table structure for accuracy
+                if hasattr(pipeline_options_ocr, 'table_structure_options'):
+                    from docling.datamodel.pipeline_options import TableFormerMode
+                    pipeline_options_ocr.table_structure_options.mode = TableFormerMode.ACCURATE
+                    pipeline_options_ocr.table_structure_options.do_cell_matching = True
+                
+                converter_ocr = DocumentConverter(
+                    format_options={
+                        InputFormat.PDF: pipeline_options_ocr
+                    }
+                )
+                
+                result_ocr = converter_ocr.convert(pdf_path)
+                ocr_text = result_ocr.document.export_to_text()
+                
+                # Choose better text based on quality score
+                if score_text(ocr_text) > score_text(native_text):
+                    # OCR produced better quality text
+                    total_pages = max(1, len(result_ocr.document.pages))
+                    return ocr_text, total_pages, total_pages, True
+                else:
+                    # Native text was better
+                    total_pages = max(1, len(result.document.pages))
                     return native_text, 0, total_pages, False
             else:
                 # Native text is good enough
+                total_pages = max(1, len(result.document.pages))
                 return native_text, 0, total_pages, False
-        except Exception:
-            return "", 0, total_pages, False
+        except Exception as e:
+            # Fallback to OCR if native fails
+            print(f"[Debug] Native extraction failed, trying OCR: {e}")
+            pipeline_options.do_ocr = True
+            converter = DocumentConverter(
+                format_options={
+                    InputFormat.PDF: pipeline_options
+                }
+            )
+            result = converter.convert(pdf_path)
+            text = result.document.export_to_text()
+            total_pages = max(1, len(result.document.pages))
+            return text, total_pages, total_pages, True
+    else:
+        # Direct mode (on/off)
+        result = converter.convert(pdf_path)
+        text = result.document.export_to_text()
+        total_pages = max(1, len(result.document.pages))
+        ocr_used = pipeline_options.do_ocr
+        ocr_pages = total_pages if ocr_used else 0
+        return text, ocr_pages, total_pages, ocr_used
+
+
+def _extract_text_with_pymupdf(pdf_path: str, ocr_mode: str) -> Tuple[str, int, int, bool]:
+    """Fallback text extraction using PyMuPDF (good quality basic extraction)."""
     
-    return "", 0, total_pages, False
+    import fitz  # PyMuPDF
+    
+    doc = fitz.open(pdf_path)
+    all_text = []
+    total_pages = len(doc)
+    
+    for page_num in range(total_pages):
+        page = doc.load_page(page_num)
+        text = page.get_text()
+        all_text.append(text)
+    
+    doc.close()
+    combined_text = "\n".join(all_text)
+    
+    # PyMuPDF doesn't do OCR, so OCR-related modes return the same result
+    return combined_text, 0, total_pages, False
+
+
+def _extract_text_with_pypdfium(pdf_path: str, ocr_mode: str) -> Tuple[str, int, int, bool]:
+    """Secondary fallback text extraction using pypdfium2 (basic functionality)."""
+    
+    try:
+        # Use pypdfium2 directly for basic text extraction
+        import pypdfium2 as pdfium
+        
+        pdf = pdfium.open_pdf(pdf_path)
+        total_pages = len(pdf)
+        all_text = []
+        
+        for page_num in range(total_pages):
+            page = pdf.get_page(page_num)
+            textpage = page.get_textpage()
+            text = textpage.get_text_range()
+            all_text.append(text)
+            page.close()
+        
+        pdf.close()
+        combined_text = "\n".join(all_text)
+        
+        # pypdfium2 doesn't do OCR, so OCR-related modes return the same result
+        return combined_text, 0, total_pages, False
+        
+    except Exception:
+        raise Exception("pypdfium2 extraction failed")
 
 
 def extract_text4(pdf_path: str, ocr_mode: str = "off") -> Tuple[str, int, int, bool]:
