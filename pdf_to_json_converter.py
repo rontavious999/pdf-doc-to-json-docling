@@ -297,9 +297,9 @@ class PDFFormFieldExtractor:
         name_mappings = {
             'first': 'First Name',
             'last': 'Last Name', 
-            'mi': 'Middle Initial',
-            'middle initial': 'Middle Initial',
-            'middle init': 'Middle Initial',
+            'mi': 'MI',
+            'middle initial': 'MI',
+            'middle init': 'MI',
             'apt/unit/suite': 'Apt/Unit/Suite',
             'social security no': 'Social Security No.',
             'social security number': 'Social Security No.',
@@ -339,6 +339,10 @@ class PDFFormFieldExtractor:
         # Check direct mappings first
         if field_lower in name_mappings:
             return name_mappings[field_lower]
+        
+        # Special cases for keys that need specific handling
+        if field_lower == 'mi':
+            return 'MI'  # This will generate key "mi" via slugify
         
         # Handle variations with context
         if field_lower == 'first' and any(word in context_line.lower() for word in ['name', 'patient']):
@@ -441,7 +445,7 @@ class PDFFormFieldExtractor:
         
         # Single comprehensive pattern to avoid duplicates
         # Matches field names followed by underscores, colons, or multiple spaces
-        pattern = r'([A-Za-z][A-Za-z\s\#\/\(\)\-]{1,35}?)(?:_+|:+|\s{3,})'
+        pattern = r'([A-Za-z][A-Za-z\s\#\/\(\)\-]{0,35}?)(?:_+|:+|\s{3,})'
         
         matches = re.finditer(pattern, line)
         for match in matches:
@@ -449,9 +453,10 @@ class PDFFormFieldExtractor:
             
             # Filter out invalid field names
             if (len(field_name) > 1 and 
-                not field_name.isupper() and 
                 field_name.lower() not in ['and', 'or', 'the', 'of', 'to', 'for', 'in', 'with', 'if', 'is', 'are'] and
-                field_name not in seen_fields):
+                field_name not in seen_fields and
+                # Allow meaningful uppercase abbreviations like MI, SSN
+                (not field_name.isupper() or field_name.lower() in ['mi', 'ssn', 'id', 'dl', 'dob'])):
                 
                 # Normalize the field name
                 normalized_name = self.normalize_field_name(field_name, line)
@@ -512,18 +517,17 @@ class PDFFormFieldExtractor:
 
             # Handle standalone single-word fields (like "SSN", "Sex")
             standalone_fields = {
-                'SSN': ('Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
-                'Sex': ('Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}], 'hint': None}),
-                'Social Security No.': ('Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
-                'Today \'s Date': ('Today\'s Date', 'date', {'input_type': 'any', 'hint': None}),
-                'Date of Birth': ('Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
-                'Birthdate': ('Birthdate', 'date', {'input_type': 'past', 'hint': None}),
+                'SSN': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
+                'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}], 'hint': None}),
+                'Social Security No.': ('ssn_2', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
+                'Today \'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any', 'hint': None}),
+                'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
+                'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past', 'hint': None}),
             }
             
             line_stripped = line.strip()
             if line_stripped in standalone_fields:
-                title, field_type, control = standalone_fields[line_stripped]
-                key = ModentoSchemaValidator.slugify(title)
+                key, title, field_type, control = standalone_fields[line_stripped]
                 
                 field = FieldInfo(
                     key=key,
