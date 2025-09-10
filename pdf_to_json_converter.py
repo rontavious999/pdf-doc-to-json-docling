@@ -33,6 +33,7 @@ class FieldInfo:
     section: str
     optional: bool = True
     control: Dict[str, Any] = None
+    line_idx: int = 0  # For ordering preservation
     
     def __post_init__(self):
         if self.control is None:
@@ -42,6 +43,7 @@ class FieldInfo:
 class ModentoSchemaValidator:
     """Validates and normalizes JSON according to Modento Forms schema"""
     
+    VALID_TYPES = {"input", "radio", "checkbox", "dropdown", "states", "date", "signature", "initials", "text", "header"}
     VALID_INPUT_TYPES = {"name", "email", "phone", "number", "ssn", "zip", "initials"}
     VALID_DATE_TYPES = {"past", "future", "any"}
     
@@ -158,46 +160,69 @@ class ModentoSchemaValidator:
     def validate_and_normalize(cls, spec: List[Dict[str, Any]]) -> Tuple[bool, List[str], List[Dict[str, Any]]]:
         """Validate and normalize a Modento spec"""
         errors = []
-        
         if not isinstance(spec, list):
             return False, ["Spec must be a top-level JSON array"], spec
-        
-        # Ensure unique keys
-        spec = cls.ensure_unique_keys(spec)
-        
-        # Add signature if missing
-        spec = cls.add_signature_if_missing(spec)
-        
-        # Validate each question
+
+        # 1) rename any existing signature to key='signature' (first one wins)
+        seen_signature = False
         for q in spec:
-            if not q.get("key"):
-                errors.append("Every question must have a non-empty 'key'")
-            
+            if q.get("type") == "signature":
+                if not seen_signature:
+                    q["key"] = "signature"
+                    seen_signature = True
+                else:
+                    # drop subsequent signature controls
+                    q["__drop__"] = True
+
+        spec = [q for q in spec if not q.get("__drop__")]
+
+        # 2) if none exists, add one
+        if not any(q.get("type") == "signature" for q in spec):
+            spec.append({"key":"signature","title":"Signature","section":"Signature","optional":False,"type":"signature","control":{}})
+
+        # 3) ensure unique keys (but keep 'signature' stable)
+        spec = cls.ensure_unique_keys(spec)
+
+        # 4) per-question checks & normalizations
+        for q in spec:
             q_type = q.get("type")
-            if not q_type:
-                errors.append(f"Question '{q.get('key')}' must have a 'type'")
+            if q_type not in cls.VALID_TYPES:
+                errors.append(f"Unknown type '{q_type}' on key '{q.get('key')}'")
                 continue
-                
-            # Validate control based on type
-            control = q.get("control", {})
-            
+
+            ctrl = q.setdefault("control", {})
+            # move hint to control.extra.hint
+            if "hint" in ctrl:
+                hint = ctrl.pop("hint")
+                if hint:
+                    extra = ctrl.setdefault("extra", {})
+                    extra["hint"] = hint
+
             if q_type == "input":
-                input_type = control.get("input_type")
-                if input_type and input_type not in cls.VALID_INPUT_TYPES:
-                    control["input_type"] = "name"  # Default fallback
-            
-            elif q_type == "date":
-                input_type = control.get("input_type")
-                if input_type and input_type not in cls.VALID_DATE_TYPES:
-                    control["input_type"] = "any"  # Default fallback
-            
-            elif q_type in ["radio", "dropdown"]:
-                options = control.get("options", [])
-                for opt in options:
+                t = ctrl.get("input_type")
+                if t not in {"name","email","phone","number","ssn","zip"}:
+                    ctrl["input_type"] = "name"
+
+            if q_type == "date":
+                t = ctrl.get("input_type")
+                if t not in {"past","future","any"}:
+                    ctrl["input_type"] = "any"
+
+            if q_type == "states":
+                # must not carry input_type
+                ctrl.pop("input_type", None)
+
+            if q_type in {"radio","checkbox","dropdown"}:
+                opts = ctrl.get("options", [])
+                for opt in opts:
+                    # coerce boolean values to strings
+                    v = opt.get("value")
+                    if isinstance(v, bool):
+                        opt["value"] = "Yes" if v else "No"
                     if not opt.get("value"):
-                        opt["value"] = cls.slugify(opt.get("name", "option"))
-        
-        return len(errors) == 0, errors, spec
+                        opt["value"] = cls.slugify(opt.get("name","option"))
+
+        return (len(errors) == 0), errors, spec
 
 
 class PDFFormFieldExtractor:
@@ -839,6 +864,77 @@ class PDFFormFieldExtractor:
         
         return fields
     
+    def collect_checkbox_run(self, lines: List[str], i: int) -> Tuple[List[Dict[str, Any]], int]:
+        """Collect contiguous checkbox/bullet list items"""
+        opts = []
+        j = i
+        check_pat = re.compile(r'^(?:[\u25A1\u25A2\u2610\[\]\(\)]\s*)?([A-Za-z][A-Za-z0-9\-\s\/&]{2,})$')
+        while j < len(lines):
+            m = check_pat.match(lines[j])
+            if not m: 
+                break
+            label = m.group(1).strip().rstrip(':')
+            if len(label) > 2:
+                opts.append({"name": label, "value": label})
+            j += 1
+        return opts, j
+
+    def emit_consent_block(self, title: str, paragraph_lines: List[str], section: str, line_idx: int = 0) -> List[FieldInfo]:
+        """Create consent text block with acknowledgment and signature"""
+        text_html = "<p>" + " ".join(paragraph_lines) + "</p>"
+        return [
+            FieldInfo(
+                key=ModentoSchemaValidator.slugify(title),
+                title=title,
+                field_type="text",
+                section=section,
+                optional=True,
+                control={
+                    "html_text": text_html,
+                    "temporary_html_text": text_html,
+                    "text": ""
+                },
+                line_idx=line_idx
+            ),
+            FieldInfo(
+                key="acknowledge",
+                title="I have read and understand the information above.",
+                field_type="checkbox",
+                section=section,
+                optional=False,
+                control={"options": [{"name": "I agree", "value": "I agree"}]},
+                line_idx=line_idx + 1
+            ),
+            FieldInfo(
+                key="signature",
+                title="Signature",
+                field_type="signature",
+                section="Signature",
+                optional=False,
+                control={},
+                line_idx=line_idx + 2
+            ),
+            FieldInfo(
+                key="signature_date",
+                title="Date",
+                field_type="date",
+                section="Signature",
+                optional=False,
+                control={"input_type": "any"},
+                line_idx=line_idx + 3
+            )
+        ]
+
+    def looks_like_first_history_item(self, line: str) -> bool:
+        """Check if line looks like the first item in a medical history list"""
+        # Look for checkbox patterns or bullet patterns common in medical history
+        patterns = [
+            r'^[\u25A1\u25A2\u2610\[\]\(\)]\s*[A-Za-z]',  # checkbox + text
+            r'^[•\-\*]\s*[A-Za-z]',  # bullet + text
+            r'^[A-Za-z][A-Za-z\s]{2,}$'  # plain text that could be medical condition
+        ]
+        return any(re.match(pattern, line) for pattern in patterns)
+
     def extract_checkbox_options(self, line: str) -> List[str]:
         """Extract checkbox options from a line"""
         # Pattern for checkbox options like "□ Option1 □ Option2"
@@ -917,7 +1013,8 @@ class PDFFormFieldExtractor:
                     title=title,
                     field_type=field_type,
                     section=current_section,
-                    control=control
+                    control=control,
+                    line_idx=i
                 )
                 fields.append(field)
                 i += 1
@@ -926,6 +1023,27 @@ class PDFFormFieldExtractor:
             # Handle large text blocks (like terms and conditions) - improved detection
             if (len(line) > 80 and 
                 any(keyword in line.lower() for keyword in ['responsibility', 'payment', 'benefit', 'authorize', 'consent', 'we are committed']) and
+            # Handle consent paragraphs with Risks/Side Effects
+            if (current_section in ["Signature", "Consent"] and 
+                len(line) > 50 and 
+                any(keyword in line.lower() for keyword in ['risks', 'side effects', 'complications', 'potential'])):
+                
+                # Collect the consent paragraph
+                consent_lines = [line]
+                j = i + 1
+                while j < len(text_lines) and len(text_lines[j]) > 30:
+                    consent_lines.append(text_lines[j])
+                    j += 1
+                
+                # Create consent block with acknowledgment
+                consent_fields = self.emit_consent_block("Risks and Acknowledgment", consent_lines, current_section, i)
+                fields.extend(consent_fields)
+                i = j
+                continue
+            
+            # Handle large text blocks (like terms and conditions)
+            if (len(line) > 100 and 
+                any(keyword in line.lower() for keyword in ['responsibility', 'payment', 'benefit', 'authorize', 'consent']) and
                 current_section == "Signature"):
                 
                 # Collect multi-line text block
@@ -1005,6 +1123,20 @@ class PDFFormFieldExtractor:
                     )
                     fields.append(field)
                 
+                field = FieldInfo(
+                    key=key,
+                    title="",
+                    field_type='text',
+                    section=current_section,
+                    optional=False,
+                    control={
+                        'html_text': f"<p>{full_text}</p>",
+                        'temporary_html_text': f"<p>{full_text}</p>",
+                        'text': ""
+                    },
+                    line_idx=i
+                )
+                fields.append(field)
                 i = j
                 continue
             
@@ -1025,7 +1157,8 @@ class PDFFormFieldExtractor:
                             'html_text': f"<p>{text_part}</p>",
                             'temporary_html_text': f"<p>{text_part}</p>",
                             'text': ""
-                        }
+                        },
+                        line_idx=i
                     )
                     fields.append(field)
                     
@@ -1039,15 +1172,18 @@ class PDFFormFieldExtractor:
                     
                     field = FieldInfo(
                         key=initials_key,
-                        title="Initial",
-                        field_type='input',
+                        title="Initials",
+                        field_type='initials',
                         section=current_section,
-                        control={'input_type': 'initials'}
+                        optional=False,
+                        control={},
+                        line_idx=i
                     )
                     fields.append(field)
                 i += 1
                 continue
             
+
             # Handle consent questions with YES/NO checkboxes - improved pattern for both formats
             consent_patterns = [
                 r'(.+?)\s+YES\s+N\s*O?\s*\(Check One\)',  # Standard format with flexible N O spacing
@@ -1109,6 +1245,42 @@ class PDFFormFieldExtractor:
                         break
             
             if consent_found:
+            # Handle consent questions with YES/NO checkboxes
+            if re.search(r'YES\s+N?O?\s*\(Check One\)', line, re.IGNORECASE):
+                # Extract the question part
+                question_match = re.match(r'^(.*?)\s+YES\s+N?O?\s*\(Check One\)', line, re.IGNORECASE)
+                if question_match:
+                    question = question_match.group(1).strip()
+                    key = ModentoSchemaValidator.slugify(question)
+                    
+                    field = FieldInfo(
+                        key=key,
+                        title=question,
+                        field_type='radio',
+                        section=current_section,
+                        optional=False,
+                        control={
+                            'options': [
+                                {"name": "Yes", "value": True},
+                                {"name": "No", "value": False}
+                            ],
+                            'hint': None
+                        }
+                    )
+                    fields.append(field)
+                    
+                    # Add initials field
+                    initials_key = f"initials_{len([f for f in fields if f.key.startswith('initials')]) + 1}"
+                    field = FieldInfo(
+                        key=initials_key,
+                        title="Initials",
+                        field_type='initials',
+                        section=current_section,
+                        optional=False,
+                        control={},
+                        line_idx=i
+                    )
+                    fields.append(field)
                 i += 1
                 continue
             
@@ -1136,6 +1308,23 @@ class PDFFormFieldExtractor:
                 fields.append(field)
                 i += 1
                 continue
+            
+            # Check for Medical History checkbox run bundling
+            if current_section == "Medical History" and self.looks_like_first_history_item(line):
+                options, j = self.collect_checkbox_run(text_lines, i)
+                if len(options) >= 4:   # threshold to avoid noise
+                    field = FieldInfo(
+                        key="medical_history",
+                        title="Medical History",
+                        field_type="checkbox",
+                        section=current_section,
+                        optional=True,
+                        control={"options": options},
+                        line_idx=i
+                    )
+                    fields.append(field)
+                    i = j
+                    continue
             
             # Check for radio button questions first
             radio_result = self.detect_radio_question(line)
@@ -1217,6 +1406,32 @@ class PDFFormFieldExtractor:
                         hint = 'Responsible Party'
                     
                     control['hint'] = hint
+                    # Check if this should be an initials field instead
+                    if input_type == 'initials':
+                        field_type = 'initials'
+                        control = {}
+                    else:
+                        control['input_type'] = input_type
+                        if input_type == 'phone':
+                            control['phone_prefix'] = '+1'
+                        
+                        # Add hints for specific contexts
+                        hint = None
+                        if 'if different from patient' in full_line.lower():
+                            hint = 'If different from patient'
+                        elif 'if different from above' in full_line.lower():
+                            hint = '(if different from above)'
+                        elif 'insurance company' in full_line.lower() and field_name.lower() in ['phone', 'street', 'city', 'zip']:
+                            hint = 'Insurance Company'
+                        elif 'responsible party' in full_line.lower() and field_name.lower() in ['first name', 'last name', 'date of birth']:
+                            if field_name.lower() == 'first name':
+                                hint = 'Name of Responsible Party'
+                            elif field_name.lower() == 'last name':
+                                hint = 'Name of Responsible Party'
+                            elif field_name.lower() == 'date of birth':
+                                hint = 'Responsible Party'
+                        
+                        control['hint'] = hint
                 elif field_type == 'date':
                     if 'birth' in field_name.lower() or 'dob' in field_name.lower():
                         control['input_type'] = 'past'
@@ -1309,6 +1524,9 @@ class PDFToJSONConverter:
         
         # Extract form fields
         fields = self.extractor.extract_fields_from_text(text_lines)
+        
+        # Sort fields by line_idx within each section to preserve document order  
+        fields.sort(key=lambda f: (f.section, getattr(f, 'line_idx', 0)))
         
         # Convert to Modento format
         json_spec = []
