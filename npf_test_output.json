@@ -11,6 +11,17 @@
     }
   },
   {
+    "key": "patient_name",
+    "title": "Patient Name",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
     "key": "first_name",
     "title": "First Name",
     "section": "Patient Information Form",
@@ -28,7 +39,7 @@
     "optional": true,
     "type": "input",
     "control": {
-      "input_type": "initials",
+      "input_type": "name",
       "hint": null
     }
   },
@@ -169,17 +180,6 @@
     }
   },
   {
-    "key": "drivers_license",
-    "title": "Drivers License #",
-    "section": "Patient Information Form",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
     "key": "what_is_your_preferred_method_of_contact",
     "title": "What Is Your Preferred Method Of Contact",
     "section": "Patient Information Form",
@@ -230,19 +230,8 @@
     }
   },
   {
-    "key": "patient_employed_by",
-    "title": "Patient Employed By",
-    "section": "Patient Information Form",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
-    "key": "occupation",
-    "title": "Occupation",
+    "key": "street_2",
+    "title": "Street",
     "section": "Patient Information Form",
     "optional": true,
     "type": "input",
@@ -337,17 +326,6 @@
     }
   },
   {
-    "key": "in_case_of_emergency_who_should_be_notified",
-    "title": "In case of emergency, who should be notified",
-    "section": "Patient Information Form",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
     "key": "relationship_to_patient",
     "title": "Relationship To Patient",
     "section": "Patient Information Form",
@@ -372,30 +350,6 @@
           "value": "Other"
         }
       ],
-      "hint": null
-    }
-  },
-  {
-    "key": "mobile_phone",
-    "title": "Mobile Phone",
-    "section": "Patient Information Form",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "phone",
-      "phone_prefix": "+1",
-      "hint": null
-    }
-  },
-  {
-    "key": "home_phone",
-    "title": "Home Phone",
-    "section": "Patient Information Form",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "phone",
-      "phone_prefix": "+1",
       "hint": null
     }
   },
@@ -548,6 +502,17 @@
     }
   },
   {
+    "key": "street_3",
+    "title": "Street",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
     "key": "city_3",
     "title": "City",
     "section": "Patient Information Form",
@@ -629,19 +594,8 @@
     }
   },
   {
-    "key": "employer_if_different_from_above",
-    "title": "Employer (if different from above)",
-    "section": "Patient Information Form",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": "(if different from above)"
-    }
-  },
-  {
-    "key": "occupation_2",
-    "title": "Occupation",
+    "key": "street_4",
+    "title": "Street",
     "section": "Patient Information Form",
     "optional": true,
     "type": "input",
@@ -684,17 +638,6 @@
     }
   },
   {
-    "key": "name_of_insured",
-    "title": "Name of Insured",
-    "section": "Primary Dental Plan",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
     "key": "birthdate",
     "title": "Birthdate",
     "section": "Primary Dental Plan",
@@ -713,6 +656,17 @@
     "type": "input",
     "control": {
       "input_type": "ssn",
+      "hint": null
+    }
+  },
+  {
+    "key": "street_5",
+    "title": "Street",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
       "hint": null
     }
   },
@@ -750,17 +704,6 @@
     }
   },
   {
-    "key": "plan_group_number",
-    "title": "Plan/Group Number",
-    "section": "Primary Dental Plan",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "number",
-      "hint": null
-    }
-  },
-  {
     "key": "id_number",
     "title": "ID Number",
     "section": "Primary Dental Plan",
@@ -772,31 +715,9 @@
     }
   },
   {
-    "key": "patient_relationship_to_insured",
-    "title": "Patient Relationship to Insured",
-    "section": "Primary Dental Plan",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
     "key": "tel",
     "title": "Tel",
     "section": "Primary Dental Plan",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
-    "key": "name_of_insured_2",
-    "title": "Name of Insured",
-    "section": "Secondary Dental Plan",
     "optional": true,
     "type": "input",
     "control": {
@@ -823,6 +744,17 @@
     "type": "input",
     "control": {
       "input_type": "ssn",
+      "hint": null
+    }
+  },
+  {
+    "key": "street_6",
+    "title": "Street",
+    "section": "Patient Information Form",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
       "hint": null
     }
   },
@@ -860,17 +792,6 @@
     }
   },
   {
-    "key": "plan_group_number_2",
-    "title": "Plan/Group Number",
-    "section": "Primary Dental Plan",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "number",
-      "hint": null
-    }
-  },
-  {
     "key": "id_number_2",
     "title": "ID Number",
     "section": "Primary Dental Plan",
@@ -878,17 +799,6 @@
     "type": "input",
     "control": {
       "input_type": "number",
-      "hint": null
-    }
-  },
-  {
-    "key": "patient_relationship_to_insured_2",
-    "title": "Patient Relationship to Insured",
-    "section": "Primary Dental Plan",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "name",
       "hint": null
     }
   },
@@ -938,28 +848,6 @@
   },
   {
     "key": "text_1",
-    "title": "",
-    "section": "Signature",
-    "optional": false,
-    "type": "text",
-    "control": {
-      "html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
-      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
-      "text": ""
-    }
-  },
-  {
-    "key": "initials",
-    "title": "Initial",
-    "section": "Signature",
-    "optional": true,
-    "type": "input",
-    "control": {
-      "input_type": "initials"
-    }
-  },
-  {
-    "key": "text_2",
     "title": "",
     "section": "Signature",
     "optional": false,
