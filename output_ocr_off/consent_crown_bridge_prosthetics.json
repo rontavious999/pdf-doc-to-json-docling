@@ -1,0 +1,109 @@
+[
+  {
+    "key": "re_not_limited_to_the_following",
+    "title": "re not limited to the following",
+    "section": "Signature",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "ited_to_the_following",
+    "title": "ited to the following",
+    "section": "Signature",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "date",
+    "title": "Date",
+    "section": "Signature",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    }
+  },
+  {
+    "key": "date_2",
+    "title": "Date",
+    "section": "Signature",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    }
+  },
+  {
+    "key": "relationship",
+    "title": "Relationship",
+    "section": "Signature",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "relationship_2",
+    "title": "Relationship",
+    "section": "Signature",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "name_if_signed_on_behalf_of_the",
+    "title": "name if signed on behalf of the",
+    "section": "Signature",
+    "optional": true,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "date_3",
+    "title": "Date",
+    "section": "Signature",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    }
+  },
+  {
+    "key": "date_4",
+    "title": "Date",
+    "section": "Signature",
+    "optional": true,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    }
+  },
+  {
+    "key": "signature",
+    "title": "Signature",
+    "section": "Signature",
+    "optional": false,
+    "type": "signature",
+    "control": {}
+  }
+]
