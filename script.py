@@ -766,16 +766,19 @@ def _extract_text_with_docling(pdf_path: str, ocr_mode: str) -> Tuple[str, int, 
     pipeline_options = PdfPipelineOptions()
     
     if ocr_mode == "off":
-        # Native text extraction only
+        # Native text extraction only - still enable advanced features for accuracy
         pipeline_options.do_ocr = False
-        pipeline_options.do_table_structure = True  # Still enable for better structure
+        pipeline_options.do_table_structure = True  # Enable for better structure
         pipeline_options.do_picture_classification = False
+        pipeline_options.do_picture_description = False
         pipeline_options.generate_page_images = False
+        pipeline_options.generate_picture_images = False
     elif ocr_mode == "on":
-        # Force OCR with all accuracy features
+        # Force OCR with all accuracy features enabled
         pipeline_options.do_ocr = True
         pipeline_options.do_table_structure = True
         pipeline_options.do_picture_classification = True
+        pipeline_options.do_picture_description = True  # Enhanced image understanding
         pipeline_options.generate_page_images = True
         pipeline_options.generate_picture_images = True
     elif ocr_mode == "auto":
@@ -783,13 +786,35 @@ def _extract_text_with_docling(pdf_path: str, ocr_mode: str) -> Tuple[str, int, 
         pipeline_options.do_ocr = False
         pipeline_options.do_table_structure = True
         pipeline_options.do_picture_classification = False
+        pipeline_options.do_picture_description = False
         pipeline_options.generate_page_images = False
+        pipeline_options.generate_picture_images = False
     
-    # Additional accuracy settings (only set if they exist)
-    if hasattr(pipeline_options, 'do_code_enrichment'):
-        pipeline_options.do_code_enrichment = True
-    if hasattr(pipeline_options, 'do_formula_enrichment'):
-        pipeline_options.do_formula_enrichment = True
+    # Enable all accuracy-enhancing features available
+    pipeline_options.do_code_enrichment = True
+    pipeline_options.do_formula_enrichment = True
+    pipeline_options.force_backend_text = False  # Use best available backend
+    
+    # Configure table structure for maximum accuracy
+    if hasattr(pipeline_options, 'table_structure_options'):
+        from docling.datamodel.pipeline_options import TableFormerMode
+        pipeline_options.table_structure_options.mode = TableFormerMode.ACCURATE
+        pipeline_options.table_structure_options.do_cell_matching = True
+    
+    # Configure OCR for maximum accuracy  
+    if hasattr(pipeline_options, 'ocr_options'):
+        pipeline_options.ocr_options.lang = ['en', 'fr', 'de', 'es']  # Multi-language support
+        pipeline_options.ocr_options.confidence_threshold = 0.3  # Lower threshold for better recall
+        pipeline_options.ocr_options.force_full_page_ocr = (ocr_mode == "on")
+        pipeline_options.ocr_options.bitmap_area_threshold = 0.02  # Lower threshold for better coverage
+    
+    # Configure accelerator options for accuracy (not speed)
+    if hasattr(pipeline_options, 'accelerator_options'):
+        pipeline_options.accelerator_options.device = 'auto'  # Use best available device
+    
+    # Enable external services for maximum accuracy (if available)
+    pipeline_options.enable_remote_services = False  # Keep offline for now
+    pipeline_options.allow_external_plugins = True
     
     # Create converter with format-specific options
     converter = DocumentConverter(
@@ -806,16 +831,29 @@ def _extract_text_with_docling(pdf_path: str, ocr_mode: str) -> Tuple[str, int, 
             
             # Check if native text quality is poor
             if needs_ocr(native_text) or score_text(native_text) < 1.2:
-                # Try with OCR enabled
+                # Try with OCR enabled for better accuracy
                 pipeline_options_ocr = PdfPipelineOptions()
                 pipeline_options_ocr.do_ocr = True
                 pipeline_options_ocr.do_table_structure = True
                 pipeline_options_ocr.do_picture_classification = True
+                pipeline_options_ocr.do_picture_description = True
                 pipeline_options_ocr.generate_page_images = True
-                if hasattr(pipeline_options_ocr, 'do_code_enrichment'):
-                    pipeline_options_ocr.do_code_enrichment = True
-                if hasattr(pipeline_options_ocr, 'do_formula_enrichment'):
-                    pipeline_options_ocr.do_formula_enrichment = True
+                pipeline_options_ocr.generate_picture_images = True
+                pipeline_options_ocr.do_code_enrichment = True
+                pipeline_options_ocr.do_formula_enrichment = True
+                
+                # Configure OCR options for accuracy
+                if hasattr(pipeline_options_ocr, 'ocr_options'):
+                    pipeline_options_ocr.ocr_options.lang = ['en', 'fr', 'de', 'es']
+                    pipeline_options_ocr.ocr_options.confidence_threshold = 0.3
+                    pipeline_options_ocr.ocr_options.force_full_page_ocr = True
+                    pipeline_options_ocr.ocr_options.bitmap_area_threshold = 0.02
+                
+                # Configure table structure for accuracy
+                if hasattr(pipeline_options_ocr, 'table_structure_options'):
+                    from docling.datamodel.pipeline_options import TableFormerMode
+                    pipeline_options_ocr.table_structure_options.mode = TableFormerMode.ACCURATE
+                    pipeline_options_ocr.table_structure_options.do_cell_matching = True
                 
                 converter_ocr = DocumentConverter(
                     format_options={
@@ -828,18 +866,20 @@ def _extract_text_with_docling(pdf_path: str, ocr_mode: str) -> Tuple[str, int, 
                 
                 # Choose better text based on quality score
                 if score_text(ocr_text) > score_text(native_text):
-                    # Estimate pages for OCR mode
+                    # OCR produced better quality text
                     total_pages = max(1, len(result_ocr.document.pages))
                     return ocr_text, total_pages, total_pages, True
                 else:
+                    # Native text was better
                     total_pages = max(1, len(result.document.pages))
                     return native_text, 0, total_pages, False
             else:
                 # Native text is good enough
                 total_pages = max(1, len(result.document.pages))
                 return native_text, 0, total_pages, False
-        except Exception:
+        except Exception as e:
             # Fallback to OCR if native fails
+            print(f"[Debug] Native extraction failed, trying OCR: {e}")
             pipeline_options.do_ocr = True
             converter = DocumentConverter(
                 format_options={
