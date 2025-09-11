@@ -643,9 +643,19 @@ class PDFFormFieldExtractor:
         
         return None
     
-    def parse_inline_fields(self, line: str) -> List[Tuple[str, str]]:
+    def parse_inline_fields(self, line: str, context_lines: List[str] = None) -> List[Tuple[str, str]]:
         fields = []
         seen_fields = set()
+        
+        # Get context for determining if we should allow duplicate field names
+        if context_lines:
+            context_text = ' '.join(context_lines).lower()
+            is_work_address = 'work address' in context_text
+            is_different_from_patient = 'if different from patient' in context_text
+            is_different_from_above = 'if different from above' in context_text
+            allow_duplicates = is_work_address or is_different_from_patient or is_different_from_above
+        else:
+            allow_duplicates = False
         
         # Skip lines that are clearly section headers or questions
         if any(keyword in line.lower() for keyword in ['patient information form', 'for children/minors only', 'primary dental plan', 'secondary dental plan']):
@@ -672,7 +682,14 @@ class PDFFormFieldExtractor:
                 ('Street', 'Street'),
                 ('Apt/Unit/Suite', 'Apt/Unit/Suite')
             ],
-            # Context-aware city/state/zip patterns
+            # Work address specific pattern - Street, City, State, Zip all on one line
+            r'Street\s*_{8,}.*?City\s*_{5,}.*?State\s*_{3,}.*?Zip\s*_{3,}': [
+                ('Street', 'Street'),
+                ('City', 'City'),
+                ('State', 'State'),
+                ('Zip', 'Zip')
+            ],
+            # Standard city/state/zip pattern (for lines without Street)
             r'City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
                 ('City', 'City'),
                 ('State', 'State'),
@@ -786,7 +803,7 @@ class PDFFormFieldExtractor:
             field_name = match.group(1).strip()
             
             # More restrictive filtering to avoid false positives
-            if (len(field_name) >= 2 and 
+            if ((len(field_name) >= 2 and 
                 len(field_name) <= 35 and
                 field_name.lower() not in [
                     'and', 'or', 'the', 'of', 'to', 'for', 'in', 'with', 'if', 'is', 'are', 
@@ -799,7 +816,11 @@ class PDFFormFieldExtractor:
                 # Avoid detecting repeated characters as fields
                 not re.match(r'^(.)\1+$', field_name.replace(' ', '')) and
                 # Must contain at least one letter
-                re.search(r'[A-Za-z]', field_name)):
+                re.search(r'[A-Za-z]', field_name)) or
+                # Allow duplicates in special contexts (work address, different from patient, etc.)
+                (allow_duplicates and field_name.lower() in ['street', 'city', 'state', 'zip'] and
+                 len(field_name) >= 2 and len(field_name) <= 35 and
+                 re.search(r'[A-Za-z]', field_name))):
                 
                 # Normalize the field name
                 normalized_name = self.normalize_field_name(field_name, line)
@@ -1317,8 +1338,9 @@ class PDFFormFieldExtractor:
                 i += 1
                 continue
             
-            # Parse inline fields from the line
-            inline_fields = self.parse_inline_fields(line)
+            # Parse inline fields from the line with context
+            context_lines = text_lines[max(0, i-5):i+5]  # 5 lines before and after for context
+            inline_fields = self.parse_inline_fields(line, context_lines)
             
             for field_name, full_line in inline_fields:
                 # Determine field type
