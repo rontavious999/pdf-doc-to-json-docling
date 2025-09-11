@@ -351,7 +351,7 @@
     "key": "other",
     "title": "Other",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "name"
@@ -396,7 +396,7 @@
     "key": "street_3",
     "title": "Street",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "name"
@@ -406,7 +406,7 @@
     "key": "city_3",
     "title": "City",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "name"
@@ -416,7 +416,7 @@
     "key": "state_3",
     "title": "State",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "states",
     "control": {}
   },
@@ -424,7 +424,7 @@
     "key": "zip_3",
     "title": "Zip",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "zip"
@@ -434,7 +434,7 @@
     "key": "mobile_2",
     "title": "Mobile",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "phone",
@@ -510,7 +510,7 @@
     "key": "phone",
     "title": "Phone",
     "section": "Primary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "phone",
@@ -524,7 +524,7 @@
     "key": "street_5",
     "title": "Street",
     "section": "Primary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "name",
@@ -537,7 +537,7 @@
     "key": "city_5",
     "title": "City",
     "section": "Primary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "name",
@@ -550,7 +550,7 @@
     "key": "state_5",
     "title": "State",
     "section": "Primary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "states",
     "control": {}
   },
@@ -558,7 +558,7 @@
     "key": "zip_5",
     "title": "Zip",
     "section": "Primary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "zip",

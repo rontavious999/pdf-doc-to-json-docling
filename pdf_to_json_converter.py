@@ -84,11 +84,20 @@ class ModentoSchemaValidator:
             current_title = current.get("title", "")
             current_section = current.get("section", "")
             
+            # Don't merge numbered fields (like street_2, city_2) - these are intentionally different
+            if '_' in current_key and current_key.split('_')[-1].isdigit():
+                return None
+            
             # Look for existing field with same title in reasonable section
             for prev_idx in range(current_idx):
                 prev = spec[prev_idx]
+                prev_key = prev.get("key", "")
                 prev_title = prev.get("title", "")
                 prev_section = prev.get("section", "")
+                
+                # Don't merge with numbered fields either
+                if '_' in prev_key and prev_key.split('_')[-1].isdigit():
+                    continue
                 
                 # If same title and compatible section, consider merging/removing
                 if (prev_title == current_title and 
@@ -318,12 +327,21 @@ class PDFFormFieldExtractor:
         if 'if different' in context_lower or 'optional' in context_lower:
             return False
         
-        # Secondary insurance fields are typically optional
+        # Secondary insurance fields are typically optional  
         if section == "Secondary Dental Plan":
             return False
         
-        # Default to required for main fields, optional for others
-        if section == "Patient Information Form":
+        # Most signature section fields are required except text blocks
+        if section == "Signature":
+            if field_lower in ['initial', 'initials'] or 'signature' in field_lower or 'date' in field_lower:
+                return True
+            return False  # Text blocks in signature are optional
+        
+        # Default to required for core form sections
+        if section in ["Patient Information Form", "Primary Dental Plan"]:
+            return True
+        elif section == "FOR CHILDREN/MINORS ONLY":
+            # Most fields in this section are required except some optional ones
             return True
         else:
             return False
@@ -1112,7 +1130,7 @@ class PDFFormFieldExtractor:
                         # Set appropriate field type and control
                         if field_name.lower() == 'state':
                             field_type = 'states'
-                            control = {'hint': None, 'input_type': 'name'}
+                            control = {'hint': None}  # No input_type for states
                         elif field_name.lower() == 'zip':
                             field_type = 'input'
                             control = {'hint': None, 'input_type': 'zip'}
@@ -1133,8 +1151,6 @@ class PDFFormFieldExtractor:
                     
                     i += 2  # Skip both the "Work Address:" line and the fields line
                     continue
-                else:
-                    print("Pattern doesn't match work address fields")
 
             # Detect section headers - improved pattern matching
             line_upper = line.upper()
@@ -1213,11 +1229,27 @@ class PDFFormFieldExtractor:
                         {"name": "Guardian", "value": "Guardian"}
                     ], 'hint': None
                 }),
+                'Date Signed': ('date_signed', 'Date Signed', 'date', {'input_type': 'any', 'hint': None}),
             }
             
             line_stripped = line.strip()
+            # Normalize line for better matching (handle Unicode variations)
+            line_normalized = line_stripped.replace(" '", "'").replace("'", "'")
+            
+            # Check exact match first, then normalized match
+            matched_key = None
             if line_stripped in standalone_fields:
-                base_key, title, field_type, control = standalone_fields[line_stripped]
+                matched_key = line_stripped
+            else:
+                # Try normalized matching for Unicode variations
+                for key in standalone_fields.keys():
+                    key_normalized = key.replace(" '", "'").replace("'", "'")
+                    if line_normalized == key_normalized:
+                        matched_key = key
+                        break
+            
+            if matched_key:
+                base_key, title, field_type, control = standalone_fields[matched_key]
                 
                 # Handle field numbering for duplicates
                 if base_key in field_counters:
@@ -1362,7 +1394,7 @@ class PDFFormFieldExtractor:
                 i = j
                 continue
             
-            # Handle signature fields with initials - improved pattern matching
+            # Handle signature fields with initials - improved pattern matching for different formats  
             if '(initial)' in line.lower() or re.search(r'_{3,}\s*\(initial\)', line, re.IGNORECASE):
                 # Extract the text before (initial)
                 text_part = re.split(r'\s*_{3,}\s*\(initial\)', line, flags=re.IGNORECASE)[0].strip()
@@ -1514,7 +1546,7 @@ class PDFFormFieldExtractor:
                 i += 1
                 continue
             
-            # Handle signature and date fields - improved pattern
+            # Handle signature and date fields - improved pattern (must come before inline field parsing)
             if re.search(r'Signature\s*_{5,}.*?Date\s*_{3,}', line, re.IGNORECASE):
                 # Add signature field
                 field = FieldInfo(
@@ -1523,7 +1555,7 @@ class PDFFormFieldExtractor:
                     field_type='signature',
                     section=current_section,
                     optional=False,
-                    control={'hint': None, 'input_type': 'name'}
+                    control={}  # Signature fields don't need input_type
                 )
                 fields.append(field)
                 
@@ -1678,7 +1710,9 @@ class PDFFormFieldExtractor:
                 # Handle special cases
                 if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                     field_type = 'states'
-                    control = {'hint': control.get('hint'), 'input_type': 'name'}
+                    # Preserve existing hint but remove input_type for states
+                    existing_hint = control.get('hint')
+                    control = {'hint': existing_hint}
                 
                 # Special handling for "Relationship To Patient" that should be radio in minors section
                 if (field_name.lower() == 'relationship to patient' and 
