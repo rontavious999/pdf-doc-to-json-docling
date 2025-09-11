@@ -19,7 +19,7 @@ def extract_field_info(fields: List[Dict]) -> List[Dict]:
             'title': field.get('title', ''),
             'type': field.get('type', ''),
             'section': field.get('section', ''),
-            'optional': field.get('optional', True),
+            'optional': field.get('optional', False),  # Default to False per Modento schema
             'input_type': field.get('control', {}).get('input_type', '')
         })
     return info

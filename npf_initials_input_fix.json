@@ -13,7 +13,7 @@
     "key": "mi",
     "title": "Middle Initial",
     "section": "Patient Information Form",
-    "optional": false,
+    "optional": true,
     "type": "input",
     "control": {
       "input_type": "initials"
@@ -33,7 +33,7 @@
     "key": "nickname",
     "title": "Nickname",
     "section": "Patient Information Form",
-    "optional": false,
+    "optional": true,
     "type": "input",
     "control": {
       "input_type": "name"
@@ -53,7 +53,7 @@
     "key": "apt_unit_suite",
     "title": "Apt/Unit/Suite",
     "section": "Patient Information Form",
-    "optional": false,
+    "optional": true,
     "type": "input",
     "control": {
       "input_type": "name"
@@ -467,7 +467,7 @@
     "key": "employer_if_different_from_above",
     "title": "Employer (if different from above)",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
+    "optional": true,
     "type": "input",
     "control": {
       "input_type": "name",
@@ -816,30 +816,6 @@
     "type": "input",
     "control": {
       "input_type": "initials"
-    }
-  },
-  {
-    "key": "text_3",
-    "title": "",
-    "section": "Signature",
-    "optional": false,
-    "type": "text",
-    "control": {
-      "html_text": "<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>",
-      "temporary_html_text": "<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>",
-      "text": ""
-    }
-  },
-  {
-    "key": "text_4",
-    "title": "",
-    "section": "Signature",
-    "optional": false,
-    "type": "text",
-    "control": {
-      "html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
-      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
-      "text": ""
     }
   },
   {

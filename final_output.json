@@ -10,6 +10,6 @@ Section detected: Primary Dental Plan from line: If we are not a contracted prov
 Section detected: Signature from line: -  Authorizations: I understand that the information I have provided is correct to the best of my knowledge. I authorize this dental team to perform any necessary dental services that I may need and have consented to during diagnosis and treatment.________ (initial)
 Section detected: Signature from line: Signature_____________________________________________  Date_________________
 [✓] Wrote JSON: pdfs/npf.json
-[i] Sections: 5 | Fields: 82
+[i] Sections: 5 | Fields: 92
 [i] Pipeline/Model/Backend used: StandardPdfPipeline/DoclingParseDocumentBackend
 [x] OCR (EasyOCR): used

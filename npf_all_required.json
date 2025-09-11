@@ -819,30 +819,6 @@
     }
   },
   {
-    "key": "text_3",
-    "title": "",
-    "section": "Signature",
-    "optional": false,
-    "type": "text",
-    "control": {
-      "html_text": "<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>",
-      "temporary_html_text": "<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>",
-      "text": ""
-    }
-  },
-  {
-    "key": "text_4",
-    "title": "",
-    "section": "Signature",
-    "optional": false,
-    "type": "text",
-    "control": {
-      "html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
-      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
-      "text": ""
-    }
-  },
-  {
     "key": "todays_date",
     "title": "Today's Date",
     "section": "Patient Information Form",

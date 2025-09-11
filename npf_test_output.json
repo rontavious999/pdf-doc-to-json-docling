@@ -102,7 +102,7 @@
     "key": "home",
     "title": "Home",
     "section": "Patient Information Form",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "phone",
@@ -113,7 +113,7 @@
     "key": "work",
     "title": "Work",
     "section": "Patient Information Form",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "phone",
@@ -144,7 +144,7 @@
     "key": "what_is_your_preferred_method_of_contact",
     "title": "What Is Your Preferred Method Of Contact",
     "section": "Patient Information Form",
-    "optional": true,
+    "optional": false,
     "type": "radio",
     "control": {
       "options": [
@@ -181,7 +181,7 @@
     "key": "occupation",
     "title": "Occupation",
     "section": "Patient Information Form",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "name"
@@ -201,7 +201,7 @@
     "key": "relationship_to_patient",
     "title": "Relationship To Patient",
     "section": "Patient Information Form",
-    "optional": true,
+    "optional": false,
     "type": "radio",
     "control": {
       "options": [
@@ -239,7 +239,7 @@
     "key": "home_phone",
     "title": "Home Phone",
     "section": "Patient Information Form",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "phone",
@@ -250,7 +250,7 @@
     "key": "is_the_patient_a_minor",
     "title": "Is the Patient a Minor?",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "radio",
     "control": {
       "options": [
@@ -269,7 +269,7 @@
     "key": "full_time_student",
     "title": "Full-time Student",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "radio",
     "control": {
       "options": [
@@ -288,7 +288,7 @@
     "key": "name_of_school",
     "title": "Name of School",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "name"
@@ -324,7 +324,7 @@
     "key": "relationship_to_patient_2",
     "title": "Relationship To Patient",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "radio",
     "control": {
       "options": [
@@ -361,7 +361,7 @@
     "key": "if_patient_is_a_minor_primary_residence",
     "title": "If Patient Is A Minor, Primary Residence",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "radio",
     "control": {
       "options": [
@@ -445,7 +445,7 @@
     "key": "home_2",
     "title": "Home",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "phone",
@@ -456,7 +456,7 @@
     "key": "work_2",
     "title": "Work",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "phone",
@@ -480,10 +480,48 @@
     "key": "occupation_2",
     "title": "Occupation",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "name"
+    }
+  },
+  {
+    "key": "street_4",
+    "title": "Street",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "city_4",
+    "title": "City",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "state_4",
+    "title": "State",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "states",
+    "control": {}
+  },
+  {
+    "key": "zip_4",
+    "title": "Zip",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip"
     }
   },
   {
@@ -631,7 +669,7 @@
     "key": "phone_2",
     "title": "Phone",
     "section": "Secondary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "phone",
@@ -645,7 +683,7 @@
     "key": "street_6",
     "title": "Street",
     "section": "Secondary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "name",
@@ -658,7 +696,7 @@
     "key": "city_6",
     "title": "City",
     "section": "Secondary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "name",
@@ -671,7 +709,7 @@
     "key": "state_6",
     "title": "State",
     "section": "Secondary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "states",
     "control": {}
   },
@@ -679,13 +717,53 @@
     "key": "zip_6",
     "title": "Zip",
     "section": "Secondary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "zip",
       "extra": {
         "hint": "Insurance Company"
       }
+    }
+  },
+  {
+    "key": "dental_plan_name_2",
+    "title": "Dental Plan Name",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "plan_group_number_2",
+    "title": "Plan/Group Number",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number"
+    }
+  },
+  {
+    "key": "id_number_2",
+    "title": "ID Number",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number"
+    }
+  },
+  {
+    "key": "patient_relationship_to_insured_2",
+    "title": "Patient Relationship to Insured",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
     }
   },
   {
@@ -724,7 +802,7 @@
     "key": "todays_date",
     "title": "Today's Date",
     "section": "Patient Information Form",
-    "optional": true,
+    "optional": false,
     "type": "date",
     "control": {
       "input_type": "any"
@@ -734,7 +812,7 @@
     "key": "ssn_2",
     "title": "Social Security No.",
     "section": "Patient Information Form",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "ssn"
@@ -744,17 +822,55 @@
     "key": "date_of_birth",
     "title": "Date of Birth",
     "section": "Patient Information Form",
-    "optional": true,
+    "optional": false,
     "type": "date",
     "control": {
       "input_type": "past"
     }
   },
   {
+    "key": "street_2",
+    "title": "Street",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "city_2",
+    "title": "City",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "state_2",
+    "title": "State",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "states",
+    "control": {}
+  },
+  {
+    "key": "zip_2",
+    "title": "Zip",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip"
+    }
+  },
+  {
     "key": "sex",
     "title": "Sex",
     "section": "Patient Information Form",
-    "optional": true,
+    "optional": false,
     "type": "radio",
     "control": {
       "options": [
@@ -773,7 +889,7 @@
     "key": "marital_status",
     "title": "Marital Status",
     "section": "Patient Information Form",
-    "optional": true,
+    "optional": false,
     "type": "radio",
     "control": {
       "options": [
@@ -804,7 +920,7 @@
     "key": "date_of_birth_2",
     "title": "Date of Birth",
     "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": true,
+    "optional": false,
     "type": "date",
     "control": {
       "input_type": "past"
@@ -814,7 +930,7 @@
     "key": "birthdate",
     "title": "Birthdate",
     "section": "Primary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "date",
     "control": {
       "input_type": "past"
@@ -824,7 +940,7 @@
     "key": "ssn",
     "title": "Social Security No.",
     "section": "Primary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "ssn"
@@ -834,7 +950,7 @@
     "key": "birthdate_2",
     "title": "Birthdate",
     "section": "Secondary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "date",
     "control": {
       "input_type": "past"
@@ -844,7 +960,7 @@
     "key": "ssn_2_2",
     "title": "Social Security No.",
     "section": "Secondary Dental Plan",
-    "optional": true,
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "ssn"
@@ -860,6 +976,16 @@
       "html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
       "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
       "text": ""
+    }
+  },
+  {
+    "key": "initials",
+    "title": "Initial",
+    "section": "Signature",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
     }
   },
   {
