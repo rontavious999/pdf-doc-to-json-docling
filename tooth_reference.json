@@ -1,0 +1,32 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<div style=\"text-align:center\"><strong>TOOTH REMOVAL CONSENT FORM</strong><br>I understand that the extraction of a tooth (teeth) has been recommended by my dentist. I<br>have had any alternative treatment (if any) explained to me, as well as the consequences<br>of doing nothing about my dental conditions. I understand that non-treatment may result<br>in, but not be limited to: infection, swelling, pain, periodontal disease, malocclusion<br>(damage to the way the teeth hit together) and systemic disease/infection.<br>I understand that there are risks associated with any dental, surgical, and anesthetic<br>procedure. These include, but are not limited to:<ul><li>Post-operative infection or inflammation</li><li>Swelling, bruising, and pain</li><li>Damage to adjacent teeth or fillings</li><li>Drug reactions and side effects</li><li>Bleeding requiring more treatment</li><li>Possibility of a small fragment of root or bone being left in the jaw intentionally when its removal is not appropriate (such fragments may work their way partially out of the tissue and need to be removed later)</li><li>Delayed healing (dry socket) necessitating several post-operative visits</li><li>Damage to sinuses requiring additional treatment or surgical repair at a later date</li><li>Fracture or dislocation of the jaw</li><li>Damage to the nerves during tooth removal resulting in temporary, or possibly partial or permanent numbness or tingling of the lip, chin, tongue, or other areas</li></ul>By providing my signature, I certify that I understand the recommended treatment, the<br>fee involved, the risks of such treatment, any alternatives and risks of these alternatives,<br>including the consequences of doing nothing. I have had all of my questions answered,<br>and have not been offered any guarantees.</div>",
+      "hint": null
+    },
+    "section": "Form"
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {
+      "hint": null,
+      "input_type": null
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "hint": null,
+      "input_type": "any"
+    },
+    "section": "Signature"
+  }
+]

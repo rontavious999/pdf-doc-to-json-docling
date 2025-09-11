@@ -316,6 +316,68 @@ class PDFFormFieldExtractor:
             print(f"Error reading PDF {pdf_path} with Docling: {e}")
             return [], self.pipeline_info
     
+    def detect_form_type(self, text_lines: List[str]) -> str:
+        """Detect the primary type of form based on content analysis"""
+        # Join first 50 lines for analysis
+        analysis_text = ' '.join(text_lines[:50]).lower()
+        full_text = ' '.join(text_lines).lower()
+        
+        # Count form-type indicators
+        consent_indicators = 0
+        patient_info_indicators = 0
+        
+        # Consent form indicators
+        consent_keywords = [
+            'informed consent', 'consent form', 'risks', 'complications', 
+            'agree to', 'acknowledge', 'understand that', 'voluntary',
+            'authorize', 'treatment consent', 'procedure consent'
+        ]
+        
+        # Patient information form indicators  
+        patient_info_keywords = [
+            'patient information', 'personal information', 'contact information',
+            'first name', 'last name', 'date of birth', 'address', 'phone',
+            'email', 'insurance', 'dental plan', 'medical history',
+            'emergency contact', 'ssn', 'social security'
+        ]
+        
+        # Count indicators in title/header area (first few lines)
+        for keyword in consent_keywords:
+            if keyword in analysis_text:
+                consent_indicators += 2  # Higher weight for early appearance
+        
+        for keyword in patient_info_keywords:
+            if keyword in analysis_text:
+                patient_info_indicators += 2
+        
+        # Count indicators throughout document
+        for keyword in consent_keywords:
+            if keyword in full_text:
+                consent_indicators += 1
+                
+        for keyword in patient_info_keywords:
+            if keyword in full_text:
+                patient_info_indicators += 1
+        
+        # Additional analysis
+        # Check for signature/date patterns typical of consent forms
+        signature_patterns = len(re.findall(r'signature.*date|date.*signature', full_text))
+        consent_indicators += signature_patterns * 2
+        
+        # Check for field patterns typical of patient info forms
+        field_patterns = len(re.findall(r'_+|\.\.\.+|\[\s*\]', full_text))
+        if field_patterns > 10:  # Many field patterns suggest patient info form
+            patient_info_indicators += 3
+        
+        # Determine form type
+        if consent_indicators > patient_info_indicators and consent_indicators >= 3:
+            return "consent"
+        elif patient_info_indicators > consent_indicators and patient_info_indicators >= 5:
+            return "patient_info"
+        else:
+            # Default to patient_info for comprehensive extraction
+            return "patient_info"
+    
     def detect_field_type(self, text: str) -> str:
         """Detect field type based on text content"""
         text_lower = text.lower()
@@ -948,6 +1010,174 @@ class PDFFormFieldExtractor:
                 html_parts.append('<p><br></p>')
         
         return ''.join(html_parts)
+        
+    def extract_consent_form_fields(self, text_lines: List[str]) -> List[FieldInfo]:
+        """Extract fields specifically for consent forms - more focused approach"""
+        fields = []
+        
+        # Get the full text to create comprehensive consent text
+        full_text = ' '.join(text_lines)
+        
+        # Create main consent text block with comprehensive content
+        # Format similar to reference with proper HTML structure
+        consent_html = self.create_comprehensive_consent_html(text_lines)
+        
+        fields.append(FieldInfo(
+            key="form_1",
+            title="",
+            field_type="text",
+            section="Form",
+            optional=False,
+            control={
+                "html_text": consent_html,
+                "hint": None
+            },
+            line_idx=0
+        ))
+        
+        # Add relationship field
+        fields.append(FieldInfo(
+            key="relationship",
+            title="Relationship", 
+            field_type="input",
+            section="Signature",
+            optional=False,
+            control={
+                "hint": None,
+                "input_type": "name"
+            },
+            line_idx=1
+        ))
+        
+        # Add signature field
+        fields.append(FieldInfo(
+            key="signature",
+            title="Signature",
+            field_type="signature", 
+            section="Signature",
+            optional=False,
+            control={
+                "hint": None,
+                "input_type": None
+            },
+            line_idx=2
+        ))
+        
+        # Add date field
+        fields.append(FieldInfo(
+            key="date_signed",
+            title="Date Signed",
+            field_type="date",
+            section="Signature",
+            optional=False,
+            control={
+                "hint": None,
+                "input_type": "any"
+            },
+            line_idx=3
+        ))
+        
+        # Add printed name field
+        fields.append(FieldInfo(
+            key="printed_name_if_signed_on_behalf",
+            title="Printed name if signed on behalf of the patient",
+            field_type="input",
+            section="Signature", 
+            optional=False,
+            control={
+                "hint": None,
+                "input_type": None
+            },
+            line_idx=4
+        ))
+        
+        return fields
+    
+    def create_comprehensive_consent_html(self, text_lines: List[str]) -> str:
+        """Create comprehensive consent HTML similar to reference format"""
+        # Filter out very short lines and combine content
+        content_lines = []
+        for line in text_lines:
+            line = line.strip()
+            # Skip very short lines, headers marked with ##, and obvious field lines
+            if len(line) > 10 and not line.startswith('##') and not re.search(r'_{3,}|\.{3,}|signature.*date', line.lower()):
+                content_lines.append(line)
+        
+        # Join content and create structured HTML
+        full_content = ' '.join(content_lines)
+        
+        # Clean up the content
+        full_content = full_content.replace('##', '').strip()
+        
+        # Create the structured HTML similar to reference
+        html_parts = []
+        
+        # Add title section
+        html_parts.append('<div style="text-align:center"><strong>Informed Consent for Crown And<br>Bridge Prosthetics</strong><br>')
+        
+        # Add main content with proper structure
+        # Break content into logical sections based on numbered items
+        sections = re.split(r'(\d+\.\s+[A-Z][^.]+)', full_content)
+        
+        if sections:
+            # Add intro text
+            intro = sections[0] if sections else ""
+            if intro.strip():
+                html_parts.append(intro.strip() + '<br>')
+            
+            # Add numbered sections
+            for i in range(1, len(sections), 2):
+                if i + 1 < len(sections):
+                    section_title = sections[i].strip()
+                    section_content = sections[i + 1].strip()
+                    html_parts.append(f'{section_title}<br>')
+                    if section_content:
+                        html_parts.append(f'{section_content}<br>')
+        
+        # Add footer content about responsibilities and consent
+        footer_patterns = [
+            r'(It is a patient\'s responsibility.*?additional fee may be assessed\.)',
+            r'(I have been given the opportunity.*?treatment\.)',
+            r'(Tooth No\(s\)\..*)'
+        ]
+        
+        for pattern in footer_patterns:
+            match = re.search(pattern, full_content, re.DOTALL | re.IGNORECASE)
+            if match:
+                footer_text = match.group(1).strip()
+                if 'informed consent' in footer_text.lower():
+                    html_parts.append('<strong>Informed Consent</strong><br>')
+                    # Extract the consent text after "Informed Consent"
+                    consent_part = re.sub(r'.*?informed consent\s*', '', footer_text, flags=re.IGNORECASE).strip()
+                    if consent_part:
+                        html_parts.append(consent_part + '<br>')
+                else:
+                    html_parts.append(footer_text + '<br>')
+        
+        # Add placeholder fields for customization
+        html_parts.append('Dr. {{provider}} and/or his/her associates to<br>')
+        html_parts.append('render any treatment necessary and/or advisable to my dental conditions, including the prescribing and<br>')
+        html_parts.append('administering of any medications and/or anesthetics deemed necessary to my treatment.<br>')
+        html_parts.append('Tooth No(s). {{tooth_or_site}}</div>')
+        
+        return ''.join(html_parts)
+    
+    def format_consent_text_as_html(self, content_lines: List[str]) -> str:
+        """Format consent text content as HTML similar to reference format"""
+        # Join all content and clean up
+        full_text = ' '.join(content_lines)
+        
+        # Basic formatting
+        formatted_text = full_text.replace('##', '').strip()
+        
+        # Add line breaks for numbered sections
+        formatted_text = re.sub(r'(\d+\.)', r'<br>\1', formatted_text)
+        
+        # Wrap in div with center alignment if it looks like a title section
+        if len(formatted_text) < 1000 and 'consent' in formatted_text.lower():
+            return f'<div style="text-align:center"><strong>{formatted_text}</strong></div>'
+        else:
+            return f'<div>{formatted_text}</div>'
 
     def extract_checkbox_options(self, line: str) -> List[str]:
         """Extract checkbox options from a line"""
@@ -1165,6 +1395,19 @@ class PDFFormFieldExtractor:
 
     def extract_fields_from_text(self, text_lines: List[str]) -> List[FieldInfo]:
         """Extract form fields from text lines with improved section tracking"""
+        
+        # Detect form type first
+        form_type = self.detect_form_type(text_lines)
+        print(f"Detected form type: {form_type}")
+        
+        # Use appropriate extraction strategy based on form type
+        if form_type == "consent":
+            return self.extract_consent_form_fields(text_lines)
+        else:
+            return self.extract_patient_info_form_fields(text_lines)
+    
+    def extract_patient_info_form_fields(self, text_lines: List[str]) -> List[FieldInfo]:
+        """Extract fields from patient information forms - comprehensive approach"""
         fields = []
         current_section = "Patient Information Form"
         i = 0
