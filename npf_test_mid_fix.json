@@ -16,7 +16,7 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "number"
+      "input_type": "name"
     }
   },
   {

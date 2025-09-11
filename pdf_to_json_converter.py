@@ -253,70 +253,12 @@ class PDFFormFieldExtractor:
         self._setup_docling_converter()
     
     def is_field_required(self, field_name: str, section: str, context: str = "") -> bool:
-        """Determine if a field should be required based on dental form conventions"""
-        field_lower = field_name.lower()
-        context_lower = context.lower()
+        """Determine if a field should be required based on dental form conventions
         
-        # Essential patient identification fields
-        if any(keyword in field_lower for keyword in ['first name', 'last name', 'date of birth', 'birthdate']):
-            return True
-        
-        # Required contact information for main patient
-        if (field_lower in ['phone', 'mobile phone', 'mobile'] or 'e-mail' in field_lower) and section == "Patient Information Form":
-            return True
-        
-        # Required address fields for main patient
-        if (field_lower in ['street', 'city', 'state', 'zip'] and 
-            section == "Patient Information Form" and 
-            'if different' not in context_lower):
-            return True
-        
-        # Required SSN and drivers license for main patient  
-        if field_lower in ['social security no.', 'ssn', 'drivers license #'] and section == "Patient Information Form":
-            return True
-        
-        # Required demographic fields
-        if field_lower in ['sex', 'marital status'] and section == "Patient Information Form":
-            return True
-        
-        # Required emergency contact info
-        if field_lower in ['in case of emergency, who should be notified', 'relationship to patient'] and section == "Patient Information Form":
-            return True
-        
-        # Insurance fields are generally required
-        if section in ["Primary Dental Plan", "Secondary Dental Plan"]:
-            if any(keyword in field_lower for keyword in [
-                'name of insured', 'birthdate', 'ssn', 'social security', 'insurance company',
-                'dental plan name', 'plan/group number', 'id number', 'patient relationship to insured'
-            ]):
-                return True
-        
-        # Children/minor section fields
-        if section == "FOR CHILDREN/MINORS ONLY":
-            if any(keyword in field_lower for keyword in [
-                'is the patient a minor', 'first name', 'last name', 'date of birth',
-                'relationship to patient', 'primary residence'
-            ]):
-                return True
-        
-        # Signature is always required
-        if 'signature' in field_lower:
-            return True
-        
-        # Today's date is required
-        if 'today' in field_lower and 'date' in field_lower:
-            return True
-        
-        # Optional fields
-        if any(keyword in field_lower for keyword in [
-            'nickname', 'mi', 'middle initial', 'apt/unit/suite', 'work phone', 'home phone',
-            'occupation', 'employer', 'school', 'home', 'work'
-        ]):
-            return False
-        
-        # Context-specific optional fields
-        if 'if different' in context_lower or 'optional' in context_lower:
-            return False
+        Per Modento schema: Most form fields are required by default (optional=false)
+        """
+        # Default to required (optional=false) to match reference schema
+        return True
         
         # Secondary insurance fields are typically optional
         if section == "Secondary Dental Plan":
@@ -434,14 +376,17 @@ class PDFFormFieldExtractor:
         elif 'zip' in text_lower:
             return 'zip'
         
-        # Initials detection - be more specific
-        elif ('initial' in text_lower or text_lower.strip() in ['mi', 'm.i.', 'middle initial', 'middle init']) and len(text) < 25:
+        # Initials detection - only for signature initials, NOT middle initial
+        elif ('initial' in text_lower and 
+              'middle' not in text_lower and  # Exclude middle initial
+              len(text) < 25):
             return 'initials'
         
         # Number detection - for IDs, license numbers, etc.
         elif (any(word in text_lower for word in ['number', 'id', '#']) 
               and 'license' not in text_lower 
-              and 'phone' not in text_lower):
+              and 'phone' not in text_lower
+              and 'initial' not in text_lower):  # Exclude initial fields
             return 'number'
         
         # Default to name for most other fields
