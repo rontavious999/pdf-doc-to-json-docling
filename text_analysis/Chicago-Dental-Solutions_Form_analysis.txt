@@ -1,0 +1,107 @@
+=== Analysis of Chicago-Dental-Solutions_Form.pdf ===
+
+Total lines: 212
+Total characters: 4987
+
+=== First 50 lines ===
+  1: ## N E W   P A T I E N T R E G I S T R A T I O N
+  2: Last Name:
+  3: Birth Date:
+  4: Apt#
+  5: City:
+  6: State:
+  7: Zip:
+  8: ! Yes, send me Text Message alerts
+  9: Ext#
+ 10: Marital Status:
+ 11: ! Married
+ 12: ! Single
+ 13: ! Other:
+ 14: First Name:
+ 15: Preferred Name:
+ 16: Address:
+ 17: Cell Phone:
+ 18: Work Phone:
+ 19: Gender:
+ 20: ! Male
+ 21: ! Female
+ 22: E-mail Address:
+ 23: Emergency Contact:
+ 24: !
+ 25: Yes, send me alerts via Email
+ 26: Phone:
+ 27: Previous Dentist and/or Dental Office:
+ 28: ! I live/work in area
+ 29: ! Google
+ 30: ! I was  Referred by:
+ 31: ! Other:
+ 32: Insurance Information
+ 33: ! N o   D e n t a l   I n s u r a n c e
+ 34: ! P r i m a r y   I n s u r a n c e   ( P o l i c y   H o l d e r )
+ 35: Name of Insurance Company:
+ 36: State:
+ 37: Policy Holder Name:                                                                   Birth Date#:       /
+ 38: /
+ 39: Member ID/ SS#:                                                            Group#:
+ 40: Name of Employer:
+ 41: Relationship to Insurance holder:
+ 42: ! Self
+ 43: ! Parent
+ 44: ! Child
+ 45: ! Spouse
+ 46: ! Other:
+ 47: ! Responsible Party (someone other than self is the Insurance Policy Holder)
+ 48: Name of Insurance Company:
+ 49: State:
+ 50: Policy Holder Name:
+
+=== Lines containing underscores (potential fields) ===
+ 70: ______________________
+ 75: ______________________
+ 80: ______________________
+ 85: ______________________
+ 89: ___________________________________
+ 92: ! Yes __
+115: _____________________________________________
+121: __________________________________________________________________
+123: :_________________________________________________________________________
+124: ________________________________________________________________________________
+127: ___________________________________________________________
+130: ______________
+133: ___________________________________
+
+=== Lines containing colons (potential labels) ===
+  2: Last Name:
+  3: Birth Date:
+  5: City:
+  6: State:
+  7: Zip:
+ 10: Marital Status:
+ 13: ! Other:
+ 14: First Name:
+ 15: Preferred Name:
+ 16: Address:
+ 17: Cell Phone:
+ 18: Work Phone:
+ 19: Gender:
+ 22: E-mail Address:
+ 23: Emergency Contact:
+ 26: Phone:
+ 27: Previous Dentist and/or Dental Office:
+ 30: ! I was  Referred by:
+ 31: ! Other:
+ 35: Name of Insurance Company:
+
+=== Sections/Headers (lines with specific patterns) ===
+  1: ## N E W   P A T I E N T R E G I S T R A T I O N
+ 23: Emergency Contact:
+ 32: Insurance Information
+ 35: Name of Insurance Company:
+ 41: Relationship to Insurance holder:
+ 47: ! Responsible Party (someone other than self is the Insurance Policy Holder)
+ 48: Name of Insurance Company:
+ 55: Relationship to Insurance holder:
+ 61: ## How d i d  y o u  h e a r a b o u t   u s ?
+ 64: ## M E D I C A L H I S T O R Y
+116: ## Do you have, or have you had, any of the following?
+126: Signature of Patient, Parent or Guardian:

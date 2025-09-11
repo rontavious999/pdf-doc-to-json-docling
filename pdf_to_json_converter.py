@@ -461,7 +461,7 @@ class PDFFormFieldExtractor:
         # If the current context mentions a specific section override, use it
         section_indicators = {
             "FOR CHILDREN/MINORS ONLY": ["for children/minors only", "minor", "children", "responsible party"],
-            "Primary Dental Plan": ["primary dental plan", "dental benefit plan information primary"],
+            "Primary Dental Plan": ["primary dental plan", "dental benefit plan information primary", "primary dental"],
             "Secondary Dental Plan": ["secondary dental plan"],
             "Signature": ["patient responsibilities", "payment", "dental benefit plans", "scheduling", "authorization", "signature", "initial", "agree"]
         }
@@ -536,12 +536,13 @@ class PDFFormFieldExtractor:
         """Normalize field names to match expected patterns"""
         field_lower = field_name.lower().strip()
         
-        # Handle common abbreviations and variations
+        # Handle common abbreviations and variations - EXACT matches from reference
         name_mappings = {
             'first': 'First Name',
             'last': 'Last Name', 
             'mi': 'Middle Initial',
             'middle init': 'Middle Initial',
+            'middle initial': 'Middle Initial',
             'apt/unit/suite': 'Apt/Unit/Suite',
             'social security no': 'Social Security No.',
             'social security number': 'Social Security No.',
@@ -556,6 +557,7 @@ class PDFFormFieldExtractor:
             'birth date': 'Date of Birth',
             'today\'s date': 'Today\'s Date',
             'todays date': 'Today\'s Date',
+            'today \'s date': 'Today\'s Date',  # Handle OCR space issues
             'date': 'Today\'s Date' if 'today' in context_line.lower() else 'Date',
             'e-mail': 'E-Mail',
             'email': 'E-Mail',
@@ -595,20 +597,11 @@ class PDFFormFieldExtractor:
         if field_lower in name_mappings:
             return name_mappings[field_lower]
         
-        # Special case for MI to ensure it becomes "Middle Initial"
-        if field_lower == 'mi':
-            return 'Middle Initial'
-        
-        # Handle variations with context
+        # Handle context-sensitive mappings
         if field_lower == 'first' and any(word in context_line.lower() for word in ['name', 'patient']):
             return 'First Name'
         if field_lower == 'last' and any(word in context_line.lower() for word in ['name', 'patient']):
             return 'Last Name'
-        
-        # Handle context-sensitive field names for different from patient
-        if 'if different from patient' in context_line.lower():
-            if field_lower == 'street':
-                return 'Street'  # Will be disambiguated by hint
         
         return field_name
     
@@ -616,7 +609,7 @@ class PDFFormFieldExtractor:
         """Detect radio button questions and extract options"""
         line_lower = line.lower()
         
-        # Common radio button patterns
+        # Common radio button patterns with exact reference matching
         radio_patterns = [
             # Sex/Gender selection
             {
@@ -656,7 +649,7 @@ class PDFFormFieldExtractor:
                     {"name": "No", "value": False}
                 ]
             },
-            # Contact preference
+            # Contact preference - exact match from reference
             {
                 'pattern': r'preferred.*?method.*?contact',
                 'title': 'What Is Your Preferred Method Of Contact',
@@ -667,7 +660,7 @@ class PDFFormFieldExtractor:
                     {"name": "E-mail", "value": "E-mail"}
                 ]
             },
-            # Relationship to patient
+            # Relationship to patient - exact match from reference
             {
                 'pattern': r'relationship.*?to.*?patient',
                 'title': 'Relationship To Patient',
@@ -678,7 +671,7 @@ class PDFFormFieldExtractor:
                     {"name": "Other", "value": "Other"}
                 ]
             },
-            # Primary residence for minors
+            # Primary residence for minors - exact match from reference
             {
                 'pattern': r'primary.*?residence',
                 'title': 'If Patient Is A Minor, Primary Residence',
@@ -713,69 +706,64 @@ class PDFFormFieldExtractor:
         
         # Handle specific known field patterns first - these are comprehensive line patterns
         known_patterns = {
-            r'First\s*_{5,}.*?MI\s*_{2,}.*?Last\s*_{5,}.*?Nickname\s*_{5,}': [
+            # EXACT pattern from reference - this is the main name line
+            r'First\s*_{10,}.*?MI\s*_{2,}.*?Last\s*_{10,}.*?Nickname\s*_{5,}': [
                 ('First Name', 'First'),
-                ('MI', 'MI'), 
+                ('Middle Initial', 'MI'), 
                 ('Last Name', 'Last'),
                 ('Nickname', 'Nickname')
             ],
-            r'Mobile\s*_{5,}.*?Home\s*_{5,}.*?Work\s*_{5,}': [
+            r'Mobile\s*_{10,}.*?Home\s*_{10,}.*?Work\s*_{10,}': [
                 ('Mobile', 'Mobile'),
                 ('Home', 'Home'),
                 ('Work', 'Work')
             ],
-            r'Street\s*_{10,}.*?Apt/Unit/Suite\s*_{5,}': [
+            r'Street\s*_{30,}.*?Apt/Unit/Suite\s*_{5,}': [
                 ('Street', 'Street'),
                 ('Apt/Unit/Suite', 'Apt/Unit/Suite')
             ],
             # Context-aware city/state/zip patterns
-            r'Street\s*_{10,}.*?City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
-                ('Street', 'Street'),
-                ('City', 'City'),
-                ('State', 'State'),
-                ('Zip', 'Zip')
-            ],
-            r'City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
+            r'City\s*_{20,}.*?State\s*_{5,}.*?Zip\s*_{10,}': [
                 ('City', 'City'),
                 ('State', 'State'),
                 ('Zip', 'Zip')
             ],
             # Work address specific pattern
-            r'Street\s*_{8,}.*?City\s*_{5,}.*?State\s*_{3,}.*?Zip\s*_{3,}': [
+            r'Street\s*_{15,}.*?City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
                 ('Street', 'Street'),
                 ('City', 'City'),
                 ('State', 'State'),
                 ('Zip', 'Zip')
             ],
-            r'E-Mail\s*_{10,}.*?Drivers License #': [
+            r'E-Mail\s*_{15,}.*?Drivers License #': [
                 ('E-Mail', 'E-Mail'),
                 ('Drivers License #', 'Drivers License #')
             ],
-            r'Patient Employed By\s*_{10,}.*?Occupation\s*_{10,}': [
+            r'Patient Employed By\s*_{15,}.*?Occupation\s*_{15,}': [
                 ('Patient Employed By', 'Patient Employed By'),
                 ('Occupation', 'Occupation')
             ],
-            r'Name of Insured\s*_{10,}.*?Birthdate\s*_{5,}': [
+            r'Name of Insured\s*_{15,}.*?Birthdate\s*_{5,}': [
                 ('Name of Insured', 'Name of Insured'),
                 ('Birthdate', 'Birthdate')
             ],
-            r'Insurance Company\s*_{10,}.*?Phone': [
+            r'Insurance Company\s*_{15,}.*?Phone': [
                 ('Insurance Company', 'Insurance Company'),
                 ('Phone', 'Phone')
             ],
-            r'Dental Plan Name\s*_{10,}.*?Plan/Group Number': [
+            r'Dental Plan Name\s*_{15,}.*?Plan/Group Number': [
                 ('Dental Plan Name', 'Dental Plan Name'),
                 ('Plan/Group Number', 'Plan/Group Number')
             ],
-            r'ID Number\s*_{10,}.*?Patient Relationship to Insured': [
+            r'ID Number\s*_{15,}.*?Patient Relationship to Insured': [
                 ('ID Number', 'ID Number'),
                 ('Patient Relationship to Insured', 'Patient Relationship to Insured')
             ],
-            r'In case of emergency, who should be notified\?\s*_{10,}.*?Relationship to Patient': [
+            r'In case of emergency, who should be notified\?\s*_{15,}.*?Relationship to Patient': [
                 ('In case of emergency, who should be notified', 'In case of emergency, who should be notified'),
                 ('Relationship to Patient', 'Relationship to Patient')
             ],
-            r'Mobile Phone\s*_{5,}.*?Home Phone': [
+            r'Mobile Phone\s*_{10,}.*?Home Phone': [
                 ('Mobile Phone', 'Mobile Phone'),
                 ('Home Phone', 'Home Phone')
             ]
@@ -839,34 +827,18 @@ class PDFFormFieldExtractor:
             if re.search(skip_pattern, line, re.IGNORECASE):
                 return fields
         
-        # Improved pattern to avoid over-detection of fields
-        # Only match if there's a clear field structure with sufficient underscores
-        pattern = r'([A-Za-z][A-Za-z\s\#\/\(\)\-\.]{1,35}?)(?:_{4,}|:\s*_{2,})'
-        
-        matches = re.finditer(pattern, line)
-        for match in matches:
-            field_name = match.group(1).strip()
-            
-            # More restrictive filtering to avoid false positives
+        # Only extract fields from lines that are clearly single field labels
+        # This is more restrictive to avoid over-detection
+        if line.strip().endswith(':') and len(line.strip()) < 50:
+            field_name = line.strip().rstrip(':')
             if (len(field_name) >= 2 and 
-                len(field_name) <= 35 and
                 field_name.lower() not in [
                     'and', 'or', 'the', 'of', 'to', 'for', 'in', 'with', 'if', 'is', 'are', 
                     'patient name', 'please', 'check', 'all', 'that', 'apply', 'form',
                     'information', 'section', 'date', 'time', 'page'
-                ] and
-                field_name not in seen_fields and
-                # Allow meaningful uppercase abbreviations
-                (not field_name.isupper() or field_name.lower() in ['mi', 'ssn', 'id', 'dl', 'dob']) and
-                # Avoid detecting repeated characters as fields
-                not re.match(r'^(.)\1+$', field_name.replace(' ', '')) and
-                # Must contain at least one letter
-                re.search(r'[A-Za-z]', field_name)):
-                
-                # Normalize the field name
+                ]):
                 normalized_name = self.normalize_field_name(field_name, line)
                 fields.append((normalized_name, line))
-                seen_fields.add(field_name)
         
         return fields
     
@@ -1717,7 +1689,9 @@ class PDFFormFieldExtractor:
                     current_section = "FOR CHILDREN/MINORS ONLY"
                 elif 'SECONDARY DENTAL' in line_upper:
                     current_section = "Secondary Dental Plan"
-                elif 'PRIMARY DENTAL' in line_upper or 'DENTAL BENEFIT' in line_upper:
+                elif 'PRIMARY DENTAL' in line_upper or 'DENTAL BENEFIT PLAN INFORMATION PRIMARY' in line_upper:
+                    current_section = "Primary Dental Plan"
+                elif 'DENTAL BENEFIT PLAN' in line_upper and 'PRIMARY' in line_upper:
                     current_section = "Primary Dental Plan"
                 elif 'MEDICAL' in line_upper or 'HEALTH' in line_upper:
                     current_section = "Medical History"

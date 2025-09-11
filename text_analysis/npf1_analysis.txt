@@ -1,0 +1,118 @@
+=== Analysis of npf1.pdf ===
+
+Total lines: 304
+Total characters: 10313
+
+=== First 50 lines ===
+  1: ## Patient Registration
+  2: Today's Date
+  3: ______________
+  4: OC126
+  5: Last Name  __________________________
+  6: First Name  _________________________
+  7: MI  _____
+  8: Date of Birth  ________
+  9: Age  ____
+ 10: Sex  M or F
+ 11: Soc. Sec. #  ___________________________________________
+ 12: Please Circle One:
+ 13: Single
+ 14: Married
+ 15: Separated
+ 16: Widow
+ 17: Mailing Address  ____________________________________
+ 18: City  ____________________________
+ 19: State  ____
+ 20: Zip Code  ____ ___ _ __
+ 21: Email  _____________________________________ ___ _ _ _
+ 22: Home Phone  (______)_______________
+ 23: Cell Phone  (______)_____________
+ 24: Driver's License #  ____________________________________________
+ 25: Employer  _____________________________________________
+ 26: Work Phone  (______)_______________________
+ 27: Occupation  _____________________________________________________________
+ 28: Are you a full time student?  Yes or No
+ 29: If patient is a minor:  Mother's DOB  __________________
+ 30: Father's DOB  ____________________
+ 31: Name of Parent  ___________________________________________
+ 32: Parent Soc. Sec. #  _________________________________________
+ 33: Parent Employer  ___________________________________________________
+ 34: Parent Phone  (______)____________________________
+ 35: Person Responsible for Account  ______________________________________________
+ 36: Relationship   ____________________________
+ 37: Emergency Contact  _________________________________
+ 38: Relationship  ________________
+ 39: Phone #  (______)________________ ___
+ 40: ## If you are fi lling this form out on behalf of another person, what is your relationship to that person?
+ 41: Name  ________________________________________________________
+ 42: Relationship  ________________________________________
+ 43: Reason for today's visit?  ___________________________________ _____________ _____________ _____________ _____________ _________
+ 44: How did you hear about us?
+ 45: ¨ In-home Mailer
+ 46: ¨ Social Media
+ 47: ¨ Insurance
+ 48: ¨ Practice Website
+ 49: ¨ Internet
+ 50: ¨ Family/Friend/Coworker
+
+=== Lines containing underscores (potential fields) ===
+  3: ______________
+  5: Last Name  __________________________
+  6: First Name  _________________________
+  7: MI  _____
+  8: Date of Birth  ________
+  9: Age  ____
+ 11: Soc. Sec. #  ___________________________________________
+ 17: Mailing Address  ____________________________________
+ 18: City  ____________________________
+ 19: State  ____
+ 20: Zip Code  ____ ___ _ __
+ 21: Email  _____________________________________ ___ _ _ _
+ 22: Home Phone  (______)_______________
+ 23: Cell Phone  (______)_____________
+ 24: Driver's License #  ____________________________________________
+ 25: Employer  _____________________________________________
+ 26: Work Phone  (______)_______________________
+ 27: Occupation  _____________________________________________________________
+ 29: If patient is a minor:  Mother's DOB  __________________
+ 30: Father's DOB  ____________________
+ 31: Name of Parent  ___________________________________________
+ 32: Parent Soc. Sec. #  _________________________________________
+ 33: Parent Employer  ___________________________________________________
+ 34: Parent Phone  (______)____________________________
+ 35: Person Responsible for Account  ______________________________________________
+ 36: Relationship   ____________________________
+ 37: Emergency Contact  _________________________________
+ 38: Relationship  ________________
+ 39: Phone #  (______)________________ ___
+ 41: Name  ________________________________________________________
+
+=== Lines containing colons (potential labels) ===
+ 12: Please Circle One:
+ 29: If patient is a minor:  Mother's DOB  __________________
+ 80: Please share the following dates:
+ 91: On a scale of 1-10, with 10 being the highest rating:
+135: Consent:
+231: Please list family history of any conditions marked:
+299: Additional Comments:
+
+=== Sections/Headers (lines with specific patterns) ===
+  1: ## Patient Registration
+ 37: Emergency Contact  _________________________________
+ 40: ## If you are fi lling this form out on behalf of another person, what is your relationship to that person?
+ 47: ¨ Insurance
+ 57: ## Dental Insurance Information (Primary Carrier)
+ 64: Insurance Co  _____________________________________________ _
+ 65: Insurance Co Address  _______________________________________
+ 66: Insurance Phone #  _________________________________________
+ 69: ## Dental Insurance Information Secondary Coverage
+ 75: Insurance Co  _____________________________________________
+ 76: Insurance Co Address  ______________________________________
+ 77: Insurance Phone #  _______________________________________ __
+131: ## Dental History
+132: ## Dental History Cont. - Please mark  (x) any of the following conditions that apply to you
+135: Consent:
+138: Signature of Patient/Legal guardian
+141: Dentist Signature
+162: ## Medical History - Please mark  (x) to your response to indicate if you have or have had any of the following
+221: ¨ Bed wetting (for children)
