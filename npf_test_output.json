@@ -863,14 +863,6 @@
     }
   },
   {
-    "key": "initials",
-    "title": "Initials",
-    "section": "Signature",
-    "optional": false,
-    "type": "initials",
-    "control": {}
-  },
-  {
     "key": "signature",
     "title": "Signature",
     "section": "Signature",
