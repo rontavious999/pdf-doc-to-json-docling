@@ -31,7 +31,7 @@ class FieldInfo:
     title: str
     field_type: str
     section: str
-    optional: bool = True
+    optional: bool = False  # Changed default to False to match reference behavior
     control: Dict[str, Any] = None
     line_idx: int = 0  # For ordering preservation
     
@@ -262,89 +262,30 @@ class PDFFormFieldExtractor:
         self._setup_docling_converter()
     
     def is_field_required(self, field_name: str, section: str, context: str = "") -> bool:
-        """Determine if a field should be required based on dental form conventions"""
+        """Determine if a field should be required based on dental form conventions and reference"""
         field_lower = field_name.lower()
         context_lower = context.lower()
         
-        # Essential patient identification fields
-        if any(keyword in field_lower for keyword in ['first name', 'last name', 'date of birth', 'birthdate']):
-            return True
+        # Based on the reference npf.json analysis, very few fields should be optional
+        # Most fields should be required (optional: false)
         
-        # Required contact information for main patient
-        if (field_lower in ['phone', 'mobile phone', 'mobile'] or 'e-mail' in field_lower) and section == "Patient Information Form":
-            return True
+        # Explicitly optional fields based on reference analysis
+        optional_fields = {
+            'nickname', 'mi', 'middle initial', 'apt/unit/suite'
+        }
         
-        # Required address fields for main patient
-        if (field_lower in ['street', 'city', 'state', 'zip'] and 
-            section == "Patient Information Form" and 
-            'if different' not in context_lower):
-            return True
-        
-        # Required SSN and drivers license for main patient  
-        if field_lower in ['social security no.', 'ssn', 'drivers license #'] and section == "Patient Information Form":
-            return True
-        
-        # Required demographic fields
-        if field_lower in ['sex', 'marital status'] and section == "Patient Information Form":
-            return True
-        
-        # Required emergency contact info
-        if field_lower in ['in case of emergency, who should be notified', 'relationship to patient'] and section == "Patient Information Form":
-            return True
-        
-        # Insurance fields are generally required
-        if section in ["Primary Dental Plan", "Secondary Dental Plan"]:
-            if any(keyword in field_lower for keyword in [
-                'name of insured', 'birthdate', 'ssn', 'social security', 'insurance company',
-                'dental plan name', 'plan/group number', 'id number', 'patient relationship to insured'
-            ]):
-                return True
-        
-        # Children/minor section fields
-        if section == "FOR CHILDREN/MINORS ONLY":
-            if any(keyword in field_lower for keyword in [
-                'is the patient a minor', 'first name', 'last name', 'date of birth',
-                'relationship to patient', 'primary residence'
-            ]):
-                return True
-        
-        # Signature is always required
-        if 'signature' in field_lower:
-            return True
-        
-        # Today's date is required
-        if 'today' in field_lower and 'date' in field_lower:
-            return True
-        
-        # Optional fields
-        if any(keyword in field_lower for keyword in [
-            'nickname', 'mi', 'middle initial', 'apt/unit/suite', 'work phone', 'home phone',
-            'occupation', 'employer', 'school', 'home', 'work'
-        ]):
+        # Check for explicitly optional fields
+        if field_lower in optional_fields:
             return False
-        
-        # Context-specific optional fields
-        if 'if different' in context_lower or 'optional' in context_lower:
+            
+        # Fields with "if different" context are typically optional  
+        if 'if different' in context_lower:
             return False
-        
-        # Secondary insurance fields are typically optional  
-        if section == "Secondary Dental Plan":
-            return False
-        
-        # Most signature section fields are required except text blocks
-        if section == "Signature":
-            if field_lower in ['initial', 'initials'] or 'signature' in field_lower or 'date' in field_lower:
-                return True
-            return False  # Text blocks in signature are optional
-        
-        # Default to required for core form sections
-        if section in ["Patient Information Form", "Primary Dental Plan"]:
-            return True
-        elif section == "FOR CHILDREN/MINORS ONLY":
-            # Most fields in this section are required except some optional ones
-            return True
-        else:
-            return False
+            
+        # Almost all other fields should be required based on the reference
+        # This matches the pattern seen in the reference npf.json where
+        # most fields have optional: false
+        return True
     
     def _setup_docling_converter(self):
         """Configure Docling for maximum form scanning accuracy"""
@@ -911,7 +852,7 @@ class PDFFormFieldExtractor:
                 title=title,
                 field_type="text",
                 section=section,
-                optional=True,
+                optional=False,  # Text blocks should not be optional based on reference
                 control={
                     "html_text": text_html,
                     "temporary_html_text": text_html,
