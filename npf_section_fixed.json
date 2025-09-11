@@ -258,7 +258,7 @@
   {
     "key": "mobile_phone",
     "title": "Mobile Phone",
-    "section": "Patient Information Form",
+    "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
     "type": "input",
     "control": {
@@ -269,7 +269,7 @@
   {
     "key": "home_phone",
     "title": "Home Phone",
-    "section": "Patient Information Form",
+    "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
     "type": "input",
     "control": {
@@ -462,42 +462,9 @@
     }
   },
   {
-    "key": "mobile_2",
-    "title": "Mobile",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "phone",
-      "phone_prefix": "+1"
-    }
-  },
-  {
-    "key": "home_2",
-    "title": "Home",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "phone",
-      "phone_prefix": "+1"
-    }
-  },
-  {
-    "key": "work_2",
-    "title": "Work",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "phone",
-      "phone_prefix": "+1"
-    }
-  },
-  {
     "key": "employer_if_different_from_above",
     "title": "Employer (if different from above)",
-    "section": "FOR CHILDREN/MINORS ONLY",
+    "section": "Primary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
@@ -510,11 +477,49 @@
   {
     "key": "occupation_2",
     "title": "Occupation",
-    "section": "FOR CHILDREN/MINORS ONLY",
+    "section": "Primary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
       "input_type": "name"
+    }
+  },
+  {
+    "key": "street_2",
+    "title": "Street",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "city_2",
+    "title": "City",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "state_2",
+    "title": "State",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "states",
+    "control": {}
+  },
+  {
+    "key": "zip_2",
+    "title": "Zip",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip"
     }
   },
   {
@@ -552,53 +557,6 @@
     }
   },
   {
-    "key": "street_2",
-    "title": "Street",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "extra": {
-        "hint": "Insurance Company"
-      }
-    }
-  },
-  {
-    "key": "city_2",
-    "title": "City",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "extra": {
-        "hint": "Insurance Company"
-      }
-    }
-  },
-  {
-    "key": "state_2",
-    "title": "State",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "states",
-    "control": {}
-  },
-  {
-    "key": "zip_2",
-    "title": "Zip",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "zip",
-      "extra": {
-        "hint": "Insurance Company"
-      }
-    }
-  },
-  {
     "key": "dental_plan_name",
     "title": "Dental Plan Name",
     "section": "Primary Dental Plan",
@@ -611,7 +569,7 @@
   {
     "key": "plan_group_number",
     "title": "Plan/Group Number",
-    "section": "Primary Dental Plan",
+    "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
@@ -621,7 +579,7 @@
   {
     "key": "id_number",
     "title": "ID Number",
-    "section": "Primary Dental Plan",
+    "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
@@ -631,7 +589,7 @@
   {
     "key": "patient_relationship_to_insured",
     "title": "Patient Relationship to Insured",
-    "section": "Primary Dental Plan",
+    "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
@@ -649,9 +607,9 @@
     }
   },
   {
-    "key": "insurance_company_2",
-    "title": "Insurance Company",
-    "section": "Secondary Dental Plan",
+    "key": "dental_plan_name_2",
+    "title": "Dental Plan Name",
+    "section": "Signature",
     "optional": false,
     "type": "input",
     "control": {
@@ -659,64 +617,33 @@
     }
   },
   {
-    "key": "phone_2",
-    "title": "Phone",
-    "section": "Secondary Dental Plan",
+    "key": "plan_group_number_2",
+    "title": "Plan/Group Number",
+    "section": "Signature",
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "phone",
-      "phone_prefix": "+1",
-      "extra": {
-        "hint": "Insurance Company"
-      }
+      "input_type": "number"
     }
   },
   {
-    "key": "street_5",
-    "title": "Street",
-    "section": "Secondary Dental Plan",
+    "key": "id_number_2",
+    "title": "ID Number",
+    "section": "Signature",
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name",
-      "extra": {
-        "hint": "Insurance Company"
-      }
+      "input_type": "number"
     }
   },
   {
-    "key": "city_5",
-    "title": "City",
-    "section": "Secondary Dental Plan",
+    "key": "patient_relationship_to_insured_2",
+    "title": "Patient Relationship to Insured",
+    "section": "Signature",
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name",
-      "extra": {
-        "hint": "Insurance Company"
-      }
-    }
-  },
-  {
-    "key": "state_5",
-    "title": "State",
-    "section": "Secondary Dental Plan",
-    "optional": false,
-    "type": "states",
-    "control": {}
-  },
-  {
-    "key": "zip_5",
-    "title": "Zip",
-    "section": "Secondary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "zip",
-      "extra": {
-        "hint": "Insurance Company"
-      }
+      "input_type": "name"
     }
   },
   {
@@ -851,7 +778,7 @@
     "control": {}
   },
   {
-    "key": "patient_relationship_to_insured_2",
+    "key": "patient_relationship_to_insured_3",
     "title": "",
     "section": "Signature",
     "optional": false,

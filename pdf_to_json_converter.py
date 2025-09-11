@@ -253,70 +253,12 @@ class PDFFormFieldExtractor:
         self._setup_docling_converter()
     
     def is_field_required(self, field_name: str, section: str, context: str = "") -> bool:
-        """Determine if a field should be required based on dental form conventions"""
-        field_lower = field_name.lower()
-        context_lower = context.lower()
+        """Determine if a field should be required based on dental form conventions
         
-        # Essential patient identification fields
-        if any(keyword in field_lower for keyword in ['first name', 'last name', 'date of birth', 'birthdate']):
-            return True
-        
-        # Required contact information for main patient
-        if (field_lower in ['phone', 'mobile phone', 'mobile'] or 'e-mail' in field_lower) and section == "Patient Information Form":
-            return True
-        
-        # Required address fields for main patient
-        if (field_lower in ['street', 'city', 'state', 'zip'] and 
-            section == "Patient Information Form" and 
-            'if different' not in context_lower):
-            return True
-        
-        # Required SSN and drivers license for main patient  
-        if field_lower in ['social security no.', 'ssn', 'drivers license #'] and section == "Patient Information Form":
-            return True
-        
-        # Required demographic fields
-        if field_lower in ['sex', 'marital status'] and section == "Patient Information Form":
-            return True
-        
-        # Required emergency contact info
-        if field_lower in ['in case of emergency, who should be notified', 'relationship to patient'] and section == "Patient Information Form":
-            return True
-        
-        # Insurance fields are generally required
-        if section in ["Primary Dental Plan", "Secondary Dental Plan"]:
-            if any(keyword in field_lower for keyword in [
-                'name of insured', 'birthdate', 'ssn', 'social security', 'insurance company',
-                'dental plan name', 'plan/group number', 'id number', 'patient relationship to insured'
-            ]):
-                return True
-        
-        # Children/minor section fields
-        if section == "FOR CHILDREN/MINORS ONLY":
-            if any(keyword in field_lower for keyword in [
-                'is the patient a minor', 'first name', 'last name', 'date of birth',
-                'relationship to patient', 'primary residence'
-            ]):
-                return True
-        
-        # Signature is always required
-        if 'signature' in field_lower:
-            return True
-        
-        # Today's date is required
-        if 'today' in field_lower and 'date' in field_lower:
-            return True
-        
-        # Optional fields
-        if any(keyword in field_lower for keyword in [
-            'nickname', 'mi', 'middle initial', 'apt/unit/suite', 'work phone', 'home phone',
-            'occupation', 'employer', 'school', 'home', 'work'
-        ]):
-            return False
-        
-        # Context-specific optional fields
-        if 'if different' in context_lower or 'optional' in context_lower:
-            return False
+        Per Modento schema: Most form fields are required by default (optional=false)
+        """
+        # Default to required (optional=false) to match reference schema
+        return True
         
         # Secondary insurance fields are typically optional
         if section == "Secondary Dental Plan":
@@ -434,14 +376,17 @@ class PDFFormFieldExtractor:
         elif 'zip' in text_lower:
             return 'zip'
         
-        # Initials detection - be more specific
-        elif ('initial' in text_lower or text_lower.strip() in ['mi', 'm.i.', 'middle initial', 'middle init']) and len(text) < 25:
+        # Initials detection - only for signature initials, NOT middle initial
+        elif ('initial' in text_lower and 
+              'middle' not in text_lower and  # Exclude middle initial
+              len(text) < 25):
             return 'initials'
         
         # Number detection - for IDs, license numbers, etc.
         elif (any(word in text_lower for word in ['number', 'id', '#']) 
               and 'license' not in text_lower 
-              and 'phone' not in text_lower):
+              and 'phone' not in text_lower
+              and 'initial' not in text_lower):  # Exclude initial fields
             return 'number'
         
         # Default to name for most other fields
@@ -456,6 +401,10 @@ class PDFFormFieldExtractor:
         # More specific section detection for dental forms
         text_lower = text.lower()
         context_lower = ' '.join(context_lines[:10]).lower()
+        
+        # Priority check: Work address should always stay in Patient Information Form
+        if 'work address' in context_lower and text_lower in ['street', 'city', 'state', 'zip']:
+            return "Patient Information Form"
         
         # If the current context mentions a specific section override, use it
         section_indicators = {
@@ -698,9 +647,19 @@ class PDFFormFieldExtractor:
         
         return None
     
-    def parse_inline_fields(self, line: str) -> List[Tuple[str, str]]:
+    def parse_inline_fields(self, line: str, context_lines: List[str] = None) -> List[Tuple[str, str]]:
         fields = []
         seen_fields = set()
+        
+        # Get context for determining if we should allow duplicate field names
+        if context_lines:
+            context_text = ' '.join(context_lines).lower()
+            is_work_address = 'work address' in context_text
+            is_different_from_patient = 'if different from patient' in context_text
+            is_different_from_above = 'if different from above' in context_text
+            allow_duplicates = is_work_address or is_different_from_patient or is_different_from_above
+        else:
+            allow_duplicates = False
         
         # Skip lines that are clearly section headers or questions
         if any(keyword in line.lower() for keyword in ['patient information form', 'for children/minors only', 'primary dental plan', 'secondary dental plan']):
@@ -727,7 +686,14 @@ class PDFFormFieldExtractor:
                 ('Street', 'Street'),
                 ('Apt/Unit/Suite', 'Apt/Unit/Suite')
             ],
-            # Context-aware city/state/zip patterns
+            # Work address specific pattern - Street, City, State, Zip all on one line
+            r'Street\s*_{8,}.*?City\s*_{5,}.*?State\s*_{3,}.*?Zip\s*_{3,}': [
+                ('Street', 'Street'),
+                ('City', 'City'),
+                ('State', 'State'),
+                ('Zip', 'Zip')
+            ],
+            # Standard city/state/zip pattern (for lines without Street)
             r'City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
                 ('City', 'City'),
                 ('State', 'State'),
@@ -841,7 +807,7 @@ class PDFFormFieldExtractor:
             field_name = match.group(1).strip()
             
             # More restrictive filtering to avoid false positives
-            if (len(field_name) >= 2 and 
+            if ((len(field_name) >= 2 and 
                 len(field_name) <= 35 and
                 field_name.lower() not in [
                     'and', 'or', 'the', 'of', 'to', 'for', 'in', 'with', 'if', 'is', 'are', 
@@ -854,7 +820,11 @@ class PDFFormFieldExtractor:
                 # Avoid detecting repeated characters as fields
                 not re.match(r'^(.)\1+$', field_name.replace(' ', '')) and
                 # Must contain at least one letter
-                re.search(r'[A-Za-z]', field_name)):
+                re.search(r'[A-Za-z]', field_name)) or
+                # Allow duplicates in special contexts (work address, different from patient, etc.)
+                (allow_duplicates and field_name.lower() in ['street', 'city', 'state', 'zip'] and
+                 len(field_name) >= 2 and len(field_name) <= 35 and
+                 re.search(r'[A-Za-z]', field_name))):
                 
                 # Normalize the field name
                 normalized_name = self.normalize_field_name(field_name, line)
@@ -1372,15 +1342,17 @@ class PDFFormFieldExtractor:
                 i += 1
                 continue
             
-            # Parse inline fields from the line
-            inline_fields = self.parse_inline_fields(line)
+            # Parse inline fields from the line with context
+            context_lines = text_lines[max(0, i-5):i+5]  # 5 lines before and after for context
+            inline_fields = self.parse_inline_fields(line, context_lines)
             
             for field_name, full_line in inline_fields:
                 # Determine field type
                 field_type = self.detect_field_type(field_name)
                 
                 # Better section detection using field content and current section context
-                detected_section = self.detect_section(field_name, text_lines[max(0, i-10):i+10], current_section)
+                # Use smaller context window to avoid interference from distant sections
+                detected_section = self.detect_section(field_name, text_lines[max(0, i-3):i+7], current_section)
                 
                 # Create control based on type
                 control = {}

@@ -424,16 +424,6 @@
     }
   },
   {
-    "key": "street_3",
-    "title": "Street",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name"
-    }
-  },
-  {
     "key": "city_3",
     "title": "City",
     "section": "FOR CHILDREN/MINORS ONLY",
@@ -552,19 +542,6 @@
     }
   },
   {
-    "key": "street_2",
-    "title": "Street",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "extra": {
-        "hint": "Insurance Company"
-      }
-    }
-  },
-  {
     "key": "city_2",
     "title": "City",
     "section": "Primary Dental Plan",
@@ -667,19 +644,6 @@
     "control": {
       "input_type": "phone",
       "phone_prefix": "+1",
-      "extra": {
-        "hint": "Insurance Company"
-      }
-    }
-  },
-  {
-    "key": "street_5",
-    "title": "Street",
-    "section": "Secondary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
       "extra": {
         "hint": "Insurance Company"
       }
