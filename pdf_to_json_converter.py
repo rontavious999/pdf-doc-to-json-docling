@@ -1020,9 +1020,6 @@ class PDFFormFieldExtractor:
                 i += 1
                 continue
             
-            # Handle large text blocks (like terms and conditions) - improved detection
-            if (len(line) > 80 and 
-                any(keyword in line.lower() for keyword in ['responsibility', 'payment', 'benefit', 'authorize', 'consent', 'we are committed']) and
             # Handle consent paragraphs with Risks/Side Effects
             if (current_section in ["Signature", "Consent"] and 
                 len(line) > 50 and 
@@ -1245,6 +1242,9 @@ class PDFFormFieldExtractor:
                         break
             
             if consent_found:
+                i += 1
+                continue
+                
             # Handle consent questions with YES/NO checkboxes
             if re.search(r'YES\s+N?O?\s*\(Check One\)', line, re.IGNORECASE):
                 # Extract the question part
