@@ -498,8 +498,9 @@ class PDFFormFieldExtractor:
         if any(keyword in text_lower for keyword in ['minor', 'children', 'parent', 'guardian', 'custody', 'school', 'responsible party']):
             return "FOR CHILDREN/MINORS ONLY"
         
-        # Signature and consent - improved detection
-        if any(keyword in text_lower for keyword in ['signature', 'consent', 'terms', 'agree', 'initial', 'responsibilities', 'payment', 'scheduling']):
+        # Signature and consent - improved detection with more precise matching
+        if (any(keyword in text_lower for keyword in ['signature', 'consent', 'terms', 'agree', 'responsibilities', 'payment', 'scheduling']) or 
+            (re.search(r'\binitial\b', text_lower) and not re.search(r'\b(middle|mi)\s+initial\b', text_lower))):
             return "Signature"
         
         # Basic patient info fields
@@ -991,7 +992,8 @@ class PDFFormFieldExtractor:
                 'SSN': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
                 'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}], 'hint': None}),
                 'Social Security No.': ('ssn_2', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
-                'Today \'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any', 'hint': None}),
+                "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'any', 'hint': None}),
+                'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any', 'hint': None}), 
                 'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
                 'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past', 'hint': None}),
             }
@@ -1525,8 +1527,8 @@ class PDFToJSONConverter:
         # Extract form fields
         fields = self.extractor.extract_fields_from_text(text_lines)
         
-        # Sort fields by line_idx within each section to preserve document order  
-        fields.sort(key=lambda f: (f.section, getattr(f, 'line_idx', 0)))
+        # Sort fields by line_idx to preserve document order, not by section name
+        fields.sort(key=lambda f: getattr(f, 'line_idx', 0))
         
         # Convert to Modento format
         json_spec = []
