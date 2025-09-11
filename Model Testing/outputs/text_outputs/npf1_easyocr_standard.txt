@@ -1,0 +1,643 @@
+# Text Extraction Result
+PDF File: npf1.pdf
+Model/Configuration: easyocr_standard
+Extraction Time: 8.23 seconds
+Character Count: 10183
+Word Count: 1031
+Line Count: 316
+
+==================================================
+EXTRACTED TEXT:
+==================================================
+
+## Patient Registration
+
+Today’s Date
+
+______________
+
+OC126
+
+Last Name __________________________
+
+First Name _________________________
+
+MI _____
+
+Date of Birth ________
+
+Age ____
+
+Sex M or F
+
+Soc. Sec. # ___________________________________________
+
+Please Circle One:
+
+Single
+
+Married
+
+Separated
+
+Widow
+
+Mailing Address ____________________________________
+
+City ____________________________
+
+State ____
+
+Zip Code __________
+
+Email _________________________________________
+
+___
+
+Home Phone (______)_______________
+
+Cell Phone (______)_____________
+
+Driver’s License # ____________________________________________
+
+Employer _____________________________________________
+
+Work Phone (______)_______________________
+
+Occupation _____________________________________________________________
+
+Are you a full time student? Yes or No
+
+If patient is a minor: Mother’s DOB __________________
+
+Father’s DOB ____________________
+
+Name of Parent ___________________________________________
+
+Parent Soc. Sec. # _________________________________________
+
+_
+
+Parent Employer ___________________________________________________
+
+Parent Phone (______)____________________________
+
+_
+
+Person Responsible for Account ______________________________________________
+
+Relationship ____________________________
+
+_
+
+Emergency Contact _________________________________
+
+Relationship ________________
+
+Phone # (______)___________________
+
+_
+
+## If you are filling this form out on behalf of another person, what is your relationship to that person?
+
+Name ________________________________________________________
+
+Relationship ________________________________________
+
+_
+
+Reason for today’s visit? ________________________________________________________________________________________________
+
+How did you hear about us?
+
+¨ In-home Mailer
+
+¨ Social Media
+
+¨ Insurance
+
+¨ Practice Website
+
+¨ Internet
+
+¨ Family/Friend/Coworker
+
+¨
+
+Other_________________________
+
+Who can we thank for your visit?
+
+________________________
+
+____________
+
+_______
+
+________________
+
+## Dental Insurance Information (Primary Carrier)
+
+Insured’s Name ___________________________________
+
+__________
+
+_
+
+Insured’s Employer _________________________________________
+
+Insured’s DOB _____________________________________________
+
+_
+
+Insurance Co ______________________________________________
+
+Insurance Co Address _______________________________________
+
+Insurance Phone # _________________________________________
+
+Group # ____________________
+
+Local # _____________________
+
+## Dental Insurance Information Secondary Coverage
+
+Insured’s Name ________________________________________
+
+____
+
+_
+
+Insured’s Employer _______________________________________
+
+__
+
+Insured’s DOB ____________________________________________
+
+Insurance Co _____________________________________________
+
+Insurance Co Address ______________________________________
+
+Insurance Phone # _________________________________________
+
+Group # ____________________
+
+Local # ___________________
+
+__
+
+Please share the following dates:
+
+Your last cleaning _______/_______
+
+Your last oral cancer screening _______/_______
+
+Your last complete X-rays _______/_______
+
+What is the most important thing to you about your future smile and dental health? _____________________________________________
+
+_____________________________________________________________________________________________________________________
+
+What is the most important thing to you about your dental visit today? _________________________________________________________
+
+_____________________________________________________________________________________________________________________
+
+Why did you leave your previous dentist? _________________________________________________________________________________
+
+_____________________________________________________________________________________________________________________
+
+Name of your previous dentist _____________________________________________________________________________________________
+
+On a scale of 1-10, with 10 being the highest rating:
+
+How important is your dental health to you? 1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+Where would you rate your current dental health? 1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+Where do you want your dental health to be? 1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+What would you like to change about your smile?
+
+¨ Color
+
+¨ Bite
+
+¨ Chipped Teeth
+
+¨ Spaces
+
+¨ Crowding
+
+¨ Smile Makeover
+
+¨ Missing Teeth
+
+¨ Whiter Teeth
+
+## Dental History
+
+## Dental History Cont. - Please mark (x) any of the following conditions that apply to you
+
+____________________
+
+OC126
+
+Consent:
+
+The undersigned hereby authorizes Doctor to take x-rays, study models, photographs, or any other diagnostic aids deemed appropriate by Doctor to make a thorough diagnosis of the patient’s dental needs. I also authorize Doctor to perform any and all forms of treatment, medication and therapy that may be indicated. I also understand the use of anesthetic agents embodies a certain risk. I have read, understand and agree to the above terms and conditions.
+
+________________________________________ ___________________________ __________ ______________________________________
+
+Signature of Patient/Legal guardian
+
+Print Name
+
+Date
+
+Dentist Signature
+
+For completion by dentist only | Additional Comments
+
+______________________________________________________________________________________________________________________________
+
+__________________________________________________________________________________________________________________
+
+__
+
+______________________________________________________________________________________________________________
+
+Cancer
+
+Type _____________
+
+¨ Chemotherapy
+
+¨ Radiation Therapy
+
+Cardiovascular
+
+¨ Angina (chest pain)
+
+¨ Artificial Heart Valve
+
+¨ Heart Conditions
+
+¨ Heart Surgery
+
+¨ High/Low Blood Pressure
+
+¨ Mitral Valve Prolapse
+
+¨ Pacemaker
+
+¨ Rheumatic Fever
+
+¨ Scarlet Fever
+
+¨ Stroke
+
+## Medical History - Please mark (x) to your response to indicate if you have or have had any of the following
+
+Are you under the care of a physician? Y or N If yes, please explain ____________________________________________________________
+
+__________________________________________________________________________________________________________________
+
+Physician Name_________________________Address:__________________________________Phone(_____)________________________
+
+Have you had a serious illness, operation, or hospitalization in the past 5 years? Y or N, If yes please explain __________________________
+
+__________________________________________________________________________________________________________________
+
+__
+
+__________________________________________________________________________________________________________________
+
+__
+
+Are you taking or have you recently taken any prescription or over the counter medicine(s)? Y or N If yes, please list all and why, including
+
+vitamins, natural or herbal supplements and/or dietary supplements _________________________________________________________
+
+__________________________________________________________________________________________________________________
+
+__
+
+__________________________________________________________________________________________________________________
+
+__
+
+Have you ever in the past, or are you now currently taking any medications for Osteopenia/Osteoporosis or Bone Disease?
+
+If so, please list medications: ___________________________________________________________________________
+
+Have you ever had surgery? If so, what type: _________________________________________________________________ _
+
+__________________________________________________________________________________________________________________
+
+__
+
+Appearance
+
+¨ Discolored teeth
+
+¨ Worn teeth
+
+¨ Misshaped teeth
+
+¨ Crooked teeth
+
+¨ Spaces
+
+¨ Overbite
+
+¨ Flat teeth
+
+Pain/Discomfort
+
+¨ Sensitivity (hot, cold, sweet)
+
+¨ Pressure
+
+¨ Broken teeth/fillings
+
+¨ Worn teeth
+
+¨ Dry Mouth
+
+Patient Name (print)
+
+Function
+
+¨ Grinding/Clenching
+
+¨ Headaches
+
+¨ Jaw Joint (TMJ) pain
+
+¨ Jaw Joint (TMJ) clicking/popping
+
+¨ Bad Bite
+
+¨ Speech Impediment
+
+¨ Mouth Breathing
+
+¨ Sore Muscles (neck, shoulders)
+
+¨ Difficulty Opening or Closing
+
+¨ Difficulty Chewing on either side
+
+Periodontal (Gum) Health
+
+¨ Bleeding, Swollen, Irritated gums
+
+¨ Bad breath
+
+¨ Loose tipped, shifting teeth
+
+¨ Previous perio/gum disease
+
+Habits
+
+¨ Thumb sucking
+
+¨ Nail-biting
+
+¨ Cheek/Lip biting
+
+¨ Chewing on ice/foreign objects
+
+Sleep Pattern or Conditions
+
+¨ Sleep Apnea
+
+¨ Snoring
+
+¨ Daytime Drowsiness
+
+¨ Bed wetting (for children)
+
+Social
+
+Tobacco
+
+How much _____ How long ______
+
+Alcohol Frequency_____________
+
+__
+
+Drugs Frequency _______________
+
+Previous Comfort Options
+
+¨ Nitrous Oxide
+
+¨ Oral Sedation (Pill)
+
+¨ IV Sedation
+
+Please list family history of any conditions marked:
+
+_________________________________
+
+_
+
+_________________________________
+
+_
+
+_________________________________
+
+_
+
+_________________________________
+
+_
+
+_________________________________
+
+_
+
+_________________________________
+
+_
+
+_________________________________
+
+_
+
+Endocrinology
+
+¨ Diabetes
+
+¨ Hepatitis A/B/C
+
+¨ Jaundice
+
+¨ Kidney Disease
+
+¨ Liver Disease
+
+¨ Thyroid Disease
+
+Gastrointestinal
+
+¨ Ulcers (Stomach)
+
+¨ Gastrointestinal Disease
+
+Hematologic/Lymphatic
+
+¨ Anemia
+
+¨ Blood Disorders
+
+¨ Bruise Easily
+
+¨ Excessive Bleeding
+
+Musculoskeletal
+
+¨ Arthritis
+
+¨ Artificial Joints
+
+¨ Jaw Joint Pain
+
+¨ Rheumatoid Arthritis
+
+Neurological
+
+¨ Anxiety
+
+¨ Depression
+
+¨ Dizziness
+
+¨ Drug/Alcohol Addiction
+
+¨ Fainting
+
+¨ Seizures
+
+¨ Psychiatric Illness
+
+Respiratory
+
+¨ Asthma
+
+¨ Emphysema
+
+¨ Respiratory Problems
+
+¨ Sinus Problems
+
+¨ Sleep Apnea
+
+¨ Tuberculosis
+
+Viral Infections
+
+¨ AIDS
+
+¨ HIV Positive
+
+¨ HPV
+
+Women
+
+¨ Currently Pregnant
+
+¨ Nursing
+
+Medical Allergies
+
+¨ Antibiotics
+
+(Penicillin/Amoxicillin /Clindamycin)
+
+¨ Opioids
+
+(Percocet, Oxycodone, Tylenol 3)
+
+¨ Latex
+
+¨ Local Anesthetics
+
+¨ NSAIDs
+
+Other Allergies
+
+¨
+
+_____________________________
+
+Additional Comments:
+
+___________________________
+
+______
+
+_
+
+_______________________
+
+__________
+
+_
