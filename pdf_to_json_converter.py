@@ -1229,6 +1229,7 @@ class PDFFormFieldExtractor:
                         {"name": "Guardian", "value": "Guardian"}
                     ], 'hint': None
                 }),
+                'Date Signed': ('date_signed', 'Date Signed', 'date', {'input_type': 'any', 'hint': None}),
             }
             
             line_stripped = line.strip()
@@ -1393,7 +1394,7 @@ class PDFFormFieldExtractor:
                 i = j
                 continue
             
-            # Handle signature fields with initials - improved pattern matching
+            # Handle signature fields with initials - improved pattern matching for different formats  
             if '(initial)' in line.lower() or re.search(r'_{3,}\s*\(initial\)', line, re.IGNORECASE):
                 # Extract the text before (initial)
                 text_part = re.split(r'\s*_{3,}\s*\(initial\)', line, flags=re.IGNORECASE)[0].strip()
@@ -1545,7 +1546,7 @@ class PDFFormFieldExtractor:
                 i += 1
                 continue
             
-            # Handle signature and date fields - improved pattern
+            # Handle signature and date fields - improved pattern (must come before inline field parsing)
             if re.search(r'Signature\s*_{5,}.*?Date\s*_{3,}', line, re.IGNORECASE):
                 # Add signature field
                 field = FieldInfo(
@@ -1554,7 +1555,7 @@ class PDFFormFieldExtractor:
                     field_type='signature',
                     section=current_section,
                     optional=False,
-                    control={'hint': None, 'input_type': 'name'}
+                    control={}  # Signature fields don't need input_type
                 )
                 fields.append(field)
                 
