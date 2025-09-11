@@ -435,8 +435,7 @@ class PDFFormFieldExtractor:
             return 'zip'
         
         # Initials detection - be more specific
-        elif (('initial' in text_lower or text_lower.strip() in ['mi', 'm.i.', 'middle initial', 'middle init']) 
-              and len(text) < 25):
+        elif ('initial' in text_lower or text_lower.strip() in ['mi', 'm.i.', 'middle initial', 'middle init']) and len(text) < 25:
             return 'initials'
         
         # Number detection - for IDs, license numbers, etc.
@@ -540,9 +539,8 @@ class PDFFormFieldExtractor:
         name_mappings = {
             'first': 'First Name',
             'last': 'Last Name', 
-            'mi': 'MI',
-            'middle initial': 'MI',
-            'middle init': 'MI',
+            'mi': 'Middle Initial',
+            'middle init': 'Middle Initial',
             'apt/unit/suite': 'Apt/Unit/Suite',
             'social security no': 'Social Security No.',
             'social security number': 'Social Security No.',
@@ -716,7 +714,7 @@ class PDFFormFieldExtractor:
         known_patterns = {
             r'First\s*_{5,}.*?MI\s*_{2,}.*?Last\s*_{5,}.*?Nickname\s*_{5,}': [
                 ('First Name', 'First'),
-                ('Middle Initial', 'MI'), 
+                ('MI', 'MI'), 
                 ('Last Name', 'Last'),
                 ('Nickname', 'Nickname')
             ],
@@ -1408,14 +1406,10 @@ class PDFFormFieldExtractor:
                         hint = 'Responsible Party'
                     
                     control['hint'] = hint
-                    # Check if this should be an initials field instead
-                    if input_type == 'initials':
-                        field_type = 'initials'
-                        control = {}
-                    else:
-                        control['input_type'] = input_type
-                        if input_type == 'phone':
-                            control['phone_prefix'] = '+1'
+                    # Set the input type (including initials)
+                    control['input_type'] = input_type
+                    if input_type == 'phone':
+                        control['phone_prefix'] = '+1'
                         
                         # Add hints for specific contexts
                         hint = None
@@ -1452,6 +1446,10 @@ class PDFFormFieldExtractor:
                 
                 # Create unique key with numbering for duplicates with better context awareness
                 base_key = ModentoSchemaValidator.slugify(field_name)
+                
+                # Special case for Middle Initial to use "mi" key 
+                if field_name.lower() == "middle initial":
+                    base_key = "mi"
                 
                 # Context-aware field numbering
                 context_lines_text = ' '.join(text_lines[max(0, i-5):i+5]).lower()
