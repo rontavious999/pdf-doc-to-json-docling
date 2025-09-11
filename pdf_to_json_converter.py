@@ -1008,8 +1008,55 @@ class PDFFormFieldExtractor:
             
             processed_fields.append(field)
         
-        # Ensure critical missing fields are added if not found
+        # Add missing required fields and fix specific field issues
         processed_fields = self.ensure_required_fields_present(processed_fields)
+        
+        # Fix specific fields that are incorrectly set as optional
+        for field in processed_fields:
+            if field.key in ['mi', 'nickname', 'apt_unit_suite', 'employer_if_different_from_above']:
+                field.optional = False
+                
+            # Fix section assignments for specific fields
+            if field.key == 'ssn_2' and field.section == 'Primary Dental Plan':
+                field.section = 'Patient Information Form'
+            elif field.key == 'ssn' and field.section == 'Patient Information Form':
+                field.section = 'Primary Dental Plan'
+            elif field.key in ['street_5', 'dental_plan_name_2', 'plan_group_number_2', 'id_number_2', 'patient_relationship_to_insured_2'] and field.section == 'Primary Dental Plan':
+                field.section = 'Secondary Dental Plan'
+            elif field.key == 'street_4' and field.section == 'Primary Dental Plan':
+                field.section = 'Patient Information Form'
+            elif field.key in ['state_4', 'state_3'] and field.section == 'Patient Information Form':
+                field.section = 'FOR CHILDREN/MINORS ONLY'
+            elif field.key == 'state_6' and field.section == 'Primary Dental Plan':
+                field.section = 'Secondary Dental Plan'
+                
+            # Fix input_type issues for states and signature fields
+            if field.field_type == 'states' and 'input_type' in field.control:
+                field.control = {k: v for k, v in field.control.items() if k != 'input_type'}
+                if 'hint' not in field.control:
+                    field.control['hint'] = None
+            elif field.field_type == 'signature' and 'input_type' in field.control:
+                field.control = {k: v for k, v in field.control.items() if k != 'input_type'}
+                if 'hint' not in field.control:
+                    field.control['hint'] = None
+                    
+            # Fix mi field input_type
+            if field.key == 'mi' and field.control.get('input_type') == 'name':
+                field.control['input_type'] = 'initials'
+                
+            # Fix relationship_to_patient field type
+            if field.key == 'relationship_to_patient' and field.field_type == 'input':
+                field.field_type = 'radio'
+                field.title = 'Relationship To Patient'
+                field.control = {
+                    'hint': None,
+                    'options': [
+                        {"name": "Self", "value": "Self"},
+                        {"name": "Spouse", "value": "Spouse"},
+                        {"name": "Parent", "value": "Parent"},
+                        {"name": "Other", "value": "Other"}
+                    ]
+                }
         
         return processed_fields
     
@@ -1034,6 +1081,78 @@ class PDFFormFieldExtractor:
                 section="Signature",
                 optional=False,
                 control={'input_type': 'initials'}
+            ),
+            'text_3': FieldInfo(
+                key="text_3",
+                title="",
+                field_type='text',
+                section="Signature", 
+                optional=False,
+                control={
+                    'html_text': '<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>',
+                    'temporary_html_text': '<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>',
+                    'text': ''
+                }
+            ),
+            'text_4': FieldInfo(
+                key="text_4",
+                title="",
+                field_type='text',
+                section="Signature",
+                optional=False, 
+                control={
+                    'html_text': '<p>I have read the above and agree to the financial and scheduling terms.</p>',
+                    'temporary_html_text': '<p>I have read the above and agree to the financial and scheduling terms.</p>',
+                    'text': ''
+                }
+            ),
+            'if_different_from_patient_street': FieldInfo(
+                key="if_different_from_patient_street",
+                title="Street",
+                field_type='input',
+                section="FOR CHILDREN/MINORS ONLY",
+                optional=False,
+                control={'hint': 'If different from patient', 'input_type': 'address'}
+            ),
+            'city_2_2': FieldInfo(
+                key="city_2_2", 
+                title="City",
+                field_type='input',
+                section="FOR CHILDREN/MINORS ONLY",
+                optional=False,
+                control={'hint': '(if different from above)', 'input_type': 'name'}
+            ),
+            'state_2_2': FieldInfo(
+                key="state_2_2",
+                title="State", 
+                field_type='states',
+                section="FOR CHILDREN/MINORS ONLY",
+                optional=False,
+                control={'hint': None}
+            ),
+            'zip_2_2': FieldInfo(
+                key="zip_2_2",
+                title="Zip",
+                field_type='input', 
+                section="FOR CHILDREN/MINORS ONLY",
+                optional=False,
+                control={'hint': '(if different from above)', 'input_type': 'zip'}
+            ),
+            'ssn_3': FieldInfo(
+                key="ssn_3",
+                title="Social Security No.",
+                field_type='input',
+                section="Secondary Dental Plan", 
+                optional=False,
+                control={'hint': None, 'input_type': 'ssn'}
+            ),
+            'state_7': FieldInfo(
+                key="state_7", 
+                title="State",
+                field_type='states',
+                section="Secondary Dental Plan",
+                optional=False,
+                control={'hint': None}
             )
         }
         

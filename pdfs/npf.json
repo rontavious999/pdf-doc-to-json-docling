@@ -509,7 +509,7 @@
   {
     "key": "state_4",
     "title": "State",
-    "section": "Patient Information Form",
+    "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
     "type": "states",
     "control": {}
@@ -561,7 +561,7 @@
   {
     "key": "street_5",
     "title": "Street",
-    "section": "Primary Dental Plan",
+    "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
@@ -729,7 +729,7 @@
   {
     "key": "dental_plan_name_2",
     "title": "Dental Plan Name",
-    "section": "Primary Dental Plan",
+    "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
@@ -739,7 +739,7 @@
   {
     "key": "plan_group_number_2",
     "title": "Plan/Group Number",
-    "section": "Primary Dental Plan",
+    "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
@@ -749,7 +749,7 @@
   {
     "key": "id_number_2",
     "title": "ID Number",
-    "section": "Primary Dental Plan",
+    "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
@@ -759,7 +759,7 @@
   {
     "key": "patient_relationship_to_insured_2",
     "title": "Patient Relationship to Insured",
-    "section": "Primary Dental Plan",
+    "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
@@ -817,6 +817,95 @@
     "control": {
       "input_type": "initials"
     }
+  },
+  {
+    "key": "text_3",
+    "title": "",
+    "section": "Signature",
+    "optional": false,
+    "type": "text",
+    "control": {
+      "html_text": "<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>",
+      "temporary_html_text": "<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>",
+      "text": ""
+    }
+  },
+  {
+    "key": "text_4",
+    "title": "",
+    "section": "Signature",
+    "optional": false,
+    "type": "text",
+    "control": {
+      "html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
+      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
+      "text": ""
+    }
+  },
+  {
+    "key": "if_different_from_patient_street",
+    "title": "Street",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "If different from patient"
+      }
+    }
+  },
+  {
+    "key": "city_2_2",
+    "title": "City",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "(if different from above)"
+      }
+    }
+  },
+  {
+    "key": "state_2_2",
+    "title": "State",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "states",
+    "control": {}
+  },
+  {
+    "key": "zip_2_2",
+    "title": "Zip",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "extra": {
+        "hint": "(if different from above)"
+      }
+    }
+  },
+  {
+    "key": "ssn_3",
+    "title": "Social Security No.",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "ssn"
+    }
+  },
+  {
+    "key": "state_7",
+    "title": "State",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "states",
+    "control": {}
   },
   {
     "key": "todays_date",
