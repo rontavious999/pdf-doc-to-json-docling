@@ -1533,6 +1533,7 @@ class PDFFormFieldExtractor:
                     title="Date Signed",
                     field_type='date',
                     section=current_section,
+                    optional=False,
                     control={'input_type': 'any', 'hint': None}
                 )
                 fields.append(field)
