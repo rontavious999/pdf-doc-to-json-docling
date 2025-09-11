@@ -1430,6 +1430,19 @@ class PDFFormFieldExtractor:
                     control = {'input_type': input_type}
                     if input_type == 'phone':
                         control['phone_prefix'] = '+1'
+                    
+                    # Add hints for specific contexts
+                    context_check = ' '.join(text_lines[max(0, i-3):i+3]).lower()
+                    hint = None
+                    if 'if different' in full_line.lower():
+                        hint = 'If different from patient' if 'patient' in full_line.lower() else '(if different from above)'
+                    elif 'insurance' in context_check and field_name.lower() in ['phone', 'street', 'city', 'zip']:
+                        hint = 'Insurance Company'
+                    elif 'emergency' in context_check:
+                        hint = 'Emergency Contact'
+                    
+                    if hint:
+                        control['hint'] = hint
                 
                 key = make_unique_key(ModentoSchemaValidator.slugify(field_name))
                 field = FieldInfo(
@@ -1513,6 +1526,9 @@ class PDFFormFieldExtractor:
                     section_name = "Signature"
                 elif 'emergency' in line_lower:
                     section_name = "Emergency Contact"
+                # Handle spaced out text like "N E W   P A T I E N T"
+                elif 'p a t i e n t' in line_lower or 'r e g i s t r a t i o n' in line_lower:
+                    section_name = "Patient Information Form"
                 
                 sections[i] = section_name
                 
