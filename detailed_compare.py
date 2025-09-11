@@ -8,7 +8,7 @@ def compare_detailed():
     with open('references/Matching JSON References/npf.json') as f:
         reference = json.load(f)
     
-    with open('improved2_npf_output.json') as f:
+    with open('improved7_npf_output.json') as f:
         current = json.load(f)
     
     print(f"Reference: {len(reference)} fields")

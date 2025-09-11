@@ -728,6 +728,12 @@ class PDFFormFieldExtractor:
                 ('Apt/Unit/Suite', 'Apt/Unit/Suite')
             ],
             # Context-aware city/state/zip patterns
+            r'Street\s*_{10,}.*?City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
+                ('Street', 'Street'),
+                ('City', 'City'),
+                ('State', 'State'),
+                ('Zip', 'Zip')
+            ],
             r'City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
                 ('City', 'City'),
                 ('State', 'State'),
@@ -1011,6 +1017,60 @@ class PDFFormFieldExtractor:
         matches = re.findall(pattern, line)
         return [match.strip() for match in matches if match.strip()]
     
+    def post_process_fields(self, fields: List[FieldInfo]) -> List[FieldInfo]:
+        """Post-process fields to fix specific extraction issues"""
+        processed_fields = []
+        
+        for field in fields:
+            # Handle authorization text field that should be split into radio + initials
+            if (field.field_type == 'text' and 
+                field.section == 'Signature' and 
+                'personal information necessary to process' in field.control.get('html_text', '')):
+                
+                # Extract the question text (before YES N O)
+                html_text = field.control.get('html_text', '')
+                if 'YES' in html_text and 'N O' in html_text:
+                    # Split at YES N O
+                    question_part = html_text.split('YES')[0].strip()
+                    # Clean up HTML tags for title
+                    question_title = re.sub(r'<[^>]+>', '', question_part).strip()
+                    
+                    # Create radio field
+                    radio_field = FieldInfo(
+                        key="i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_",
+                        title=question_title,
+                        field_type='radio',
+                        section=field.section,
+                        optional=False,
+                        control={
+                            'options': [
+                                {"name": "Yes", "value": True},
+                                {"name": "No", "value": False}
+                            ],
+                            'hint': None,
+                            'text': "",
+                            'html_text': question_part,
+                            'temporary_html_text': question_part
+                        }
+                    )
+                    processed_fields.append(radio_field)
+                    
+                    # Create initials field
+                    initials_field = FieldInfo(
+                        key="initials_3",
+                        title="Initial",
+                        field_type='input',
+                        section=field.section,
+                        optional=False,
+                        control={'input_type': 'initials'}
+                    )
+                    processed_fields.append(initials_field)
+                    continue  # Skip the original text field
+            
+            processed_fields.append(field)
+        
+        return processed_fields
+
     def extract_fields_from_text(self, text_lines: List[str]) -> List[FieldInfo]:
         """Extract form fields from text lines with improved section tracking"""
         fields = []
@@ -1634,6 +1694,9 @@ class PDFFormFieldExtractor:
                 fields.append(field)
             
             i += 1
+        
+        # Post-process fields to fix specific extraction issues
+        fields = self.post_process_fields(fields)
         
         return fields
 
