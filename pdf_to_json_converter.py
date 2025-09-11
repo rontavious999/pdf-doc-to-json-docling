@@ -1238,28 +1238,8 @@ class PDFFormFieldExtractor:
             
             processed_fields.append(field)
         
-        # Add missing required fields and fix specific field issues
-        processed_fields = self.ensure_required_fields_present(processed_fields)
-        
-        # Fix specific fields that are incorrectly set as optional
+        # Basic field validation and cleanup only (no hardcoded additions)
         for field in processed_fields:
-            if field.key in ['mi', 'nickname', 'apt_unit_suite', 'employer_if_different_from_above']:
-                field.optional = False
-                
-            # Fix section assignments for specific fields
-            if field.key == 'ssn_2' and field.section == 'Primary Dental Plan':
-                field.section = 'Patient Information Form'
-            elif field.key == 'ssn' and field.section == 'Patient Information Form':
-                field.section = 'Primary Dental Plan'
-            elif field.key in ['street_5', 'dental_plan_name_2', 'plan_group_number_2', 'id_number_2', 'patient_relationship_to_insured_2'] and field.section == 'Primary Dental Plan':
-                field.section = 'Secondary Dental Plan'
-            elif field.key == 'street_4' and field.section == 'Primary Dental Plan':
-                field.section = 'Patient Information Form'
-            elif field.key in ['state_4', 'state_3'] and field.section == 'Patient Information Form':
-                field.section = 'FOR CHILDREN/MINORS ONLY'
-            elif field.key == 'state_6' and field.section == 'Primary Dental Plan':
-                field.section = 'Secondary Dental Plan'
-                
             # Fix input_type issues for states and signature fields
             if field.field_type == 'states' and 'input_type' in field.control:
                 field.control = {k: v for k, v in field.control.items() if k != 'input_type'}
@@ -1273,20 +1253,6 @@ class PDFFormFieldExtractor:
             # Fix mi field input_type
             if field.key == 'mi' and field.control.get('input_type') == 'name':
                 field.control['input_type'] = 'initials'
-                
-            # Fix relationship_to_patient field type
-            if field.key == 'relationship_to_patient' and field.field_type == 'input':
-                field.field_type = 'radio'
-                field.title = 'Relationship To Patient'
-                field.control = {
-                    'hint': None,
-                    'options': [
-                        {"name": "Self", "value": "Self"},
-                        {"name": "Spouse", "value": "Spouse"},
-                        {"name": "Parent", "value": "Parent"},
-                        {"name": "Other", "value": "Other"}
-                    ]
-                }
         
         return processed_fields
     
@@ -1394,17 +1360,267 @@ class PDFFormFieldExtractor:
         return fields
 
     def extract_fields_from_text(self, text_lines: List[str]) -> List[FieldInfo]:
-        """Extract form fields from text lines with improved section tracking"""
+        """Extract form fields from text lines using universal extraction logic"""
         
-        # Detect form type first
-        form_type = self.detect_form_type(text_lines)
-        print(f"Detected form type: {form_type}")
+        # Use universal extraction that works across all form types
+        return self.extract_fields_universal(text_lines)
+    
+    def extract_fields_universal(self, text_lines: List[str]) -> List[FieldInfo]:
+        """Universal field extraction that works across different form types"""
+        fields = []
+        seen_keys = set()
         
-        # Use appropriate extraction strategy based on form type
-        if form_type == "consent":
-            return self.extract_consent_form_fields(text_lines)
-        else:
-            return self.extract_patient_info_form_fields(text_lines)
+        def make_unique_key(base_key: str) -> str:
+            """Ensure key is unique"""
+            if base_key not in seen_keys:
+                seen_keys.add(base_key)
+                return base_key
+            
+            counter = 2
+            while f"{base_key}_{counter}" in seen_keys:
+                counter += 1
+            
+            unique_key = f"{base_key}_{counter}"
+            seen_keys.add(unique_key)
+            return unique_key
+        
+        # First, detect all section headers
+        sections = self.detect_section_headers_universal(text_lines)
+        
+        i = 0
+        while i < len(text_lines):
+            line = text_lines[i]
+            current_section = self.get_current_section_universal(i, sections)
+            
+            # Skip empty lines and section headers
+            if not line.strip() or i in sections:
+                i += 1
+                continue
+            
+            # Try to detect radio button questions first
+            question, options, next_i = self.detect_radio_options_universal(text_lines, i)
+            if question and options:
+                key = make_unique_key(ModentoSchemaValidator.slugify(question))
+                field = FieldInfo(
+                    key=key,
+                    title=question,
+                    field_type='radio',
+                    section=current_section,
+                    optional=False,
+                    control={'options': options},
+                    line_idx=i
+                )
+                fields.append(field)
+                i = next_i
+                continue
+            
+            # Try to detect input fields
+            input_fields = self.detect_input_field_universal(line)
+            for field_name, full_line in input_fields:
+                # Determine field type
+                if 'state' in field_name.lower() and 'estate' not in field_name.lower():
+                    field_type = 'states'
+                    control = {}
+                elif 'date' in field_name.lower():
+                    field_type = 'date'
+                    control = {'input_type': 'any'}
+                else:
+                    field_type = 'input'
+                    input_type = self.detect_input_type(field_name)
+                    control = {'input_type': input_type}
+                    if input_type == 'phone':
+                        control['phone_prefix'] = '+1'
+                
+                key = make_unique_key(ModentoSchemaValidator.slugify(field_name))
+                field = FieldInfo(
+                    key=key,
+                    title=field_name,
+                    field_type=field_type,
+                    section=current_section,
+                    optional=False,
+                    control=control,
+                    line_idx=i
+                )
+                fields.append(field)
+            
+            # Handle signature lines
+            if re.search(r'signature.*date', line, re.IGNORECASE):
+                # Add signature field
+                if 'signature' not in seen_keys:
+                    fields.append(FieldInfo(
+                        key='signature',
+                        title='Signature',
+                        field_type='signature',
+                        section=current_section,
+                        optional=False,
+                        control={},
+                        line_idx=i
+                    ))
+                    seen_keys.add('signature')
+                
+                # Add date field
+                date_key = make_unique_key('date_signed')
+                fields.append(FieldInfo(
+                    key=date_key,
+                    title='Date Signed',
+                    field_type='date',
+                    section=current_section,
+                    optional=False,
+                    control={'input_type': 'any'},
+                    line_idx=i
+                ))
+            
+            i += 1
+        
+        return fields
+    
+    def detect_section_headers_universal(self, text_lines: List[str]) -> Dict[int, str]:
+        """Detect section headers in the text"""
+        sections = {}
+        
+        for i, line in enumerate(text_lines):
+            line_stripped = line.strip()
+            line_lower = line_stripped.lower()
+            
+            # Detect section headers
+            if (line.startswith('##') or
+                (len(line_stripped) < 80 and any(keyword in line_lower for keyword in [
+                    'patient information', 'medical history', 'dental history', 
+                    'insurance', 'emergency contact', 'signature', 'consent',
+                    'for children', 'minors only', 'primary dental plan', 
+                    'secondary dental plan', 'benefit plan', 'registration'
+                ]))):
+                
+                # Clean up the section name
+                section_name = line_stripped.replace('##', '').strip()
+                if not section_name:
+                    continue
+                    
+                # Standardize common section names
+                if 'patient information' in line_lower or 'registration' in line_lower:
+                    section_name = "Patient Information Form"
+                elif 'medical history' in line_lower:
+                    section_name = "Medical History"
+                elif 'dental history' in line_lower:
+                    section_name = "Dental History"
+                elif 'children' in line_lower or 'minors' in line_lower:
+                    section_name = "FOR CHILDREN/MINORS ONLY"
+                elif 'primary dental' in line_lower or 'primary insurance' in line_lower:
+                    section_name = "Primary Dental Plan"
+                elif 'secondary dental' in line_lower or 'secondary insurance' in line_lower:
+                    section_name = "Secondary Dental Plan"
+                elif 'signature' in line_lower or 'consent' in line_lower:
+                    section_name = "Signature"
+                elif 'emergency' in line_lower:
+                    section_name = "Emergency Contact"
+                
+                sections[i] = section_name
+                
+        return sections
+    
+    def get_current_section_universal(self, line_idx: int, sections: Dict[int, str], default: str = "Patient Information Form") -> str:
+        """Get the current section for a given line index"""
+        current_section = default
+        for section_line, section_name in sections.items():
+            if section_line <= line_idx:
+                current_section = section_name
+            else:
+                break
+        return current_section
+    
+    def detect_radio_options_universal(self, text_lines: List[str], start_idx: int) -> Tuple[Optional[str], List[Dict[str, Any]], int]:
+        """Detect radio button questions and their options"""
+        
+        # Look for checkbox symbols or radio patterns
+        line = text_lines[start_idx]
+        
+        # Pattern 1: Question with checkboxes on same line
+        checkbox_pattern = r'([^□☐!]+?)(?:□|☐|!)([^□☐!]+?)(?:□|☐|!)([^□☐!]*)'
+        match = re.search(checkbox_pattern, line)
+        if match:
+            question = match.group(1).strip().rstrip(':')
+            if len(question) < 5:  # Too short to be a real question
+                return None, [], start_idx
+                
+            # Extract options from the line
+            options = []
+            option_parts = re.split(r'[□☐!]', line)[1:]  # Skip the question part
+            for part in option_parts:
+                option_text = part.strip()
+                if option_text and len(option_text) > 0:
+                    # Clean up option text
+                    option_text = option_text.strip('(),. ')
+                    if option_text and option_text not in ['', ' ']:
+                        value = option_text.lower()
+                        if value in ['yes', 'true']:
+                            value = True
+                        elif value in ['no', 'false']:
+                            value = False
+                        options.append({"name": option_text, "value": value})
+            
+            if len(options) >= 2:
+                return question, options, start_idx + 1
+        
+        # Pattern 2: Question followed by options on subsequent lines
+        if ':' in line and not line.strip().startswith('##'):
+            question = line.split(':')[0].strip()
+            if len(question) < 5:
+                return None, [], start_idx
+                
+            options = []
+            next_idx = start_idx + 1
+            
+            # Look ahead for option lines
+            while next_idx < len(text_lines) and next_idx < start_idx + 5:  # Limit lookahead
+                next_line = text_lines[next_idx]
+                if any(symbol in next_line for symbol in ['□', '☐', '!']):
+                    # Extract option text
+                    option_match = re.search(r'[□☐!]\s*([^□☐!]+)', next_line)
+                    if option_match:
+                        option_text = option_match.group(1).strip()
+                        if option_text:
+                            value = option_text.lower()
+                            if value in ['yes', 'true']:
+                                value = True
+                            elif value in ['no', 'false']:
+                                value = False
+                            options.append({"name": option_text, "value": value})
+                    next_idx += 1
+                else:
+                    break
+            
+            if len(options) >= 2:
+                return question, options, next_idx
+        
+        return None, [], start_idx
+    
+    def detect_input_field_universal(self, line: str) -> List[Tuple[str, str]]:
+        """Detect input fields in a line"""
+        fields = []
+        
+        # Pattern 1: "Label:" pattern
+        if ':' in line and not line.strip().startswith('##'):
+            label = line.split(':')[0].strip()
+            if len(label) > 0 and len(label) < 50:  # Reasonable label length
+                fields.append((label, line))
+        
+        # Pattern 2: "Label ___" pattern (underscores indicating input fields)
+        underscore_pattern = r'([A-Za-z\s]+?)(?:_{3,})'
+        matches = re.finditer(underscore_pattern, line)
+        for match in matches:
+            label = match.group(1).strip()
+            if len(label) > 1 and len(label) < 50:
+                fields.append((label, line))
+        
+        # Pattern 3: Inline labels like "First____ MI___ Last____"
+        inline_pattern = r'([A-Za-z]+)_{3,}'
+        matches = re.finditer(inline_pattern, line)
+        for match in matches:
+            label = match.group(1).strip()
+            if len(label) > 1:
+                fields.append((label, line))
+        
+        return fields
     
     def extract_patient_info_form_fields(self, text_lines: List[str]) -> List[FieldInfo]:
         """Extract fields from patient information forms - comprehensive approach"""
