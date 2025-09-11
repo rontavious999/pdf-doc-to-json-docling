@@ -25,7 +25,7 @@
         "title": "Middle Initial",
         "control": {
             "hint": null,
-            "input_type": "initials"
+            "input_type": "name"
         },
         "section": "Patient Information Form"
     },

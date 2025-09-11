@@ -1,0 +1,30 @@
+2025-09-11 05:20:22,502 - INFO - detected formats: [<InputFormat.PDF: 'pdf'>]
+2025-09-11 05:20:22,512 - INFO - Going to convert document batch...
+2025-09-11 05:20:22,512 - INFO - Initializing pipeline for StandardPdfPipeline with options hash 409740a308d273b3f090712d250cd783
+2025-09-11 05:20:22,522 - INFO - Loading plugin 'docling_defaults'
+2025-09-11 05:20:22,523 - INFO - Registered ocr engines: ['easyocr', 'ocrmac', 'rapidocr', 'tesserocr', 'tesseract']
+2025-09-11 05:20:22,576 - INFO - Accelerator device: 'cpu'
+2025-09-11 05:20:24,123 - INFO - Accelerator device: 'cpu'
+2025-09-11 05:20:25,147 - INFO - Accelerator device: 'cpu'
+2025-09-11 05:20:25,448 - INFO - Loading plugin 'docling_defaults'
+2025-09-11 05:20:25,449 - INFO - Registered picture descriptions: ['vlm', 'api']
+2025-09-11 05:20:25,449 - INFO - Processing document npf.pdf
+/home/runner/.local/lib/python3.12/site-packages/torch/utils/data/dataloader.py:666: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
+  warnings.warn(warn_msg)
+2025-09-11 05:20:34,494 - INFO - Finished converting document npf.pdf in 11.99 sec.
+2025-09-11 05:20:34,518 - WARNING - Parameter `strict_text` has been deprecated and will be ignored.
+[+] Processing npf.pdf ...
+Section detected: Patient Information Form from line: ## Patient Information Form
+Section detected: FOR CHILDREN/MINORS ONLY from line: ## FOR CHILDREN/MINORS ONLY:
+Section detected: Primary Dental Plan from line: ## Dental Benefit Plan Information Primary Dental Plan
+Section detected: Secondary Dental Plan from line: ## Secondary Dental Plan
+Section detected: Primary Dental Plan from line: -  Dental Benefit Plans: Your dental insurance benefit is a contract between you or your employer and the dental benefit plan. Benefits and payments received are based on the terms of the contract negotiated between you or your employer and the plan. We are happy to help our patients with dental benefit plans to understand and maximize their coverage.
+Section detected: Primary Dental Plan from line: Our practice  IS  IS N OT (check one) a contracted provider with your dental benefit plan.
+Section detected: Primary Dental Plan from line: If we are a contracted provider with your plan , you are responsible only for your portion of the approved fee as determined by your plan. We are required to collect the patient's portion (deductible, co -insurance, co-pay, or any amount not covered by the dental benefit plan) in full at time of service. If our estimate of your portion is less than the amount determined by your plan, the amount billed to you will be adjusted to reflect this.
+Section detected: Primary Dental Plan from line: If we are not a contracted provider with your dental benefit plan , it is the patient's responsibility to verify with the plan whether the plan allows patients to receive reimbursement for services from out-of-network providers. If your plan allows reimbursement for services from out-of-network providers, our practice can file the claim with your plan and receive reimbursement directly from the plan if you 'assign benefits' to us. In this circumstance, you are responsible and will be billed for any unpaid balance for services rendered upon receipt of payment from the plan to our practice, even if that amount is different than our estimated patient portion of the bill. If you choose to not 'assign benefits' to our practice, you are responsible for filing claims and obtaining reimbursement directly from your dental benefit plan and will be responsible for payment in full to our practice before or at the time of service.
+Section detected: Signature from line: -  Authorizations: I understand that the information I have provided is correct to the best of my knowledge. I authorize this dental team to perform any necessary dental services that I may need and have consented to during diagnosis and treatment.________ (initial)
+Section detected: Signature from line: Signature_____________________________________________  Date_________________
+[✓] Wrote JSON: /npf_debug2_output.json
+[i] Sections: 5 | Fields: 82
+[i] Pipeline/Model/Backend used: StandardPdfPipeline/DoclingParseDocumentBackend
+[x] OCR (EasyOCR): used

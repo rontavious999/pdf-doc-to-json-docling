@@ -1088,6 +1088,54 @@ class PDFFormFieldExtractor:
                 i += 1
                 continue
             
+            # Handle work address context - check if current line is "Work Address:" and next line has fields
+            if re.match(r'^Work Address:\s*$', line, re.IGNORECASE) and i + 1 < len(text_lines):
+                next_line = text_lines[i + 1].strip()
+                # Check if next line has the expected field pattern
+                if re.search(r'Street.*City.*State.*Zip', next_line, re.IGNORECASE):
+                    # Extract work address fields from next line
+                    work_address_fields = [
+                        ('Street', 'Street'),
+                        ('City', 'City'), 
+                        ('State', 'State'),
+                        ('Zip', 'Zip')
+                    ]
+                    
+                    for field_name, _ in work_address_fields:
+                        # Create numbered field since these are work address fields
+                        base_key = ModentoSchemaValidator.slugify(field_name)
+                        if base_key not in field_counters:
+                            field_counters[base_key] = 1
+                        field_counters[base_key] += 1
+                        key = f"{base_key}_{field_counters[base_key]}"
+                        
+                        # Set appropriate field type and control
+                        if field_name.lower() == 'state':
+                            field_type = 'states'
+                            control = {'hint': None, 'input_type': 'name'}
+                        elif field_name.lower() == 'zip':
+                            field_type = 'input'
+                            control = {'hint': None, 'input_type': 'zip'}
+                        else:
+                            field_type = 'input'
+                            control = {'hint': None, 'input_type': 'name'}
+                        
+                        field = FieldInfo(
+                            key=key,
+                            title=field_name,
+                            field_type=field_type,
+                            section=current_section,
+                            optional=False,  # Work address fields should not be optional
+                            control=control,
+                            line_idx=i+1
+                        )
+                        fields.append(field)
+                    
+                    i += 2  # Skip both the "Work Address:" line and the fields line
+                    continue
+                else:
+                    print("Pattern doesn't match work address fields")
+
             # Detect section headers - improved pattern matching
             line_upper = line.upper()
             if line.startswith('##') or any(header in line_upper for header in [
@@ -1346,11 +1394,11 @@ class PDFFormFieldExtractor:
                     
                     field = FieldInfo(
                         key=initials_key,
-                        title="Initials",
-                        field_type='initials',
+                        title="Initial",
+                        field_type='input',
                         section=current_section,
                         optional=False,
-                        control={},
+                        control={'input_type': 'initials'},
                         line_idx=i
                     )
                     fields.append(field)
@@ -1455,11 +1503,11 @@ class PDFFormFieldExtractor:
                     initials_key = f"initials_{len([f for f in fields if f.key.startswith('initials')]) + 1}"
                     field = FieldInfo(
                         key=initials_key,
-                        title="Initials",
-                        field_type='initials',
+                        title="Initial",
+                        field_type='input',
                         section=current_section,
                         optional=False,
-                        control={},
+                        control={'input_type': 'initials'},
                         line_idx=i
                     )
                     fields.append(field)
@@ -1485,6 +1533,7 @@ class PDFFormFieldExtractor:
                     title="Date Signed",
                     field_type='date',
                     section=current_section,
+                    optional=False,
                     control={'input_type': 'any', 'hint': None}
                 )
                 fields.append(field)
@@ -1630,6 +1679,27 @@ class PDFFormFieldExtractor:
                 if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                     field_type = 'states'
                     control = {'hint': control.get('hint'), 'input_type': 'name'}
+                
+                # Special handling for "Relationship To Patient" that should be radio in minors section
+                if (field_name.lower() == 'relationship to patient' and 
+                    detected_section == "FOR CHILDREN/MINORS ONLY"):
+                    # Check if the next few lines contain radio options like Self, Spouse, etc.
+                    lookahead_lines = text_lines[i:i+5]
+                    has_radio_options = any('self' in line.lower() or 'spouse' in line.lower() or 'parent' in line.lower() 
+                                          for line in lookahead_lines)
+                    if has_radio_options:
+                        field_type = 'radio'
+                        control = {
+                            'hint': None,
+                            'options': [
+                                {"name": "Self", "value": "Self"},
+                                {"name": "Spouse", "value": "Spouse"},
+                                {"name": "Parent", "value": "Parent"},
+                                {"name": "Other", "value": "Other"}
+                            ]
+                        }
+                        # Also fix the title to match reference exactly
+                        field_name = "Relationship To Patient"
                 
                 # Create unique key with numbering for duplicates with better context awareness
                 base_key = ModentoSchemaValidator.slugify(field_name)
