@@ -402,6 +402,10 @@ class PDFFormFieldExtractor:
         text_lower = text.lower()
         context_lower = ' '.join(context_lines[:10]).lower()
         
+        # Priority check: Work address should always stay in Patient Information Form
+        if 'work address' in context_lower and text_lower in ['street', 'city', 'state', 'zip']:
+            return "Patient Information Form"
+        
         # If the current context mentions a specific section override, use it
         section_indicators = {
             "FOR CHILDREN/MINORS ONLY": ["for children/minors only", "minor", "children", "responsible party"],
@@ -1347,7 +1351,8 @@ class PDFFormFieldExtractor:
                 field_type = self.detect_field_type(field_name)
                 
                 # Better section detection using field content and current section context
-                detected_section = self.detect_section(field_name, text_lines[max(0, i-10):i+10], current_section)
+                # Use smaller context window to avoid interference from distant sections
+                detected_section = self.detect_section(field_name, text_lines[max(0, i-3):i+7], current_section)
                 
                 # Create control based on type
                 control = {}
