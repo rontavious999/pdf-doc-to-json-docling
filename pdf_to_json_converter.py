@@ -934,6 +934,76 @@ class PDFFormFieldExtractor:
         ]
         return any(re.match(pattern, line) for pattern in patterns)
 
+    def format_text_as_html(self, text: str) -> str:
+        """Format text with proper HTML paragraph structure"""
+        # Split into sentences and group into logical paragraphs
+        sentences = text.split('.')
+        paragraphs = []
+        current_paragraph = []
+        
+        for sentence in sentences:
+            sentence = sentence.strip()
+            if not sentence:
+                continue
+                
+            # Add period back unless it's the last sentence
+            if not sentence.endswith((':', '!', '?')):
+                sentence += '.'
+                
+            current_paragraph.append(sentence)
+            
+            # Start new paragraph at section headers or after certain patterns
+            if (any(header in sentence for header in [
+                'Patient Responsibilities:', 'Payment:', 'Dental Benefit Plans:', 
+                'Scheduling of Appointments:', 'Authorizations:'
+            ]) or len(' '.join(current_paragraph)) > 400):
+                if current_paragraph:
+                    paragraphs.append(' '.join(current_paragraph))
+                    current_paragraph = []
+        
+        # Add remaining sentences
+        if current_paragraph:
+            paragraphs.append(' '.join(current_paragraph))
+        
+        # Format as HTML with proper paragraph tags and emphasis
+        html_parts = []
+        for paragraph in paragraphs:
+            if not paragraph.strip():
+                continue
+                
+            # Add emphasis to section headers
+            formatted_paragraph = paragraph
+            for header in ['Patient Responsibilities:', 'Payment:', 'Dental Benefit Plans:', 
+                          'Scheduling of Appointments:', 'Authorizations:']:
+                if header in formatted_paragraph:
+                    formatted_paragraph = formatted_paragraph.replace(header, f'<strong>{header}</strong>')
+            
+            # Add emphasis to important notices
+            formatted_paragraph = re.sub(
+                r'(Payment is due at the time services are rendered|With less than 24 hour notice[^.]*\.)',
+                r'<strong>\1</strong>',
+                formatted_paragraph
+            )
+            
+            # Add emphasis to "IS" and "IS NOT" choices
+            formatted_paragraph = re.sub(
+                r'\b(IS)\s+(IS NOT)\s+\(check one\)',
+                r'<strong>\1 </strong><strong>\2 (check one) </strong>',
+                formatted_paragraph,
+                flags=re.IGNORECASE
+            )
+            
+            html_parts.append(f'<p>{formatted_paragraph}</p>')
+            
+            # Add line breaks between major sections
+            if any(header in paragraph for header in [
+                'Patient Responsibilities:', 'Dental Benefit Plans:', 
+                'Scheduling of Appointments:', 'Authorizations:'
+            ]):
+                html_parts.append('<p><br></p>')
+        
+        return ''.join(html_parts)
+
     def extract_checkbox_options(self, line: str) -> List[str]:
         """Extract checkbox options from a line"""
         # Pattern for checkbox options like "□ Option1 □ Option2"
@@ -994,6 +1064,47 @@ class PDFFormFieldExtractor:
                 'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any', 'hint': None}), 
                 'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
                 'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past', 'hint': None}),
+                'Marital Status': ('marital_status', 'Marital Status', 'radio', {
+                    'options': [
+                        {"name": "Married", "value": "Married"},
+                        {"name": "Single", "value": "Single"},
+                        {"name": "Divorced", "value": "Divorced"},
+                        {"name": "Separated", "value": "Separated"},
+                        {"name": "Widowed", "value": "Widowed"}
+                    ], 'hint': None
+                }),
+                'What Is Your Preferred Method Of Contact': ('what_is_your_preferred_method_of_contact', 'What Is Your Preferred Method Of Contact', 'radio', {
+                    'options': [
+                        {"name": "Mobile Phone", "value": "Mobile Phone"},
+                        {"name": "Home Phone", "value": "Home Phone"},
+                        {"name": "Work Phone", "value": "Work Phone"},
+                        {"name": "E-mail", "value": "E-mail"}
+                    ], 'hint': None
+                }),
+                'Is the Patient a Minor?': ('is_the_patient_a_minor', 'Is the Patient a Minor?', 'radio', {
+                    'options': [{"name": "Yes", "value": True}, {"name": "No", "value": False}], 'hint': None
+                }),
+                'Full-time Student': ('full_time_student', 'Full-time Student', 'radio', {
+                    'options': [{"name": "Yes", "value": True}, {"name": "No", "value": False}], 'hint': None
+                }),
+                'Relationship To Patient': ('relationship_to_patient_2', 'Relationship To Patient', 'radio', {
+                    'options': [
+                        {"name": "Self", "value": "Self"},
+                        {"name": "Spouse", "value": "Spouse"},
+                        {"name": "Parent", "value": "Parent"},
+                        {"name": "Other", "value": "Other"}
+                    ], 'hint': None
+                }),
+                'If Patient Is A Minor, Primary Residence': ('if_patient_is_a_minor_primary_residence', 'If Patient Is A Minor, Primary Residence', 'radio', {
+                    'options': [
+                        {"name": "Both Parents", "value": "Both Parents"},
+                        {"name": "Mom", "value": "Mom"},
+                        {"name": "Dad", "value": "Dad"},
+                        {"name": "Step Parent", "value": "Step Parent"},
+                        {"name": "Shared Custody", "value": "Shared Custody"},
+                        {"name": "Guardian", "value": "Guardian"}
+                    ], 'hint': None
+                }),
             }
             
             line_stripped = line.strip()
@@ -1039,9 +1150,14 @@ class PDFFormFieldExtractor:
                 continue
             
             # Handle large text blocks (like terms and conditions)
+            # But exclude consent questions with YES/NO patterns
+            normalized_line = re.sub(r'[\uf031\uf020\u2003\u2002\u2000-\u200b\ufeff]+', ' ', line)
+            has_yes_no_pattern = bool(re.search(r'YES\s+N\s*O?\s*\(Check One\)', normalized_line, re.IGNORECASE))
+            
             if (len(line) > 100 and 
                 any(keyword in line.lower() for keyword in ['responsibility', 'payment', 'benefit', 'authorize', 'consent']) and
-                current_section == "Signature"):
+                current_section == "Signature" and
+                not has_yes_no_pattern):  # Exclude consent questions
                 
                 # Collect multi-line text block
                 text_content = [line]
@@ -1063,46 +1179,61 @@ class PDFFormFieldExtractor:
                 # Create text field
                 full_text = ' '.join(text_content)
                 
-                # Split into multiple text blocks if very long
+                # Format the text as HTML with proper paragraph breaks
+                html_text = self.format_text_as_html(full_text)
+                
+                # Split into separate text blocks if very long
                 if len(full_text) > 1000:
-                    # Split by bullet points or major sections
-                    paragraphs = []
-                    current_paragraph = []
+                    # Split at major section breaks
+                    split_points = []
+                    for pattern in ['Dental Benefit Plans:', 'Scheduling of Appointments:', 'Authorizations:']:
+                        pos = full_text.find(pattern)
+                        if pos > 0:
+                            split_points.append(pos)
                     
-                    for sentence in full_text.split('.'):
-                        sentence = sentence.strip()
-                        if sentence:
-                            current_paragraph.append(sentence + '.')
-                            # Start new paragraph at bullet points or major topic changes
-                            if (len(' '.join(current_paragraph)) > 500 or
-                                any(indicator in sentence.lower() for indicator in [
-                                    'dental benefit plans:', 'scheduling of appointments:', 'authorizations:'
-                                ])):
-                                if current_paragraph:
-                                    paragraphs.append(' '.join(current_paragraph))
-                                    current_paragraph = []
-                    
-                    if current_paragraph:
-                        paragraphs.append(' '.join(current_paragraph))
-                    
-                    # Create separate text fields for each paragraph
-                    for idx, paragraph in enumerate(paragraphs):
-                        if paragraph.strip():
-                            text_key = f"text_{len([f for f in fields if f.field_type == 'text']) + 1}"
+                    if split_points:
+                        split_points.sort()
+                        split_points = [0] + split_points + [len(full_text)]
+                        
+                        for k in range(len(split_points) - 1):
+                            start = split_points[k]
+                            end = split_points[k + 1]
+                            section_text = full_text[start:end].strip()
                             
-                            field = FieldInfo(
-                                key=text_key,
-                                title="",
-                                field_type='text',
-                                section=current_section,
-                                optional=False,
-                                control={
-                                    'html_text': f"<p>{paragraph.strip()}</p>",
-                                    'temporary_html_text': f"<p>{paragraph.strip()}</p>",
-                                    'text': ""
-                                }
-                            )
-                            fields.append(field)
+                            if section_text:
+                                text_key = f"text_{len([f for f in fields if f.field_type == 'text']) + 1}"
+                                section_html = self.format_text_as_html(section_text)
+                                
+                                field = FieldInfo(
+                                    key=text_key,
+                                    title="",
+                                    field_type='text',
+                                    section=current_section,
+                                    optional=False,
+                                    control={
+                                        'html_text': section_html,
+                                        'temporary_html_text': section_html,
+                                        'text': ""
+                                    }
+                                )
+                                fields.append(field)
+                    else:
+                        # Fallback: create single text block
+                        text_key = f"text_{len([f for f in fields if f.field_type == 'text']) + 1}"
+                        
+                        field = FieldInfo(
+                            key=text_key,
+                            title="",
+                            field_type='text',
+                            section=current_section,
+                            optional=False,
+                            control={
+                                'html_text': html_text,
+                                'temporary_html_text': html_text,
+                                'text': ""
+                            }
+                        )
+                        fields.append(field)
                 else:
                     text_key = f"text_{len([f for f in fields if f.field_type == 'text']) + 1}"
                     
@@ -1113,27 +1244,13 @@ class PDFFormFieldExtractor:
                         section=current_section,
                         optional=False,
                         control={
-                            'html_text': f"<p>{full_text}</p>",
-                            'temporary_html_text': f"<p>{full_text}</p>",
+                            'html_text': html_text,
+                            'temporary_html_text': html_text,
                             'text': ""
                         }
                     )
                     fields.append(field)
                 
-                field = FieldInfo(
-                    key=key,
-                    title="",
-                    field_type='text',
-                    section=current_section,
-                    optional=False,
-                    control={
-                        'html_text': f"<p>{full_text}</p>",
-                        'temporary_html_text': f"<p>{full_text}</p>",
-                        'text': ""
-                    },
-                    line_idx=i
-                )
-                fields.append(field)
                 i = j
                 continue
             
@@ -1182,17 +1299,22 @@ class PDFFormFieldExtractor:
             
 
             # Handle consent questions with YES/NO checkboxes - improved pattern for both formats
+            # First normalize special Unicode spaces that may come from OCR
+            normalized_line = re.sub(r'[\uf031\uf020\u2003\u2002\u2000-\u200b\ufeff]+', ' ', line)
+            
             consent_patterns = [
                 r'(.+?)\s+YES\s+N\s*O?\s*\(Check One\)',  # Standard format with flexible N O spacing
                 r'(.+?)\.\s+YES\s+N\s*O\s*\(Check One\)',  # Format with period before YES
-                r'(.+?)\s+YES\s+N\s+O\s*\(Check One\)'  # Format with space between N and O
+                r'(.+?)\s+YES\s+N\s+O\s*\(Check One\)',  # Format with space between N and O
+                r'(.+?)\s*\.\s*YES\s+N\s+O\s*\(Check One\)',  # Format with period and spaces
+                r'(.+?)\s+YES\s+N\s+O\s+\(Check One\)'   # Format with extra spaces
             ]
             
             consent_found = False
             for pattern in consent_patterns:
-                if re.search(pattern, line, re.IGNORECASE):
+                if re.search(pattern, normalized_line, re.IGNORECASE):
                     # Extract the question part
-                    question_match = re.match(pattern, line, re.IGNORECASE)
+                    question_match = re.match(pattern, normalized_line, re.IGNORECASE)
                     if question_match:
                         question = question_match.group(1).strip()
                         # Truncate very long questions for the key
@@ -1382,6 +1504,11 @@ class PDFFormFieldExtractor:
                 # Better section detection using field content and current section context
                 detected_section = self.detect_section(field_name, text_lines[max(0, i-10):i+10], current_section)
                 
+                # Special handling for work address fields
+                context_lines_text = ' '.join(text_lines[max(0, i-3):i+3]).lower()
+                if 'work address:' in context_lines_text and field_name.lower() in ['street', 'city', 'state', 'zip']:
+                    detected_section = "Patient Information Form"  # Work address is part of patient info
+                
                 # Create control based on type
                 control = {}
                 if field_type == 'input':
@@ -1471,6 +1598,12 @@ class PDFFormFieldExtractor:
                 elif (detected_section == "FOR CHILDREN/MINORS ONLY" and 
                       field_name.lower() in ['street', 'city', 'state', 'zip'] and
                       'if different' in context_lines_text):
+                    should_number = True
+                
+                # Check for insurance company address fields in dental plans
+                elif (detected_section in ["Primary Dental Plan", "Secondary Dental Plan"] and
+                      field_name.lower() in ['street', 'city', 'state', 'zip'] and
+                      any(existing_field.key == base_key for existing_field in fields)):
                     should_number = True
                 
                 # Check for any duplicate in same section
