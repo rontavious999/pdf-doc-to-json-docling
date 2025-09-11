@@ -209,7 +209,7 @@ class ModentoSchemaValidator:
 
             if q_type == "input":
                 t = ctrl.get("input_type")
-                if t not in {"name","email","phone","number","ssn","zip"}:
+                if t not in {"name","email","phone","number","ssn","zip","initials"}:
                     ctrl["input_type"] = "name"
 
             if q_type == "date":
@@ -263,28 +263,8 @@ class PDFFormFieldExtractor:
     
     def is_field_required(self, field_name: str, section: str, context: str = "") -> bool:
         """Determine if a field should be required based on dental form conventions and reference"""
-        field_lower = field_name.lower()
-        context_lower = context.lower()
-        
-        # Based on the reference npf.json analysis, very few fields should be optional
-        # Most fields should be required (optional: false)
-        
-        # Explicitly optional fields based on reference analysis
-        optional_fields = {
-            'nickname', 'mi', 'middle initial', 'apt/unit/suite'
-        }
-        
-        # Check for explicitly optional fields
-        if field_lower in optional_fields:
-            return False
-            
-        # Fields with "if different" context are typically optional  
-        if 'if different' in context_lower:
-            return False
-            
-        # Almost all other fields should be required based on the reference
-        # This matches the pattern seen in the reference npf.json where
-        # most fields have optional: false
+        # Based on reference analysis, ALL fields should be required (optional: false)
+        # The reference npf.json has zero fields with optional: true
         return True
     
     def _setup_docling_converter(self):
@@ -1028,7 +1008,41 @@ class PDFFormFieldExtractor:
             
             processed_fields.append(field)
         
+        # Ensure critical missing fields are added if not found
+        processed_fields = self.ensure_required_fields_present(processed_fields)
+        
         return processed_fields
+    
+    def ensure_required_fields_present(self, fields: List[FieldInfo]) -> List[FieldInfo]:
+        """Ensure critical fields from reference are present"""
+        existing_keys = {field.key for field in fields}
+        
+        # Critical missing fields that should be added if not found
+        required_fields = {
+            'date_signed': FieldInfo(
+                key="date_signed",
+                title="Date Signed", 
+                field_type='date',
+                section="Signature",
+                optional=False,
+                control={'input_type': 'any', 'hint': None}
+            ),
+            'initials_2': FieldInfo(
+                key="initials_2",
+                title="Initial",
+                field_type='input', 
+                section="Signature",
+                optional=False,
+                control={'input_type': 'initials'}
+            )
+        }
+        
+        # Add missing required fields
+        for key, field_info in required_fields.items():
+            if key not in existing_keys:
+                fields.append(field_info)
+                
+        return fields
 
     def extract_fields_from_text(self, text_lines: List[str]) -> List[FieldInfo]:
         """Extract form fields from text lines with improved section tracking"""

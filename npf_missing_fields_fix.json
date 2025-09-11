@@ -16,7 +16,7 @@
     "optional": true,
     "type": "input",
     "control": {
-      "input_type": "initials"
+      "input_type": "name"
     }
   },
   {
@@ -795,7 +795,7 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "initials"
+      "input_type": "name"
     }
   },
   {
@@ -815,7 +815,7 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "initials"
+      "input_type": "name"
     }
   },
   {
@@ -1005,7 +1005,7 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "initials"
+      "input_type": "name"
     }
   },
   {
