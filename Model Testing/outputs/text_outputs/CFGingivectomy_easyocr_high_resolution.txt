@@ -1,0 +1,68 @@
+# Text Extraction Result
+PDF File: CFGingivectomy.pdf
+Model/Configuration: easyocr_high_resolution
+Extraction Time: 5.21 seconds
+Character Count: 4574
+Word Count: 729
+Line Count: 31
+
+==================================================
+EXTRACTED TEXT:
+==================================================
+
+## The Hub Dental Practice Consent Form for Gingivectomy
+
+This consent form should be ready in conjunction with the Oral Surgery and Local Anaesthetic Consent forms.
+
+Periodontal surgery may be seen as a secondary line of treatment of those pockets persisting after initial treatment. These are often the areas most severely affected by periodontal disease. Surgery has the advantage of allowing direct access inspection and cleaning of the affected root surfaces. Many long term periodontal studies have demonstrated the benefit and success of periodontal surgery.
+
+## Benefits of Gingivectomy
+
+-  More predictable results in reducing pocketing and inflammation
+-  Reduce possibility of future bone support loss, and therefore tooth loss
+-  Can help to allow for easier cleaning
+-  Able to investigate the areas with inflammation and pocketing, and remove diseased tissue
+
+## Aims of Gingivectomy
+
+Periodontal surgery primarily carried out to eliminate/ reduce pockets, and create healthy root surfaces. The plaque growing on the root surfaces is the causative factor for periodontal disease, and associated bone support loss. Clean root surfaces leads to healthy gum tissue.
+
+It is carried out to provide a more favourable long term outcome.
+
+## Gingivectomy
+
+A Gingivectomy is a procedure where excess gum tissue is removed. The benefit of selective gum removal is for aesthetic improvement or to gain access to a lesion on a tooth for restorative repair.
+
+## What are the risks?
+
+- $_{1.}$  There may be some soreness or sensitivity for a few days afterwards and it may appear red, with time this will improve.
+- $_{2.}$  The gum tissue may grow back, in the case of gaining access for restorative procedure; re-growth of the gum tissue is of little significance. However, if the re-growth is in an aesthetic area then a more invasive procedure called Crown Lengthening may be needed. This procedure involves the reduction in gum and bone tissue.
+- $_{3.}$  Unevenness of final result. In aesthetic areas our goal is to reveal more enamel and aim for symmetry. However as the gums heal this may not be perfect. One follow up re-contouring (another Gingivectomy) can be done to fine tune the symmetry. After that the gums will have settled into their final position and further Gingivectomy will not improve symmetry.
+
+## Alternative to Suggested Treatment
+
+I understand that alternatives to periodontal surgery include; no treatment with the expectation of possible advancement of my condition, which may result in permanent loss of teeth: Extraction of teeth involved with periodontal disease and Non-surgical scraping of tooth roots and lining of the gum (scaling and root planning) with or without medication, in an attempt to further reduce bacteria and tartar under the gum-line with the expectation that this may not fully eliminate deep bacteria and tartar and may not reduce gum pockets, which will require more frequent professional care and time commitment and may result in worsening of my condition and the premature loss of teeth.
+
+## Side Effects
+
+Following on from periodontal surgery there can be swelling, bruising and discomfort around the treated area. This usually settles within -5 days.
+
+There can be more dental hypersensitivity (this means that you can have pronounced sensation to hot and cold). This sensitivity is usually short-term, and can be relieved by desensitising tooth pastes.
+
+The teeth being operated on can appear longer; this can be aesthetically significant if surgery is being performed on teeth at the front of the mouth.
+
+Occasionally the teeth may become more mobile and suffer of aesthetic exposure of margins
+
+I have read this consent form in full and understand what it says. I was able to ask questions and raise concerns with the dentist about my condition, the procedure and its risks, and my treatment options, as well as the options to delay and/or decline treatment. My questions and concerns have been discussed and answered to my complete satisfaction.
+
+I realize that signing does not mean that I am under an obligation to have any treatment and that I may decide not to proceed with all or any part of the treatment. Similarly signing this means that I pay for the treatment that I actually have done. I hereby consent to the proposed dental treatment and acknowledge that it is being provided as a private patient.
+
+(CF Gingivectomy)
+
+Name of Patient : ___________________________________
+
+Date of Birth-: ________________
+
+Signature : _________________________________________
+
+Date : ______________________

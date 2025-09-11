@@ -1,0 +1,387 @@
+# Text Extraction Result
+PDF File: Chicago-Dental-Solutions_Form.pdf
+Model/Configuration: easyocr_full_page
+Extraction Time: 118.84 seconds
+Character Count: 3771
+Word Count: 534
+Line Count: 188
+
+==================================================
+EXTRACTED TEXT:
+==================================================
+
+## N E W
+
+First Name:
+
+Last Name:
+
+Address:_
+
+Apt#
+
+State=
+
+Cell Phonez
+
+Yes, send me Text Message alerts
+
+Ext#
+
+Gender:
+
+Male
+
+Female
+
+Marital Status:
+
+Married
+
+Single
+
+Other:
+
+E-mail Address=
+
+Yes, send me alerts via Email
+
+Emergency Contact:_
+
+Phone
+
+Previous Dentist and/or Dental Office:_
+
+## How did you hear about us?
+
+livelwwork in area
+
+Google
+
+Yelp
+
+Social Media
+
+was Referred by:_
+
+Other:
+
+Insurance Information
+
+No Dental Insurance
+
+Primary Insurance (Policy Holder)
+
+Name of Insurance Company:
+
+State:
+
+Policy Holder Name:_
+
+Birth Date#_
+
+Member IDI SS#:
+
+Group#:
+
+Name of Employer:
+
+Relationship to Insurance holder:[] Self
+
+JParent
+
+Child
+
+Spouse
+
+Other:
+
+Responsible Party (someone other than self is the Insurance Policy Holder)
+
+Name of Insurance Company:_
+
+State:
+
+Policy Holder Name:
+
+Birth Date:
+
+Member IDI SS#:
+
+Group#:
+
+Name of Employer:
+
+Relationship to Insurance holder:
+
+Self
+
+Parent
+
+Child
+
+Spouse
+
+Other:
+
+City:
+
+Zip:_
+
+## H | S T 0 R Y
+
+Although dental professionals primarily treat the area around the mouth, your mouth is part of your entire body_ Health problems that You may have, or medication that you may be taking, could have an important interrelationship with the dentistry You will receive. Thank You for answering the following questions
+
+Are you under a physician's care now?
+
+Yes
+
+No
+
+If yes, please explain:
+
+Have you ever been hospitalized/ had major surgery?
+
+Yes
+
+No
+
+If please explain: yes,
+
+Have you ever had a serious head/ neck injury?
+
+Yes
+
+No
+
+If yes, please explain:
+
+Are you taking any medications, pills or drugs?
+
+Yes
+
+No
+
+If yes, please explain:
+
+Do you take, or have you taken, Phen-Fen or Redux?
+
+Yes
+
+No
+
+Have you ever taken Fosamax; Boniva, Actonell other medications containing bisphosphonates?
+
+Yes
+
+No
+
+Are you on a special diet?
+
+JYes
+
+No
+
+Do you use tobacco?
+
+Yes
+
+No
+
+Do you use controlled substances?
+
+Yes
+
+No
+
+Women are you
+
+Pregnant
+
+Trying to get pregnant
+
+Nursing
+
+Taking oral contraceptives
+
+Are you allergic to any of the following?
+
+Aspirin
+
+Penicillin
+
+Codeine
+
+Acrylic
+
+Metal
+
+Latex
+
+Local Anesthesia
+
+Sulfa Drugs
+
+Other:
+
+## Do have, or have you had, any of the following? you
+
+AIDSHHIV Positive
+
+Chest Pains
+
+JFrequent Headaches
+
+Hypoglycemia
+
+Rheurnatism
+
+JAIzheimer's Disease
+
+Dold Sores/Fever Blisters
+
+JGenital Herpes
+
+Irregular Heartbeat
+
+Scarlet Fever
+
+Anaphylaxis
+
+Jongenital Heart Disorder
+
+JGlaucoma
+
+IKidney Problems
+
+Shingles
+
+Sickle Cell Disease
+
+Anemia
+
+Jconvulsions
+
+Hay Fever
+
+JLeukemia
+
+Sinus Trouble
+
+Jngina
+
+Jcortisone Medicine
+
+Heart Attack/Failure
+
+JLiver Disease
+
+Spina Bifida
+
+Arthritis/Gout
+
+Heart Murmur
+
+Blood Pressure
+
+Stomach/iIntestinal Disease
+
+Artificial Heart Valve
+
+JDrug Addiction
+
+JHeart Pacemaker
+
+JMitral Valve Prolapse
+
+IArtificial Joint
+
+IEasily Winded
+
+Heart Trouble/Disease
+
+Dosteoporosis
+
+Stroke
+
+JAsthma
+
+JEmphysema
+
+Hemophilia
+
+Pain in Jaw Joints
+
+Swelling of Limbs
+
+Blood Disease
+
+EEpilepsyl/ Seizers
+
+HHepatitis
+
+Parathyroid Disease
+
+Tonsillitis
+
+Blood Transfusion
+
+EExcessive Bleeding
+
+Herpes
+
+IPsychiatric Care
+
+Tuberculosis
+
+IBreathing Problem
+
+Excessive Thirst
+
+JHigh Blood Pressure
+
+Tumors/Growths
+
+IBruise Easily
+
+Fainting/Dizzy Spells
+
+High Cholesterol
+
+Recent Weight Loss
+
+Ulcers
+
+Icancer
+
+Frequent Cough
+
+Hives/Rash
+
+Venereal Disease
+
+Chemotherapy
+
+Frequent Diarrhea
+
+JHypoglycemia
+
+Rheumatic Fever
+
+Iellow Jaundice
+
+Have you had any serious illness not listed above?
+
+Yes
+
+No
+
+If yes, please explain: _
+
+Comments
+
+To the best of my knowledge, the questions on this form have been accurately answered. understand that providing incorrect information can be dangerous to my (or professionals) health_ It is my responsibility to inform the dental official of any changes in medical status_
+
+Signature of Patient, Parent or Guardian:
+
+Date

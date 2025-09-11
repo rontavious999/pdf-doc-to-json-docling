@@ -1,0 +1,34 @@
+# Text Extraction Result
+PDF File: tooth20removal20consent20form.pdf
+Model/Configuration: easyocr_full_page
+Extraction Time: 50.92 seconds
+Character Count: 1677
+Word Count: 264
+Line Count: 16
+
+==================================================
+EXTRACTED TEXT:
+==================================================
+
+## TOOTH REMOVAL CONSENT FORM
+
+Iunderstand that the extraction of a tooth (teeth) has been recommended by my dentist: I have had any alternative treatment (if any) explained to me, as well as the consequences of nothing about my dental conditions I understand that non-treatment result in, but not be limited to: infection, swelling; pain, periodontal disease, malocclusion (damage to the way the teeth hit together) and systemic diseaselinfection. doing may
+
+Iunderstand that there are risks associated with any dental, surgical, and anesthetic procedure. These include, but are not limited to:
+
+- Post-operative infection or inflammation
+- Damage to adjacent teeth or fillings
+- Swelling, bruising, and pain
+- Drug reactions and side effects
+- Possibility of a small fragment of root or bone being left in the jaw intentionally when its removal is not appropriate (such fragments may work their way partially out of the tissue and need to be removed later)
+- Bleeding requiring more treatment
+- Delayed healing (dry socket) necessitating several post-operative visits
+- Fracture or dislocation of the jaw
+- Damage to sinuses requiring additional treatment O surgical repair at a later date
+- Damage to the nerves tooth removal resulting in temporary, O possibly partial Or permanent numbness O tingling of the lip, chin, tongue, Or other areas during
+
+By providing my signature, I certify that I understand the recommended treatment, the fee involved, the risks of such treatment, any alternatives and risks of these alternatives, including the consequences of doing nothing: Ihave had all of my questions answered, and have not been offered any guarantees
+
+Signature:
+
+Date:
