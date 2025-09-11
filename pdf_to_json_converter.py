@@ -435,8 +435,7 @@ class PDFFormFieldExtractor:
             return 'zip'
         
         # Initials detection - be more specific
-        elif (('initial' in text_lower or text_lower.strip() in ['mi', 'm.i.', 'middle initial', 'middle init']) 
-              and len(text) < 25):
+        elif ('initial' in text_lower or text_lower.strip() in ['mi', 'm.i.', 'middle initial', 'middle init']) and len(text) < 25:
             return 'initials'
         
         # Number detection - for IDs, license numbers, etc.
@@ -498,8 +497,9 @@ class PDFFormFieldExtractor:
         if any(keyword in text_lower for keyword in ['minor', 'children', 'parent', 'guardian', 'custody', 'school', 'responsible party']):
             return "FOR CHILDREN/MINORS ONLY"
         
-        # Signature and consent - improved detection
-        if any(keyword in text_lower for keyword in ['signature', 'consent', 'terms', 'agree', 'initial', 'responsibilities', 'payment', 'scheduling']):
+        # Signature and consent - improved detection with more precise matching
+        if (any(keyword in text_lower for keyword in ['signature', 'consent', 'terms', 'agree', 'responsibilities', 'payment', 'scheduling']) or 
+            (re.search(r'\binitial\b', text_lower) and not re.search(r'\b(middle|mi)\s+initial\b', text_lower))):
             return "Signature"
         
         # Basic patient info fields
@@ -539,9 +539,8 @@ class PDFFormFieldExtractor:
         name_mappings = {
             'first': 'First Name',
             'last': 'Last Name', 
-            'mi': 'MI',
-            'middle initial': 'MI',
-            'middle init': 'MI',
+            'mi': 'Middle Initial',
+            'middle init': 'Middle Initial',
             'apt/unit/suite': 'Apt/Unit/Suite',
             'social security no': 'Social Security No.',
             'social security number': 'Social Security No.',
@@ -715,7 +714,7 @@ class PDFFormFieldExtractor:
         known_patterns = {
             r'First\s*_{5,}.*?MI\s*_{2,}.*?Last\s*_{5,}.*?Nickname\s*_{5,}': [
                 ('First Name', 'First'),
-                ('Middle Initial', 'MI'), 
+                ('MI', 'MI'), 
                 ('Last Name', 'Last'),
                 ('Nickname', 'Nickname')
             ],
@@ -991,7 +990,8 @@ class PDFFormFieldExtractor:
                 'SSN': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
                 'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}], 'hint': None}),
                 'Social Security No.': ('ssn_2', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
-                'Today \'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any', 'hint': None}),
+                "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'any', 'hint': None}),
+                'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any', 'hint': None}), 
                 'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
                 'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past', 'hint': None}),
             }
@@ -1020,9 +1020,6 @@ class PDFFormFieldExtractor:
                 i += 1
                 continue
             
-            # Handle large text blocks (like terms and conditions) - improved detection
-            if (len(line) > 80 and 
-                any(keyword in line.lower() for keyword in ['responsibility', 'payment', 'benefit', 'authorize', 'consent', 'we are committed']) and
             # Handle consent paragraphs with Risks/Side Effects
             if (current_section in ["Signature", "Consent"] and 
                 len(line) > 50 and 
@@ -1245,6 +1242,9 @@ class PDFFormFieldExtractor:
                         break
             
             if consent_found:
+                i += 1
+                continue
+                
             # Handle consent questions with YES/NO checkboxes
             if re.search(r'YES\s+N?O?\s*\(Check One\)', line, re.IGNORECASE):
                 # Extract the question part
@@ -1406,14 +1406,10 @@ class PDFFormFieldExtractor:
                         hint = 'Responsible Party'
                     
                     control['hint'] = hint
-                    # Check if this should be an initials field instead
-                    if input_type == 'initials':
-                        field_type = 'initials'
-                        control = {}
-                    else:
-                        control['input_type'] = input_type
-                        if input_type == 'phone':
-                            control['phone_prefix'] = '+1'
+                    # Set the input type (including initials)
+                    control['input_type'] = input_type
+                    if input_type == 'phone':
+                        control['phone_prefix'] = '+1'
                         
                         # Add hints for specific contexts
                         hint = None
@@ -1450,6 +1446,10 @@ class PDFFormFieldExtractor:
                 
                 # Create unique key with numbering for duplicates with better context awareness
                 base_key = ModentoSchemaValidator.slugify(field_name)
+                
+                # Special case for Middle Initial to use "mi" key 
+                if field_name.lower() == "middle initial":
+                    base_key = "mi"
                 
                 # Context-aware field numbering
                 context_lines_text = ' '.join(text_lines[max(0, i-5):i+5]).lower()
@@ -1525,8 +1525,8 @@ class PDFToJSONConverter:
         # Extract form fields
         fields = self.extractor.extract_fields_from_text(text_lines)
         
-        # Sort fields by line_idx within each section to preserve document order  
-        fields.sort(key=lambda f: (f.section, getattr(f, 'line_idx', 0)))
+        # Sort fields by line_idx to preserve document order, not by section name
+        fields.sort(key=lambda f: getattr(f, 'line_idx', 0))
         
         # Convert to Modento format
         json_spec = []
