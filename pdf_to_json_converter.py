@@ -2467,8 +2467,8 @@ class PDFFormFieldExtractor:
         for i, line in enumerate(text_lines):
             # Find patient responsibilities text (should be text_3)
             if (len(line) > 100 and 
-                'patient responsibilities' in line.lower() and
-                'payment' in line.lower()):
+                ('patient responsibilities' in line.lower() or 'payment' in line.lower()) and
+                'we are committed' in line.lower()):
                 text_lines_to_process.append(('text_3', i))
             
             # Find "I have read" text (should be text_4)  
@@ -2564,7 +2564,12 @@ class PDFFormFieldExtractor:
         # Process authorization question at its proper position
         if auth_line is not None:
             line = text_lines[auth_line]
+            # More flexible pattern to handle "N O" spacing
             question_match = re.match(r'^(.*?)\s+YES\s+N\s*O?\s*\(Check One\)', line, re.IGNORECASE)
+            if not question_match:
+                # Try alternative pattern
+                question_match = re.match(r'^(.*?)\s+YES\s+N\s+O\s*\(Check One\)', line, re.IGNORECASE)
+            
             if question_match:
                 question = question_match.group(1).strip()
                 
