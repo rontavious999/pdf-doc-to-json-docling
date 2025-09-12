@@ -1,0 +1,560 @@
+[
+  {
+    "key": "todays_date",
+    "title": "Today's Date",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "any"
+    }
+  },
+  {
+    "key": "last_name",
+    "title": "Last Name",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "first_name",
+    "title": "First Name",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "mi",
+    "title": "MI",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "initials"
+    }
+  },
+  {
+    "key": "date_of_birth",
+    "title": "Date of Birth",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "any"
+    }
+  },
+  {
+    "key": "age",
+    "title": "Age",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "please_circle_one",
+    "title": "Please Circle One",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "mailing_address",
+    "title": "Mailing Address",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "city",
+    "title": "City",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "state",
+    "title": "State",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "states",
+    "control": {}
+  },
+  {
+    "key": "zip_code",
+    "title": "Zip Code",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip"
+    }
+  },
+  {
+    "key": "email",
+    "title": "Email",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "email"
+    }
+  },
+  {
+    "key": "employer",
+    "title": "Employer",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "occupation",
+    "title": "Occupation",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "if_patient_is_a_minor",
+    "title": "If patient is a minor",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "s_dob",
+    "title": "s DOB",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "s_dob_2",
+    "title": "s DOB",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "name_of_parent",
+    "title": "Name of Parent",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "parent_employer",
+    "title": "Parent Employer",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "person_responsible_for_account",
+    "title": "Person Responsible for Account",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Emergency Contact"
+      }
+    }
+  },
+  {
+    "key": "relationship",
+    "title": "Relationship",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Emergency Contact"
+      }
+    }
+  },
+  {
+    "key": "emergency_contact",
+    "title": "Emergency Contact",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Emergency Contact"
+      }
+    }
+  },
+  {
+    "key": "relationship_2",
+    "title": "Relationship",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Emergency Contact"
+      }
+    }
+  },
+  {
+    "key": "name",
+    "title": "Name",
+    "section": "If you are fi lling this form out on behalf of another person, what is your relationship to that person?",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "relationship_3",
+    "title": "Relationship",
+    "section": "If you are fi lling this form out on behalf of another person, what is your relationship to that person?",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "other",
+    "title": "Other",
+    "section": "If you are fi lling this form out on behalf of another person, what is your relationship to that person?",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "s_name",
+    "title": "s Name",
+    "section": "Dental Insurance Information (Primary Carrier)",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "s_employer",
+    "title": "s  Employer",
+    "section": "Dental Insurance Information (Primary Carrier)",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "s_dob_3",
+    "title": "s DOB",
+    "section": "Dental Insurance Information (Primary Carrier)",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "insurance_co",
+    "title": "Insurance Co",
+    "section": "Dental Insurance Information (Primary Carrier)",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "insurance_co_address",
+    "title": "Insurance Co Address",
+    "section": "Dental Insurance Information (Primary Carrier)",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "s_name_2",
+    "title": "s Name",
+    "section": "Dental Insurance Information Secondary Coverage",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "s_employer_2",
+    "title": "s Employer",
+    "section": "Dental Insurance Information Secondary Coverage",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "s_dob_4",
+    "title": "s DOB",
+    "section": "Dental Insurance Information Secondary Coverage",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "insurance_co_2",
+    "title": "Insurance Co",
+    "section": "Dental Insurance Information Secondary Coverage",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "insurance_co_address_2",
+    "title": "Insurance Co Address",
+    "section": "Dental Insurance Information Secondary Coverage",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "please_share_the_following_dates",
+    "title": "Please share the following dates",
+    "section": "Dental Insurance Information Secondary Coverage",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "any"
+    }
+  },
+  {
+    "key": "your_last_cleaning",
+    "title": "Your last cleaning",
+    "section": "Dental Insurance Information Secondary Coverage",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "your_last_oral_cancer_screening",
+    "title": "Your last oral cancer screening",
+    "section": "Dental Insurance Information Secondary Coverage",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "rays",
+    "title": "rays",
+    "section": "Dental Insurance Information Secondary Coverage",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "name_of_your_previous_dentist",
+    "title": "Name of your previous dentist",
+    "section": "Dental Insurance Information Secondary Coverage",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "type",
+    "title": "Type",
+    "section": "Signature",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "please_explain",
+    "title": "please explain",
+    "section": "Medical History",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "physician_name_address",
+    "title": "Physician Name_________________________Address",
+    "section": "Medical History",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "physician_name",
+    "title": "Physician Name",
+    "section": "Medical History",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "if_yes_please_explain",
+    "title": "If yes please explain",
+    "section": "Medical History",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "or_dietary_supplements",
+    "title": "or dietary supplements",
+    "section": "Medical History",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "if_so_please_list_medications",
+    "title": "If so, please list medications",
+    "section": "Medical History",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "have_you_ever_had_surgery_if_so_what_type",
+    "title": "Have you ever had surgery? If so, what type",
+    "section": "Medical History",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "how_much",
+    "title": "How much",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "how_long",
+    "title": "How long",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "alcohol_frequency",
+    "title": "Alcohol Frequency",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "drugs_frequency",
+    "title": "Drugs Frequency",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "additional_comments",
+    "title": "Additional Comments",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "signature",
+    "title": "Signature",
+    "section": "Signature",
+    "optional": false,
+    "type": "signature",
+    "control": {}
+  }
+]

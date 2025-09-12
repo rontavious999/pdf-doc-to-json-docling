@@ -1568,8 +1568,13 @@ class PDFFormFieldExtractor:
                 return question, options, start_idx + 1
         
         # Pattern 2: Question followed by options on subsequent lines
-        if ':' in line and not line.strip().startswith('##'):
-            question = line.split(':')[0].strip()
+        if (':' in line or line.strip().endswith('?')) and not line.strip().startswith('##'):
+            if ':' in line:
+                question = line.split(':')[0].strip()
+            else:
+                # Handle questions ending with ?
+                question = line.strip().rstrip('?').strip()
+            
             if len(question) < 5:
                 return None, [], start_idx
                 
