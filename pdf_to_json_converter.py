@@ -1812,38 +1812,12 @@ class PDFFormFieldExtractor:
                         {"name": "Widowed", "value": "Widowed"}
                     ], 'hint': None
                 }),
-                'What Is Your Preferred Method Of Contact': ('what_is_your_preferred_method_of_contact', 'What Is Your Preferred Method Of Contact', 'radio', {
-                    'options': [
-                        {"name": "Mobile Phone", "value": "Mobile Phone"},
-                        {"name": "Home Phone", "value": "Home Phone"},
-                        {"name": "Work Phone", "value": "Work Phone"},
-                        {"name": "E-mail", "value": "E-mail"}
-                    ], 'hint': None
-                }),
-                'Is the Patient a Minor?': ('is_the_patient_a_minor', 'Is the Patient a Minor?', 'radio', {
-                    'options': [{"name": "Yes", "value": True}, {"name": "No", "value": False}], 'hint': None
-                }),
-                'Full-time Student': ('full_time_student', 'Full-time Student', 'radio', {
-                    'options': [{"name": "Yes", "value": True}, {"name": "No", "value": False}], 'hint': None
-                }),
-                'Relationship To Patient': ('relationship_to_patient_2', 'Relationship To Patient', 'radio', {
-                    'options': [
-                        {"name": "Self", "value": "Self"},
-                        {"name": "Spouse", "value": "Spouse"},
-                        {"name": "Parent", "value": "Parent"},
-                        {"name": "Other", "value": "Other"}
-                    ], 'hint': None
-                }),
-                'If Patient Is A Minor, Primary Residence': ('if_patient_is_a_minor_primary_residence', 'If Patient Is A Minor, Primary Residence', 'radio', {
-                    'options': [
-                        {"name": "Both Parents", "value": "Both Parents"},
-                        {"name": "Mom", "value": "Mom"},
-                        {"name": "Dad", "value": "Dad"},
-                        {"name": "Step Parent", "value": "Step Parent"},
-                        {"name": "Shared Custody", "value": "Shared Custody"},
-                        {"name": "Guardian", "value": "Guardian"}
-                    ], 'hint': None
-                }),
+                # Remove problematic radio fields that are handled elsewhere:
+                # - 'What Is Your Preferred Method Of Contact' 
+                # - 'Is the Patient a Minor?'
+                # - 'Full-time Student'
+                # - 'Relationship To Patient'
+                # - 'If Patient Is A Minor, Primary Residence'
                 'Date Signed': ('date_signed', 'Date Signed', 'date', {'input_type': 'any', 'hint': None}),
             }
             
@@ -2215,7 +2189,8 @@ class PDFFormFieldExtractor:
                     title=title,
                     field_type='radio',
                     section=current_section,
-                    control={'options': options, 'hint': None}
+                    control={'options': options, 'hint': None},
+                    line_idx=i  # Add line index for proper ordering
                 )
                 fields.append(field)
                 i += 1
@@ -2244,7 +2219,8 @@ class PDFFormFieldExtractor:
                         title=question_part,
                         field_type='radio',
                         section=current_section,
-                        control={'options': options, 'hint': None}
+                        control={'options': options, 'hint': None},
+                        line_idx=i  # Add line index for proper ordering
                     )
                     fields.append(field)
                 i += 1
