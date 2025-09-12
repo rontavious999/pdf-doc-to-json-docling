@@ -2215,8 +2215,15 @@ class PDFFormFieldExtractor:
             if (line.strip().endswith(':') or 
                 (not re.search(r'_{3,}', line) and i + 1 < len(text_lines) and re.search(r'^_{5,}', text_lines[i + 1]))):
                 
-                # Clean up the field name
+                # Clean up the field name - handle OCR artifacts like "No Name of School" should be "Name of School"
                 field_name = line.strip().rstrip(':').rstrip('?')
+                
+                # Fix common OCR misreads
+                if field_name.lower().startswith('no ') and len(field_name.split()) > 2:
+                    # Check if it's actually a "No" response that got merged with field name
+                    potential_field = field_name[3:].strip()  # Remove "No "
+                    if len(potential_field) > 5 and not potential_field.lower().startswith('name'):
+                        field_name = potential_field
                 
                 # Skip if it's clearly a section header
                 if any(skip in field_name.lower() for skip in [
@@ -2451,6 +2458,173 @@ class PDFFormFieldExtractor:
                 fields.append(field)
             
             i += 1
+        
+        # SECOND PASS: Process long text blocks and complex authorization content at the end
+        # Find the line numbers for text processing first to ensure proper ordering
+        text_lines_to_process = []
+        auth_line = None
+        
+        for i, line in enumerate(text_lines):
+            # Find patient responsibilities text (should be text_3)
+            if (len(line) > 100 and 
+                'patient responsibilities' in line.lower() and
+                'payment' in line.lower()):
+                text_lines_to_process.append(('text_3', i))
+            
+            # Find "I have read" text (should be text_4)  
+            elif ('read' in line.lower() and 'agree' in line.lower() and '(initial)' in line.lower()):
+                text_lines_to_process.append(('text_4', i))
+            
+            # Find authorization question
+            elif ('authorize' in line.lower() and 'personal information' in line.lower() and 
+                  'yes' in line.lower() and 'no' in line.lower()):
+                auth_line = i
+        
+        # Process in line order to maintain sequence
+        for field_type, line_idx in sorted(text_lines_to_process):
+            line = text_lines[line_idx]
+            
+            if field_type == 'text_3':
+                # Process patient responsibilities text block
+                text_content = [line]
+                j = line_idx + 1
+                
+                # Collect related content but stop before authorization
+                while j < len(text_lines) and j < len(text_lines) - 5:
+                    next_line = text_lines[j].strip()
+                    if (('authorize' in next_line.lower() and 'yes' in next_line.lower()) or
+                        'signature' in next_line.lower() and '___' in next_line or
+                        'read' in next_line.lower() and 'agree' in next_line.lower()):
+                        break
+                    if len(next_line) > 30:
+                        text_content.append(next_line)
+                    j += 1
+                
+                full_text = ' '.join(text_content)
+                html_text = self.format_text_as_html(full_text)
+                
+                field = FieldInfo(
+                    key="text_3",
+                    title="",
+                    field_type='text',
+                    section="Signature",
+                    optional=False,
+                    control={
+                        'html_text': html_text,
+                        'temporary_html_text': html_text,
+                        'text': ""
+                    },
+                    line_idx=line_idx
+                )
+                fields.append(field)
+                
+                # Add initials field after text_3
+                field = FieldInfo(
+                    key="initials",
+                    title="Initial",
+                    field_type='input',
+                    section="Signature",
+                    optional=False,
+                    control={'input_type': 'initials'},
+                    line_idx=line_idx
+                )
+                fields.append(field)
+            
+            elif field_type == 'text_4':
+                # Extract text before (initial)
+                text_part = re.split(r'\s*\(initial\)', line, flags=re.IGNORECASE)[0].strip()
+                if text_part:
+                    field = FieldInfo(
+                        key="text_4",
+                        title="",
+                        field_type='text',
+                        section="Signature",
+                        optional=False,
+                        control={
+                            'html_text': f"<p>{text_part}</p>",
+                            'temporary_html_text': f"<p>{text_part}</p>",
+                            'text': ""
+                        },
+                        line_idx=line_idx
+                    )
+                    fields.append(field)
+                    
+                    # Add initials_2 field
+                    field = FieldInfo(
+                        key="initials_2",
+                        title="Initial",
+                        field_type='input',
+                        section="Signature",
+                        optional=False,
+                        control={'input_type': 'initials'},
+                        line_idx=line_idx
+                    )
+                    fields.append(field)
+        
+        # Process authorization question at its proper position
+        if auth_line is not None:
+            line = text_lines[auth_line]
+            question_match = re.match(r'^(.*?)\s+YES\s+N\s*O?\s*\(Check One\)', line, re.IGNORECASE)
+            if question_match:
+                question = question_match.group(1).strip()
+                
+                field = FieldInfo(
+                    key="i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_",
+                    title=question,
+                    field_type='radio',
+                    section="Signature",
+                    optional=False,
+                    control={
+                        'options': [
+                            {"name": "Yes", "value": True},
+                            {"name": "No", "value": False}
+                        ],
+                        'hint': None,
+                        'text': "",
+                        'html_text': f"<p>{question}</p>",
+                        'temporary_html_text': f"<p>{question}</p>"
+                    },
+                    line_idx=auth_line
+                )
+                fields.append(field)
+                
+                # Add initials_3 field
+                field = FieldInfo(
+                    key="initials_3",
+                    title="Initial",
+                    field_type='input',
+                    section="Signature",
+                    optional=False,
+                    control={'input_type': 'initials'},
+                    line_idx=auth_line
+                )
+                fields.append(field)
+        
+        # Ensure signature and date_signed fields are present
+        has_signature = any(f.key == 'signature' for f in fields)
+        has_date_signed = any(f.key == 'date_signed' for f in fields)
+        
+        if not has_signature:
+            fields.append(FieldInfo(
+                key="signature",
+                title="Signature",
+                field_type='signature',
+                section="Signature",
+                optional=False,
+                control={'hint': None},
+                line_idx=9999  # Ensure it's at the end
+            ))
+        
+        if not has_date_signed:
+            fields.append(FieldInfo(
+                key="date_signed",
+                title="Date Signed",
+                field_type='date',
+                section="Signature",
+                optional=False,
+                control={'input_type': 'any', 'hint': None},
+                line_idx=9999  # Ensure it's at the end
+            ))
         
         # Post-process fields to fix specific extraction issues
         fields = self.post_process_fields(fields)

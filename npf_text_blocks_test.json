@@ -1,5 +1,39 @@
 [
   {
+    "key": "i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_",
+    "title": "I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. ",
+    "section": "Signature",
+    "optional": false,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ],
+      "hint": null,
+      "text": "",
+      "html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. ",
+      "temporary_html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. "
+    }
+  },
+  {
+    "key": "initials_3",
+    "title": "Initial",
+    "section": "Signature",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "initials",
+      "hint": null
+    }
+  },
+  {
     "key": "todays_date",
     "title": "Today's Date",
     "section": "Patient Information Form",
@@ -980,6 +1014,19 @@
     }
   },
   {
+    "key": "text_3",
+    "title": "",
+    "section": "Signature",
+    "optional": false,
+    "type": "text",
+    "control": {
+      "html_text": "<p>-  <strong>Payment:</strong> <strong>Payment is due at the time services are rendered</strong>.</p><p>Financial arrangements are discussed during the initial visit and a financial agreement is completed in advance of performing any treatment with our practice. We accept the following forms of payment: Cash (US currency only), certified check or money order, credit card (Visa, Mastercard, Amex, Discover). Personal checks are also accepted from patients who have established a positive payment history with the practice.</p><p>Non-sufficient funds or returned checks may be grounds for declining future personal checks and an alternative form of payment may be requested, upon the discretion of the doctor. -  <strong>Dental Benefit Plans:</strong> Your dental insurance benefit is a contract between you or your employer and the dental benefit plan.</p><p><br></p><p>Benefits and payments received are based on the terms of the contract negotiated between you or your employer and the plan. We are happy to help our patients with dental benefit plans to understand and maximize their coverage. Our practice  IS  IS N OT (check one) a contracted provider with your dental benefit plan. If we are a contracted provider with your plan , you are responsible only for your portion of the approved fee as determined by your plan.</p><p>We are required to collect the patient's portion (deductible, co -insurance, co-pay, or any amount not covered by the dental benefit plan) in full at time of service. If our estimate of your portion is less than the amount determined by your plan, the amount billed to you will be adjusted to reflect this. If we are not a contracted provider with your dental benefit plan , it is the patient's responsibility to verify with the plan whether the plan allows patients to receive reimbursement for services from out-of-network providers.</p><p>If your plan allows reimbursement for services from out-of-network providers, our practice can file the claim with your plan and receive reimbursement directly from the plan if you 'assign benefits' to us. In this circumstance, you are responsible and will be billed for any unpaid balance for services rendered upon receipt of payment from the plan to our practice, even if that amount is different than our estimated patient portion of the bill.</p><p>If you choose to not 'assign benefits' to our practice, you are responsible for filing claims and obtaining reimbursement directly from your dental benefit plan and will be responsible for payment in full to our practice before or at the time of service. -  <strong>Scheduling of Appointments:</strong> We reserve the doctor and hygienist's time on the schedule for each patient procedure and are diligent about being on-time.</p><p><br></p><p>Because of this courtesy, when a patient cancels an appointment, it impacts the overall quality of service we are able to provide. To maintain the utmost service and care, we do require 24 hour advance notice to reschedule an appointment. <strong>With less than 24 hour notice, a cancellation fee of minimum $50 may be charged or deposit to reserve the appointment time again, may be required.</strong> To serve all of our patients in a timely manner, we may need to reschedule an appointment if a patient is ten minutes late or more arriving to our practice.</p><p>To reschedule an appointment due to late arrival, a fee of minimum $50 may be charged or deposit to reserve the appointment time again, may be required. -  <strong>Authorizations:</strong> I understand that the information I have provided is correct to the best of my knowledge.</p><p><br></p><p>I authorize this dental team to perform any necessary dental services that I may need and have consented to during diagnosis and treatment. ________ (initial) I have read the above and agree to the financial and scheduling terms. _________ (initial).</p>",
+      "temporary_html_text": "<p>-  <strong>Payment:</strong> <strong>Payment is due at the time services are rendered</strong>.</p><p>Financial arrangements are discussed during the initial visit and a financial agreement is completed in advance of performing any treatment with our practice. We accept the following forms of payment: Cash (US currency only), certified check or money order, credit card (Visa, Mastercard, Amex, Discover). Personal checks are also accepted from patients who have established a positive payment history with the practice.</p><p>Non-sufficient funds or returned checks may be grounds for declining future personal checks and an alternative form of payment may be requested, upon the discretion of the doctor. -  <strong>Dental Benefit Plans:</strong> Your dental insurance benefit is a contract between you or your employer and the dental benefit plan.</p><p><br></p><p>Benefits and payments received are based on the terms of the contract negotiated between you or your employer and the plan. We are happy to help our patients with dental benefit plans to understand and maximize their coverage. Our practice  IS  IS N OT (check one) a contracted provider with your dental benefit plan. If we are a contracted provider with your plan , you are responsible only for your portion of the approved fee as determined by your plan.</p><p>We are required to collect the patient's portion (deductible, co -insurance, co-pay, or any amount not covered by the dental benefit plan) in full at time of service. If our estimate of your portion is less than the amount determined by your plan, the amount billed to you will be adjusted to reflect this. If we are not a contracted provider with your dental benefit plan , it is the patient's responsibility to verify with the plan whether the plan allows patients to receive reimbursement for services from out-of-network providers.</p><p>If your plan allows reimbursement for services from out-of-network providers, our practice can file the claim with your plan and receive reimbursement directly from the plan if you 'assign benefits' to us. In this circumstance, you are responsible and will be billed for any unpaid balance for services rendered upon receipt of payment from the plan to our practice, even if that amount is different than our estimated patient portion of the bill.</p><p>If you choose to not 'assign benefits' to our practice, you are responsible for filing claims and obtaining reimbursement directly from your dental benefit plan and will be responsible for payment in full to our practice before or at the time of service. -  <strong>Scheduling of Appointments:</strong> We reserve the doctor and hygienist's time on the schedule for each patient procedure and are diligent about being on-time.</p><p><br></p><p>Because of this courtesy, when a patient cancels an appointment, it impacts the overall quality of service we are able to provide. To maintain the utmost service and care, we do require 24 hour advance notice to reschedule an appointment. <strong>With less than 24 hour notice, a cancellation fee of minimum $50 may be charged or deposit to reserve the appointment time again, may be required.</strong> To serve all of our patients in a timely manner, we may need to reschedule an appointment if a patient is ten minutes late or more arriving to our practice.</p><p>To reschedule an appointment due to late arrival, a fee of minimum $50 may be charged or deposit to reserve the appointment time again, may be required. -  <strong>Authorizations:</strong> I understand that the information I have provided is correct to the best of my knowledge.</p><p><br></p><p>I authorize this dental team to perform any necessary dental services that I may need and have consented to during diagnosis and treatment. ________ (initial) I have read the above and agree to the financial and scheduling terms. _________ (initial).</p>",
+      "text": "",
+      "hint": null
+    }
+  },
+  {
     "key": "text_1",
     "title": "",
     "section": "Signature",
@@ -994,30 +1041,6 @@
   },
   {
     "key": "initials",
-    "title": "Initial",
-    "section": "Signature",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "initials",
-      "hint": null
-    }
-  },
-  {
-    "key": "text_4",
-    "title": "",
-    "section": "Signature",
-    "optional": false,
-    "type": "text",
-    "control": {
-      "html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
-      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
-      "text": "",
-      "hint": null
-    }
-  },
-  {
-    "key": "initials_2",
     "title": "Initial",
     "section": "Signature",
     "optional": false,

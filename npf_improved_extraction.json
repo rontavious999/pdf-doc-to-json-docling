@@ -1004,47 +1004,12 @@
     }
   },
   {
-    "key": "text_4",
-    "title": "",
-    "section": "Signature",
-    "optional": false,
-    "type": "text",
-    "control": {
-      "html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
-      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
-      "text": "",
-      "hint": null
-    }
-  },
-  {
-    "key": "initials_2",
-    "title": "Initial",
-    "section": "Signature",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "initials",
-      "hint": null
-    }
-  },
-  {
     "key": "signature",
     "title": "Signature",
     "section": "Signature",
     "optional": false,
     "type": "signature",
     "control": {
-      "hint": null
-    }
-  },
-  {
-    "key": "date_signed",
-    "title": "Date Signed",
-    "section": "Signature",
-    "optional": false,
-    "type": "date",
-    "control": {
-      "input_type": "any",
       "hint": null
     }
   }
