@@ -1413,6 +1413,59 @@ class PDFFormFieldExtractor:
                     line_idx=i
                 ))
             
+            # Handle standalone field labels
+            line_stripped = line.strip()
+            standalone_fields = {
+                'SSN': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn'}),
+                'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}]}),
+                'Social Security No.': ('ssn_2', 'Social Security No.', 'input', {'input_type': 'ssn'}),
+                "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'any'}),
+                'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any'}), 
+                'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past'}),
+                'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past'}),
+                'Marital Status': ('marital_status', 'Marital Status', 'radio', {
+                    'options': [
+                        {"name": "Married", "value": "Married"},
+                        {"name": "Single", "value": "Single"},
+                        {"name": "Divorced", "value": "Divorced"},
+                        {"name": "Separated", "value": "Separated"},
+                        {"name": "Widowed", "value": "Widowed"}
+                    ]
+                })
+            }
+            
+            # Normalize line for better matching (handle Unicode variations)
+            line_normalized = line_stripped.replace(" '", "'").replace("'", "'")
+            
+            # Check exact match first, then normalized match
+            matched_key = None
+            if line_stripped in standalone_fields:
+                matched_key = line_stripped
+            else:
+                # Try normalized matching for Unicode variations
+                for key in standalone_fields.keys():
+                    key_normalized = key.replace(" '", "'").replace("'", "'")
+                    if line_normalized == key_normalized:
+                        matched_key = key
+                        break
+            
+            if matched_key:
+                base_key, title, field_type, control = standalone_fields[matched_key]
+                
+                # Create unique key
+                key = make_unique_key(base_key)
+                
+                field = FieldInfo(
+                    key=key,
+                    title=title,
+                    field_type=field_type,
+                    section=current_section,
+                    optional=False,
+                    control=control,
+                    line_idx=i
+                )
+                fields.append(field)
+
             i += 1
         
         return fields
@@ -1551,6 +1604,49 @@ class PDFFormFieldExtractor:
         """Detect input fields in a line"""
         fields = []
         
+        # First check exact patterns for precise field naming
+        exact_patterns = {
+            # Main name line pattern - this is critical
+            r'First\s*_{10,}.*?MI\s*_{2,}.*?Last\s*_{10,}.*?Nickname\s*_{5,}': [
+                ('First Name', 'first_name'),
+                ('Middle Initial', 'mi'), 
+                ('Last Name', 'last_name'),
+                ('Nickname', 'nickname')
+            ],
+            # Address line pattern
+            r'Street\s*_{30,}.*?Apt/Unit/Suite\s*_{5,}': [
+                ('Street', 'street'),
+                ('Apt/Unit/Suite', 'apt_unit_suite')
+            ],
+            # City/State/Zip pattern
+            r'City\s*_{20,}.*?State\s*_{5,}.*?Zip\s*_{10,}': [
+                ('City', 'city'),
+                ('State', 'state'),
+                ('Zip', 'zip')
+            ],
+            # Main phone line pattern  
+            r'Mobile\s*_{10,}.*?Home\s*_{10,}.*?Work\s*_{10,}': [
+                ('Mobile', 'mobile'),
+                ('Home', 'home'),
+                ('Work', 'work')
+            ],
+            # E-mail and driver's license pattern
+            r'E-Mail\s*_{20,}.*?Drivers License #': [
+                ('E-Mail', 'e_mail'),
+                ('Drivers License #', 'drivers_license')
+            ],
+        }
+        
+        # Check if line matches any exact pattern
+        for pattern, field_mappings in exact_patterns.items():
+            if re.search(pattern, line, re.IGNORECASE):
+                # Use the exact field mappings instead of extracting from line
+                for field_title, field_key in field_mappings:
+                    fields.append((field_title, line))
+                return fields  # Return early to avoid double extraction
+        
+        # Fallback to generic patterns if no exact match
+        
         # Pattern 1: "Label:" pattern
         if ':' in line and not line.strip().startswith('##'):
             label = line.split(':')[0].strip()
@@ -1563,14 +1659,6 @@ class PDFFormFieldExtractor:
         for match in matches:
             label = match.group(1).strip()
             if len(label) > 1 and len(label) < 50:
-                fields.append((label, line))
-        
-        # Pattern 3: Inline labels like "First____ MI___ Last____"
-        inline_pattern = r'([A-Za-z]+)_{3,}'
-        matches = re.finditer(inline_pattern, line)
-        for match in matches:
-            label = match.group(1).strip()
-            if len(label) > 1:
                 fields.append((label, line))
         
         return fields
