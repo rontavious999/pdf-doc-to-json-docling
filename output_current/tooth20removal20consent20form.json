@@ -1,0 +1,22 @@
+[
+  {
+    "key": "signature",
+    "title": "Signature",
+    "section": "Signature",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "date_signed",
+    "title": "Date Signed",
+    "section": "Signature",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "any"
+    }
+  }
+]
