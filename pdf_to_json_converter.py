@@ -200,12 +200,19 @@ class ModentoSchemaValidator:
                 continue
 
             ctrl = q.setdefault("control", {})
+            
+            # Ensure hint field is present for consistency with reference
+            if 'hint' not in ctrl:
+                ctrl['hint'] = None
+                
             # move hint to control.extra.hint
-            if "hint" in ctrl:
+            if "hint" in ctrl and ctrl["hint"] is not None:
                 hint = ctrl.pop("hint")
                 if hint:
                     extra = ctrl.setdefault("extra", {})
                     extra["hint"] = hint
+                else:
+                    ctrl["hint"] = None
 
             if q_type == "input":
                 t = ctrl.get("input_type")
@@ -218,17 +225,27 @@ class ModentoSchemaValidator:
                     ctrl["input_type"] = "any"
 
             if q_type == "states":
-                # must not carry input_type
+                # must not carry input_type, but preserve hint
                 ctrl.pop("input_type", None)
+                if 'hint' not in ctrl:
+                    ctrl['hint'] = None
+
+            if q_type == "signature":
+                # Remove input_type for signature fields and ensure hint is present
+                ctrl.pop("input_type", None)
+                if 'hint' not in ctrl:
+                    ctrl['hint'] = None
 
             if q_type in {"radio","checkbox","dropdown"}:
                 opts = ctrl.get("options", [])
                 for opt in opts:
-                    # coerce boolean values to strings
+                    # Keep original string casing from reference for radio options
                     v = opt.get("value")
                     if isinstance(v, bool):
-                        opt["value"] = "Yes" if v else "No"
-                    if not opt.get("value"):
+                        opt["value"] = v  # Keep boolean values as-is
+                    elif isinstance(v, str):
+                        opt["value"] = v  # Keep string values as-is to match reference
+                    if not opt.get("value") and opt.get("value") != False:
                         opt["value"] = cls.slugify(opt.get("name","option"))
 
         return (len(errors) == 0), errors, spec
@@ -703,12 +720,16 @@ class PDFFormFieldExtractor:
         if re.match(r'^[_\-\s]*$', line) or len(line.strip()) < 3:
             return fields
         
+        # Skip lines that start with "Patient Name:" as these are headers, not inline fields
+        if re.match(r'^Patient Name\s*[:_]', line, re.IGNORECASE):
+            return fields
+            
         # Handle EXACT patterns from reference analysis - these are the key multi-field lines
         exact_patterns = {
             # Main name line pattern - this is critical
             r'First\s*_{10,}.*?MI\s*_{2,}.*?Last\s*_{10,}.*?Nickname\s*_{5,}': [
                 ('First Name', 'first_name'),
-                ('Middle Initial', 'mi'), 
+                ('Middle Initial', 'mi'),  # Use 'mi' key to match reference
                 ('Last Name', 'last_name'),
                 ('Nickname', 'nickname')
             ],
@@ -723,7 +744,7 @@ class PDFFormFieldExtractor:
                 ('State', 'state'),
                 ('Zip', 'zip')
             ],
-            # Main phone line pattern  
+            # Main phone line pattern with exact reference names
             r'Mobile\s*_{10,}.*?Home\s*_{10,}.*?Work\s*_{10,}': [
                 ('Mobile', 'mobile'),
                 ('Home', 'home'),
@@ -731,11 +752,6 @@ class PDFFormFieldExtractor:
             ],
             # E-mail and driver's license pattern
             r'E-Mail\s*_{20,}.*?Drivers License #': [
-                ('E-Mail', 'e_mail'),
-                ('Drivers License #', 'drivers_license')
-            ],
-            # E-mail and drivers license
-            r'E-Mail\s*_{15,}.*?Drivers License #': [
                 ('E-Mail', 'e_mail'),
                 ('Drivers License #', 'drivers_license')
             ],
@@ -766,7 +782,7 @@ class PDFFormFieldExtractor:
                 ('In case of emergency, who should be notified', 'in_case_of_emergency_who_should_be_notified'),
                 ('Relationship to Patient', 'relationship_to_patient')
             ],
-            # Children section phones
+            # Children section phones with exact reference names
             r'Mobile Phone\s*_{10,}.*?Home Phone': [
                 ('Mobile Phone', 'mobile_phone'),
                 ('Home Phone', 'home_phone')
@@ -1161,15 +1177,19 @@ class PDFFormFieldExtractor:
                         field_type='input',
                         section=field.section,
                         optional=False,
-                        control={'input_type': 'initials'}
+                        control={'input_type': 'initials', 'hint': None}
                     )
                     processed_fields.append(initials_field)
                     continue  # Skip the original text field
             
             processed_fields.append(field)
         
-        # Basic field validation and cleanup only (no hardcoded additions)
+        # Basic field validation and cleanup - ensure all controls have hint field
         for field in processed_fields:
+            # Ensure hint field is always present for consistency with reference
+            if 'hint' not in field.control:
+                field.control['hint'] = None
+                
             # Fix input_type issues for states and signature fields
             if field.field_type == 'states' and 'input_type' in field.control:
                 field.control = {k: v for k, v in field.control.items() if k != 'input_type'}
@@ -1180,9 +1200,13 @@ class PDFFormFieldExtractor:
                 if 'hint' not in field.control:
                     field.control['hint'] = None
                     
-            # Fix mi field input_type
-            if field.key == 'mi' and field.control.get('input_type') == 'name':
+            # Fix mi field input_type to be 'initials' to match reference
+            if field.key == 'mi' and field.control.get('input_type') != 'initials':
                 field.control['input_type'] = 'initials'
+                
+            # Fix state fields that shouldn't have input_type
+            if field.field_type == 'states':
+                field.control.pop('input_type', None)
         
         return processed_fields
     
@@ -1290,10 +1314,20 @@ class PDFFormFieldExtractor:
         return fields
 
     def extract_fields_from_text(self, text_lines: List[str]) -> List[FieldInfo]:
-        """Extract form fields from text lines using universal extraction logic"""
+        """Extract form fields from text lines using form-specific extraction logic"""
         
-        # Use universal extraction that works across all form types
-        return self.extract_fields_universal(text_lines)
+        # Detect form type to choose appropriate extraction method
+        form_type = self.detect_form_type(text_lines)
+        
+        if form_type == "patient_info":
+            # Use specialized patient info form extraction
+            return self.extract_patient_info_form_fields(text_lines)
+        elif form_type == "consent":
+            # Use specialized consent form extraction  
+            return self.extract_consent_form_fields(text_lines)
+        else:
+            # Fall back to universal extraction for other form types
+            return self.extract_fields_universal(text_lines)
     
     def extract_fields_universal(self, text_lines: List[str]) -> List[FieldInfo]:
         """Universal field extraction that works across different form types"""
@@ -1846,7 +1880,7 @@ class PDFFormFieldExtractor:
                     field_type=field_type,
                     section=current_section,
                     control=control,
-                    line_idx=i
+                    line_idx=i  # Add line index for ordering
                 )
                 fields.append(field)
                 i += 1
@@ -2321,8 +2355,10 @@ class PDFFormFieldExtractor:
                 base_key = ModentoSchemaValidator.slugify(field_name)
                 
                 # Special case for Middle Initial to use "mi" key 
-                if field_name.lower() == "middle initial":
+                if field_name.lower() in ["middle initial", "mi"]:
                     base_key = "mi"
+                else:
+                    base_key = ModentoSchemaValidator.slugify(field_name)
                 
                 # Context-aware field numbering
                 context_lines_text = ' '.join(text_lines[max(0, i-5):i+5]).lower()
@@ -2375,7 +2411,8 @@ class PDFFormFieldExtractor:
                     field_type=field_type,
                     section=detected_section,
                     optional=not is_required,
-                    control=control
+                    control=control,
+                    line_idx=i  # Add line index for ordering
                 )
                 fields.append(field)
             
