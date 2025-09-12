@@ -6,7 +6,8 @@
     "optional": false,
     "type": "date",
     "control": {
-      "input_type": "any"
+      "input_type": "any",
+      "hint": null
     }
   },
   {
@@ -16,7 +17,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -26,7 +28,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -36,7 +39,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "initials"
+      "input_type": "initials",
+      "hint": null
     }
   },
   {
@@ -46,7 +50,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -56,7 +61,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -66,7 +72,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -76,7 +83,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -86,7 +94,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -96,7 +105,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -105,7 +115,9 @@
     "section": "Patient Information Form",
     "optional": false,
     "type": "states",
-    "control": {}
+    "control": {
+      "hint": null
+    }
   },
   {
     "key": "zip",
@@ -114,7 +126,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "zip"
+      "input_type": "zip",
+      "hint": null
     }
   },
   {
@@ -125,7 +138,8 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "phone_prefix": "+1"
+      "phone_prefix": "+1",
+      "hint": null
     }
   },
   {
@@ -136,7 +150,8 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "phone_prefix": "+1"
+      "phone_prefix": "+1",
+      "hint": null
     }
   },
   {
@@ -147,7 +162,8 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "phone_prefix": "+1"
+      "phone_prefix": "+1",
+      "hint": null
     }
   },
   {
@@ -158,7 +174,8 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "phone_prefix": "+1"
+      "phone_prefix": "+1",
+      "hint": null
     }
   },
   {
@@ -168,7 +185,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "email"
+      "input_type": "email",
+      "hint": null
     }
   },
   {
@@ -178,7 +196,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -205,7 +224,8 @@
           "name": "E-mail",
           "value": "e-mail"
         }
-      ]
+      ],
+      "hint": null
     }
   },
   {
@@ -215,7 +235,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "ssn"
+      "input_type": "ssn",
+      "hint": null
     }
   },
   {
@@ -225,7 +246,8 @@
     "optional": false,
     "type": "date",
     "control": {
-      "input_type": "past"
+      "input_type": "past",
+      "hint": null
     }
   },
   {
@@ -235,7 +257,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -245,7 +268,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -255,7 +279,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -264,7 +289,9 @@
     "section": "Patient Information Form",
     "optional": false,
     "type": "states",
-    "control": {}
+    "control": {
+      "hint": null
+    }
   },
   {
     "key": "zip_2",
@@ -273,7 +300,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "zip"
+      "input_type": "zip",
+      "hint": null
     }
   },
   {
@@ -292,7 +320,8 @@
           "name": "Female",
           "value": "female"
         }
-      ]
+      ],
+      "hint": null
     }
   },
   {
@@ -323,7 +352,8 @@
           "name": "Widowed",
           "value": "Widowed"
         }
-      ]
+      ],
+      "hint": null
     }
   },
   {
@@ -336,7 +366,7 @@
       "options": [
         {
           "name": "Yes",
-          "value": "Yes"
+          "value": true
         },
         {
           "name": "No Full-time Student",
@@ -344,9 +374,10 @@
         },
         {
           "name": "Yes",
-          "value": "Yes"
+          "value": true
         }
-      ]
+      ],
+      "hint": null
     }
   },
   {
@@ -356,7 +387,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -366,7 +398,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -376,7 +409,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -386,7 +420,8 @@
     "optional": false,
     "type": "date",
     "control": {
-      "input_type": "past"
+      "input_type": "past",
+      "hint": null
     }
   },
   {
@@ -396,7 +431,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -431,7 +467,8 @@
           "name": "Guardian",
           "value": "guardian"
         }
-      ]
+      ],
+      "hint": null
     }
   },
   {
@@ -441,7 +478,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -451,7 +489,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -461,7 +500,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -470,7 +510,9 @@
     "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
     "type": "states",
-    "control": {}
+    "control": {
+      "hint": null
+    }
   },
   {
     "key": "zip_3",
@@ -479,7 +521,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "zip"
+      "input_type": "zip",
+      "hint": null
     }
   },
   {
@@ -490,7 +533,8 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "phone_prefix": "+1"
+      "phone_prefix": "+1",
+      "hint": null
     }
   },
   {
@@ -501,7 +545,8 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "phone_prefix": "+1"
+      "phone_prefix": "+1",
+      "hint": null
     }
   },
   {
@@ -512,7 +557,8 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "phone_prefix": "+1"
+      "phone_prefix": "+1",
+      "hint": null
     }
   },
   {
@@ -523,7 +569,8 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "phone_prefix": "+1"
+      "phone_prefix": "+1",
+      "hint": null
     }
   },
   {
@@ -533,7 +580,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -543,7 +591,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -553,7 +602,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -562,7 +612,9 @@
     "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
     "type": "states",
-    "control": {}
+    "control": {
+      "hint": null
+    }
   },
   {
     "key": "zip_4",
@@ -571,7 +623,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "zip"
+      "input_type": "zip",
+      "hint": null
     }
   },
   {
@@ -581,7 +634,8 @@
     "optional": false,
     "type": "date",
     "control": {
-      "input_type": "past"
+      "input_type": "past",
+      "hint": null
     }
   },
   {
@@ -591,7 +645,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "ssn"
+      "input_type": "ssn",
+      "hint": null
     }
   },
   {
@@ -601,7 +656,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -611,7 +667,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -646,7 +703,9 @@
     "section": "Primary Dental Plan",
     "optional": false,
     "type": "states",
-    "control": {}
+    "control": {
+      "hint": null
+    }
   },
   {
     "key": "zip_5",
@@ -668,7 +727,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "number"
+      "input_type": "number",
+      "hint": null
     }
   },
   {
@@ -678,7 +738,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -688,7 +749,8 @@
     "optional": false,
     "type": "date",
     "control": {
-      "input_type": "past"
+      "input_type": "past",
+      "hint": null
     }
   },
   {
@@ -698,7 +760,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "ssn"
+      "input_type": "ssn",
+      "hint": null
     }
   },
   {
@@ -708,7 +771,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -718,7 +782,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -753,7 +818,9 @@
     "section": "Secondary Dental Plan",
     "optional": false,
     "type": "states",
-    "control": {}
+    "control": {
+      "hint": null
+    }
   },
   {
     "key": "zip_6",
@@ -775,7 +842,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "number"
+      "input_type": "number",
+      "hint": null
     }
   },
   {
@@ -785,7 +853,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -795,7 +864,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -805,7 +875,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -815,7 +886,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -825,7 +897,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -835,7 +908,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name"
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -845,7 +919,8 @@
     "optional": false,
     "type": "date",
     "control": {
-      "input_type": "any"
+      "input_type": "any",
+      "hint": null
     }
   },
   {
@@ -855,7 +930,8 @@
     "optional": false,
     "type": "date",
     "control": {
-      "input_type": "any"
+      "input_type": "any",
+      "hint": null
     }
   },
   {
@@ -864,6 +940,8 @@
     "section": "Signature",
     "optional": false,
     "type": "signature",
-    "control": {}
+    "control": {
+      "hint": null
+    }
   }
 ]
