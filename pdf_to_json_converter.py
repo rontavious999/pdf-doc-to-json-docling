@@ -1424,10 +1424,16 @@ class PDFFormFieldExtractor:
             if (line.startswith('##') or
                 (len(line_stripped) < 80 and any(keyword in line_lower for keyword in [
                     'patient information', 'medical history', 'dental history', 
-                    'insurance', 'emergency contact', 'signature', 'consent',
+                    'emergency contact', 'signature', 'consent',
                     'for children', 'minors only', 'primary dental plan', 
                     'secondary dental plan', 'benefit plan', 'registration'
                 ]))):
+                
+                # Exclude field labels that might contain section keywords
+                if any(pattern in line_lower for pattern in [
+                    'insurance company', '__', 'phone', 'name of insured', 'plan name'
+                ]):
+                    continue
                 
                 # Clean up the section name
                 section_name = line_stripped.replace('##', '').strip()
@@ -1443,7 +1449,8 @@ class PDFFormFieldExtractor:
                     section_name = "Dental History"
                 elif 'children' in line_lower or 'minors' in line_lower:
                     section_name = "FOR CHILDREN/MINORS ONLY"
-                elif 'primary dental' in line_lower or 'primary insurance' in line_lower:
+                elif ('primary dental' in line_lower or 'primary insurance' in line_lower or 
+                      'dental benefit plan information primary' in line_lower):
                     section_name = "Primary Dental Plan"
                 elif 'secondary dental' in line_lower or 'secondary insurance' in line_lower:
                     section_name = "Secondary Dental Plan"
@@ -2281,82 +2288,6 @@ class PDFFormFieldExtractor:
         fields = self.post_process_fields(fields)
         
         return fields
-    
-    def post_process_for_npf_accuracy(self, fields: List[FieldInfo], pdf_name: str) -> List[FieldInfo]:
-        """Post-process fields to ensure NPF accuracy matches reference exactly"""
-        
-        # Only apply this fix for npf.pdf to ensure exact reference matching
-        if 'npf' not in pdf_name.lower():
-            return fields
-        
-        # Load reference for npf.pdf
-        try:
-            reference_path = Path("pdfs/npf.json")
-            if not reference_path.exists():
-                return fields
-                
-            with open(reference_path) as f:
-                reference = json.load(f)
-        except:
-            return fields
-        
-        print(f"[*] Applying NPF accuracy post-processing...")
-        
-        # Create mapping of reference fields
-        ref_by_key = {field['key']: field for field in reference}
-        ref_keys_order = [field['key'] for field in reference]
-        
-        fixed_fields = []
-        used_keys = set()
-        
-        # Process current fields, filtering problematic ones
-        for field in fields:
-            # Skip problematic fields that shouldn't exist
-            if field.key in ['patient_name'] or field.title in ['Patient Name']:
-                continue
-            
-            # Try to map to reference field
-            if field.key in ref_by_key and field.key not in used_keys:
-                ref_field = ref_by_key[field.key]
-                
-                # Create field with reference structure
-                fixed_field = FieldInfo(
-                    key=ref_field['key'],
-                    title=ref_field['title'],
-                    field_type=ref_field['type'],
-                    section=ref_field['section'],
-                    optional=ref_field['optional'],
-                    control=ref_field['control'].copy(),
-                    line_idx=field.line_idx
-                )
-                fixed_fields.append(fixed_field)
-                used_keys.add(field.key)
-        
-        # Add any missing reference fields
-        for ref_field in reference:
-            if ref_field['key'] not in used_keys:
-                missing_field = FieldInfo(
-                    key=ref_field['key'],
-                    title=ref_field['title'],
-                    field_type=ref_field['type'],
-                    section=ref_field['section'],
-                    optional=ref_field['optional'],
-                    control=ref_field['control'].copy(),
-                    line_idx=0
-                )
-                fixed_fields.append(missing_field)
-        
-        # Sort to match reference order
-        def get_ref_order(field):
-            try:
-                return ref_keys_order.index(field.key)
-            except ValueError:
-                return len(ref_keys_order)
-        
-        fixed_fields.sort(key=get_ref_order)
-        
-        print(f"[*] NPF post-processing: {len(fields)} -> {len(fixed_fields)} fields")
-        return fixed_fields
 
 
 class PDFToJSONConverter:
@@ -2378,9 +2309,6 @@ class PDFToJSONConverter:
         
         # Extract form fields
         fields = self.extractor.extract_fields_from_text(text_lines)
-        
-        # Apply NPF-specific post-processing for accuracy
-        fields = self.extractor.post_process_for_npf_accuracy(fields, pdf_path.name)
         
         # Sort fields by line_idx to preserve document order, not by section name
         fields.sort(key=lambda f: getattr(f, 'line_idx', 0))
