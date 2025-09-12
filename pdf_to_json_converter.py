@@ -729,6 +729,11 @@ class PDFFormFieldExtractor:
                 ('Home', 'home'),
                 ('Work', 'work')
             ],
+            # E-mail and driver's license pattern
+            r'E-Mail\s*_{20,}.*?Drivers License #': [
+                ('E-Mail', 'e_mail'),
+                ('Drivers License #', 'drivers_license')
+            ],
             # E-mail and drivers license
             r'E-Mail\s*_{15,}.*?Drivers License #': [
                 ('E-Mail', 'e_mail'),
@@ -1408,6 +1413,59 @@ class PDFFormFieldExtractor:
                     line_idx=i
                 ))
             
+            # Handle standalone field labels
+            line_stripped = line.strip()
+            standalone_fields = {
+                'SSN': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn'}),
+                'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}]}),
+                'Social Security No.': ('ssn_2', 'Social Security No.', 'input', {'input_type': 'ssn'}),
+                "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'any'}),
+                'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any'}), 
+                'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past'}),
+                'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past'}),
+                'Marital Status': ('marital_status', 'Marital Status', 'radio', {
+                    'options': [
+                        {"name": "Married", "value": "Married"},
+                        {"name": "Single", "value": "Single"},
+                        {"name": "Divorced", "value": "Divorced"},
+                        {"name": "Separated", "value": "Separated"},
+                        {"name": "Widowed", "value": "Widowed"}
+                    ]
+                })
+            }
+            
+            # Normalize line for better matching (handle Unicode variations)
+            line_normalized = line_stripped.replace(" '", "'").replace("'", "'")
+            
+            # Check exact match first, then normalized match
+            matched_key = None
+            if line_stripped in standalone_fields:
+                matched_key = line_stripped
+            else:
+                # Try normalized matching for Unicode variations
+                for key in standalone_fields.keys():
+                    key_normalized = key.replace(" '", "'").replace("'", "'")
+                    if line_normalized == key_normalized:
+                        matched_key = key
+                        break
+            
+            if matched_key:
+                base_key, title, field_type, control = standalone_fields[matched_key]
+                
+                # Create unique key
+                key = make_unique_key(base_key)
+                
+                field = FieldInfo(
+                    key=key,
+                    title=title,
+                    field_type=field_type,
+                    section=current_section,
+                    optional=False,
+                    control=control,
+                    line_idx=i
+                )
+                fields.append(field)
+
             i += 1
         
         return fields
@@ -1424,10 +1482,16 @@ class PDFFormFieldExtractor:
             if (line.startswith('##') or
                 (len(line_stripped) < 80 and any(keyword in line_lower for keyword in [
                     'patient information', 'medical history', 'dental history', 
-                    'insurance', 'emergency contact', 'signature', 'consent',
+                    'emergency contact', 'signature', 'consent',
                     'for children', 'minors only', 'primary dental plan', 
                     'secondary dental plan', 'benefit plan', 'registration'
                 ]))):
+                
+                # Exclude field labels that might contain section keywords
+                if any(pattern in line_lower for pattern in [
+                    'insurance company', '__', 'phone', 'name of insured', 'plan name'
+                ]):
+                    continue
                 
                 # Clean up the section name
                 section_name = line_stripped.replace('##', '').strip()
@@ -1443,7 +1507,8 @@ class PDFFormFieldExtractor:
                     section_name = "Dental History"
                 elif 'children' in line_lower or 'minors' in line_lower:
                     section_name = "FOR CHILDREN/MINORS ONLY"
-                elif 'primary dental' in line_lower or 'primary insurance' in line_lower:
+                elif ('primary dental' in line_lower or 'primary insurance' in line_lower or 
+                      'dental benefit plan information primary' in line_lower):
                     section_name = "Primary Dental Plan"
                 elif 'secondary dental' in line_lower or 'secondary insurance' in line_lower:
                     section_name = "Secondary Dental Plan"
@@ -1503,8 +1568,13 @@ class PDFFormFieldExtractor:
                 return question, options, start_idx + 1
         
         # Pattern 2: Question followed by options on subsequent lines
-        if ':' in line and not line.strip().startswith('##'):
-            question = line.split(':')[0].strip()
+        if (':' in line or line.strip().endswith('?')) and not line.strip().startswith('##'):
+            if ':' in line:
+                question = line.split(':')[0].strip()
+            else:
+                # Handle questions ending with ?
+                question = line.strip().rstrip('?').strip()
+            
             if len(question) < 5:
                 return None, [], start_idx
                 
@@ -1539,6 +1609,49 @@ class PDFFormFieldExtractor:
         """Detect input fields in a line"""
         fields = []
         
+        # First check exact patterns for precise field naming
+        exact_patterns = {
+            # Main name line pattern - this is critical
+            r'First\s*_{10,}.*?MI\s*_{2,}.*?Last\s*_{10,}.*?Nickname\s*_{5,}': [
+                ('First Name', 'first_name'),
+                ('Middle Initial', 'mi'), 
+                ('Last Name', 'last_name'),
+                ('Nickname', 'nickname')
+            ],
+            # Address line pattern
+            r'Street\s*_{30,}.*?Apt/Unit/Suite\s*_{5,}': [
+                ('Street', 'street'),
+                ('Apt/Unit/Suite', 'apt_unit_suite')
+            ],
+            # City/State/Zip pattern
+            r'City\s*_{20,}.*?State\s*_{5,}.*?Zip\s*_{10,}': [
+                ('City', 'city'),
+                ('State', 'state'),
+                ('Zip', 'zip')
+            ],
+            # Main phone line pattern  
+            r'Mobile\s*_{10,}.*?Home\s*_{10,}.*?Work\s*_{10,}': [
+                ('Mobile', 'mobile'),
+                ('Home', 'home'),
+                ('Work', 'work')
+            ],
+            # E-mail and driver's license pattern
+            r'E-Mail\s*_{20,}.*?Drivers License #': [
+                ('E-Mail', 'e_mail'),
+                ('Drivers License #', 'drivers_license')
+            ],
+        }
+        
+        # Check if line matches any exact pattern
+        for pattern, field_mappings in exact_patterns.items():
+            if re.search(pattern, line, re.IGNORECASE):
+                # Use the exact field mappings instead of extracting from line
+                for field_title, field_key in field_mappings:
+                    fields.append((field_title, line))
+                return fields  # Return early to avoid double extraction
+        
+        # Fallback to generic patterns if no exact match
+        
         # Pattern 1: "Label:" pattern
         if ':' in line and not line.strip().startswith('##'):
             label = line.split(':')[0].strip()
@@ -1551,14 +1664,6 @@ class PDFFormFieldExtractor:
         for match in matches:
             label = match.group(1).strip()
             if len(label) > 1 and len(label) < 50:
-                fields.append((label, line))
-        
-        # Pattern 3: Inline labels like "First____ MI___ Last____"
-        inline_pattern = r'([A-Za-z]+)_{3,}'
-        matches = re.finditer(inline_pattern, line)
-        for match in matches:
-            label = match.group(1).strip()
-            if len(label) > 1:
                 fields.append((label, line))
         
         return fields
@@ -2117,7 +2222,6 @@ class PDFFormFieldExtractor:
                 r'^Address:?\s*$', 
                 r'^Phone:?\s*$',
                 r'^Work Address:?\s*$',
-                r'^Today\s*\'?s?\s*Date:?\s*$',
                 r'^Social Security No\.?:?\s*$',
                 r'^Date of Birth:?\s*$',
                 r'^Insurance Company:?\s*$',
@@ -2281,82 +2385,6 @@ class PDFFormFieldExtractor:
         fields = self.post_process_fields(fields)
         
         return fields
-    
-    def post_process_for_npf_accuracy(self, fields: List[FieldInfo], pdf_name: str) -> List[FieldInfo]:
-        """Post-process fields to ensure NPF accuracy matches reference exactly"""
-        
-        # Only apply this fix for npf.pdf to ensure exact reference matching
-        if 'npf' not in pdf_name.lower():
-            return fields
-        
-        # Load reference for npf.pdf
-        try:
-            reference_path = Path("pdfs/npf.json")
-            if not reference_path.exists():
-                return fields
-                
-            with open(reference_path) as f:
-                reference = json.load(f)
-        except:
-            return fields
-        
-        print(f"[*] Applying NPF accuracy post-processing...")
-        
-        # Create mapping of reference fields
-        ref_by_key = {field['key']: field for field in reference}
-        ref_keys_order = [field['key'] for field in reference]
-        
-        fixed_fields = []
-        used_keys = set()
-        
-        # Process current fields, filtering problematic ones
-        for field in fields:
-            # Skip problematic fields that shouldn't exist
-            if field.key in ['patient_name'] or field.title in ['Patient Name']:
-                continue
-            
-            # Try to map to reference field
-            if field.key in ref_by_key and field.key not in used_keys:
-                ref_field = ref_by_key[field.key]
-                
-                # Create field with reference structure
-                fixed_field = FieldInfo(
-                    key=ref_field['key'],
-                    title=ref_field['title'],
-                    field_type=ref_field['type'],
-                    section=ref_field['section'],
-                    optional=ref_field['optional'],
-                    control=ref_field['control'].copy(),
-                    line_idx=field.line_idx
-                )
-                fixed_fields.append(fixed_field)
-                used_keys.add(field.key)
-        
-        # Add any missing reference fields
-        for ref_field in reference:
-            if ref_field['key'] not in used_keys:
-                missing_field = FieldInfo(
-                    key=ref_field['key'],
-                    title=ref_field['title'],
-                    field_type=ref_field['type'],
-                    section=ref_field['section'],
-                    optional=ref_field['optional'],
-                    control=ref_field['control'].copy(),
-                    line_idx=0
-                )
-                fixed_fields.append(missing_field)
-        
-        # Sort to match reference order
-        def get_ref_order(field):
-            try:
-                return ref_keys_order.index(field.key)
-            except ValueError:
-                return len(ref_keys_order)
-        
-        fixed_fields.sort(key=get_ref_order)
-        
-        print(f"[*] NPF post-processing: {len(fields)} -> {len(fixed_fields)} fields")
-        return fixed_fields
 
 
 class PDFToJSONConverter:
@@ -2378,9 +2406,6 @@ class PDFToJSONConverter:
         
         # Extract form fields
         fields = self.extractor.extract_fields_from_text(text_lines)
-        
-        # Apply NPF-specific post-processing for accuracy
-        fields = self.extractor.post_process_for_npf_accuracy(fields, pdf_path.name)
         
         # Sort fields by line_idx to preserve document order, not by section name
         fields.sort(key=lambda f: getattr(f, 'line_idx', 0))

@@ -1,0 +1,40 @@
+[
+  {
+    "key": "name_of_patient",
+    "title": "Name of Patient",
+    "section": "Side Effects",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "signature",
+    "title": "Signature",
+    "section": "Side Effects",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name"
+    }
+  },
+  {
+    "key": "date_signed",
+    "title": "Date Signed",
+    "section": "Side Effects",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "any"
+    }
+  },
+  {
+    "key": "signature_2",
+    "title": "Signature",
+    "section": "Signature",
+    "optional": false,
+    "type": "signature",
+    "control": {}
+  }
+]

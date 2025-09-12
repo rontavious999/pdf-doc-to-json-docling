@@ -182,33 +182,6 @@
     }
   },
   {
-    "key": "what_is_your_preferred_method_of_contact",
-    "title": "What is your preferred method of contact",
-    "section": "Patient Information Form",
-    "optional": false,
-    "type": "radio",
-    "control": {
-      "options": [
-        {
-          "name": "Mobile Phone",
-          "value": "mobile phone"
-        },
-        {
-          "name": "Home Phone",
-          "value": "home phone"
-        },
-        {
-          "name": "Work Phone",
-          "value": "work phone"
-        },
-        {
-          "name": "E-mail",
-          "value": "e-mail"
-        }
-      ]
-    }
-  },
-  {
     "key": "ssn_2",
     "title": "Social Security No.",
     "section": "Patient Information Form",
@@ -322,29 +295,6 @@
         {
           "name": "Widowed",
           "value": "Widowed"
-        }
-      ]
-    }
-  },
-  {
-    "key": "is_the_patient_a_minor",
-    "title": "Is the patient a Minor",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "radio",
-    "control": {
-      "options": [
-        {
-          "name": "Yes",
-          "value": "Yes"
-        },
-        {
-          "name": "No Full-time Student",
-          "value": "no full-time student"
-        },
-        {
-          "name": "Yes",
-          "value": "Yes"
         }
       ]
     }
