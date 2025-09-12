@@ -733,10 +733,22 @@ class PDFFormFieldExtractor:
                 ('Last Name', 'last_name'),
                 ('Nickname', 'nickname')
             ],
+            # Children section name line - responsible party
+            r'First\s*_{10,}.*?Last\s*_{10,}': [
+                ('First Name', 'first_name_2'),  # numbered for children section
+                ('Last Name', 'last_name_2')
+            ],
             # Address line pattern
             r'Street\s*_{30,}.*?Apt/Unit/Suite\s*_{5,}': [
                 ('Street', 'street'),
                 ('Apt/Unit/Suite', 'apt_unit_suite')
+            ],
+            # Children section address pattern (if different from patient)
+            r'Street\s*_{10,}.*?City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
+                ('Street', 'if_different_from_patient_street'),  # Special naming for children section
+                ('City', 'city_3'),
+                ('State', 'state_4'), 
+                ('Zip', 'zip_3')
             ],
             # City/State/Zip pattern
             r'City\s*_{20,}.*?State\s*_{5,}.*?Zip\s*_{10,}': [
@@ -744,11 +756,17 @@ class PDFFormFieldExtractor:
                 ('State', 'state'),
                 ('Zip', 'zip')
             ],
-            # Main phone line pattern with exact reference names
+            # Main phone line pattern  
             r'Mobile\s*_{10,}.*?Home\s*_{10,}.*?Work\s*_{10,}': [
                 ('Mobile', 'mobile'),
                 ('Home', 'home'),
                 ('Work', 'work')
+            ],
+            # Children section phone pattern 
+            r'Mobile\s*_{15,}.*?Home\s*_{10,}.*?Work\s*_{10,}': [
+                ('Mobile', 'mobile_2'),
+                ('Home', 'home_2'), 
+                ('Work', 'work_2')
             ],
             # E-mail and driver's license pattern
             r'E-Mail\s*_{20,}.*?Drivers License #': [
@@ -1765,6 +1783,12 @@ class PDFFormFieldExtractor:
                     i += 2  # Skip both the "Work Address:" line and the fields line
                     continue
 
+            # Skip very long lines that are policy text during main field extraction - process these later
+            if (len(line) > 200 and 
+                any(keyword in line.lower() for keyword in ['responsibility', 'payment', 'benefit', 'insurance'])):
+                i += 1
+                continue
+
             # Detect section headers - improved pattern matching
             line_upper = line.upper()
             if line.startswith('##') or any(header in line_upper for header in [
@@ -2027,72 +2051,10 @@ class PDFFormFieldExtractor:
                 continue
             
 
-            # Handle consent questions with YES/NO checkboxes - improved pattern for both formats
-            # First normalize special Unicode spaces that may come from OCR
-            normalized_line = re.sub(r'[\uf031\uf020\u2003\u2002\u2000-\u200b\ufeff]+', ' ', line)
-            
-            consent_patterns = [
-                r'(.+?)\s+YES\s+N\s*O?\s*\(Check One\)',  # Standard format with flexible N O spacing
-                r'(.+?)\.\s+YES\s+N\s*O\s*\(Check One\)',  # Format with period before YES
-                r'(.+?)\s+YES\s+N\s+O\s*\(Check One\)',  # Format with space between N and O
-                r'(.+?)\s*\.\s*YES\s+N\s+O\s*\(Check One\)',  # Format with period and spaces
-                r'(.+?)\s+YES\s+N\s+O\s+\(Check One\)'   # Format with extra spaces
-            ]
-            
-            consent_found = False
-            for pattern in consent_patterns:
-                if re.search(pattern, normalized_line, re.IGNORECASE):
-                    # Extract the question part
-                    question_match = re.match(pattern, normalized_line, re.IGNORECASE)
-                    if question_match:
-                        question = question_match.group(1).strip()
-                        # Truncate very long questions for the key
-                        if len(question) > 200:
-                            question_short = question[:197] + "..."
-                        else:
-                            question_short = question
-                        
-                        key = ModentoSchemaValidator.slugify(question_short)
-                        
-                        field = FieldInfo(
-                            key=key,
-                            title=question,
-                            field_type='radio',
-                            section=current_section,
-                            optional=False,
-                            control={
-                                'options': [
-                                    {"name": "Yes", "value": True},
-                                    {"name": "No", "value": False}
-                                ],
-                                'hint': None,
-                                'text': "",
-                                'html_text': f"<p>{question}</p>",
-                                'temporary_html_text': f"<p>{question}</p>"
-                            }
-                        )
-                        fields.append(field)
-                        
-                        # Add initials field
-                        if 'initials' in field_counters:
-                            field_counters['initials'] += 1
-                            initials_key = f"initials_{field_counters['initials']}"
-                        else:
-                            field_counters['initials'] = 1
-                            initials_key = "initials"
-                        
-                        field = FieldInfo(
-                            key=initials_key,
-                            title="Initial",
-                            field_type='input',
-                            section=current_section,
-                            control={'input_type': 'initials'}
-                        )
-                        fields.append(field)
-                        consent_found = True
-                        break
-            
-            if consent_found:
+            # Skip long authorization text blocks during main field extraction - process these later
+            if (len(line) > 100 and 
+                'authorize' in line.lower() and 
+                'personal information' in line.lower()):
                 i += 1
                 continue
                 
@@ -2249,9 +2211,109 @@ class PDFFormFieldExtractor:
                 i += 1
                 continue
             
-            # Parse inline fields from the line
-            inline_fields = self.parse_inline_fields(line)
+            # Handle standalone field labels followed by underscores on next line
+            if (line.strip().endswith(':') or 
+                (not re.search(r'_{3,}', line) and i + 1 < len(text_lines) and re.search(r'^_{5,}', text_lines[i + 1]))):
+                
+                # Clean up the field name - handle OCR artifacts like "No Name of School" should be "Name of School"
+                field_name = line.strip().rstrip(':').rstrip('?')
+                
+                # Fix common OCR misreads
+                if field_name.lower().startswith('no ') and len(field_name.split()) > 2:
+                    # Check if it's actually a "No" response that got merged with field name
+                    potential_field = field_name[3:].strip()  # Remove "No "
+                    if len(potential_field) > 5 and not potential_field.lower().startswith('name'):
+                        field_name = potential_field
+                
+                # Skip if it's clearly a section header
+                if any(skip in field_name.lower() for skip in [
+                    'patient name', 'address', 'phone', 'work address'  
+                ]):
+                    i += 1
+                    continue
+                
+                # Process as standalone field
+                if len(field_name) > 2 and len(field_name) < 80:
+                    # Determine field type
+                    field_type = self.detect_field_type(field_name)
+                    
+                    # Special section detection
+                    detected_section = self.detect_section(field_name, text_lines[max(0, i-10):i+10], current_section)
+                    
+                    # Create control based on type
+                    control = {}
+                    if field_type == 'input':
+                        input_type = self.detect_input_type(field_name)
+                        control['input_type'] = input_type
+                        if input_type == 'phone':
+                            control['phone_prefix'] = '+1'
+                        control['hint'] = None
+                    elif field_type == 'date':
+                        if 'birth' in field_name.lower() or 'dob' in field_name.lower():
+                            control['input_type'] = 'past'
+                        else:
+                            control['input_type'] = 'any'
+                        control['hint'] = None
+                    elif field_type == 'signature':
+                        control = {'hint': None}
+                    
+                    # Handle special cases
+                    if 'state' in field_name.lower() and 'estate' not in field_name.lower():
+                        field_type = 'states'
+                        control = {'hint': None}
+                    
+                    # Normalize field name
+                    normalized_name = self.normalize_field_name(field_name, line)
+                    
+                    # Create unique key with proper numbering
+                    base_key = ModentoSchemaValidator.slugify(normalized_name)
+                    
+                    # Context-aware field numbering
+                    context_lines_text = ' '.join(text_lines[max(0, i-5):i+5]).lower()
+                    existing_fields_in_section = [f for f in fields if f.section == detected_section]
+                    same_type_in_section = [f for f in existing_fields_in_section if f.key.startswith(base_key)]
+                    
+                    should_number = False
+                    
+                    # Check for secondary dental plan
+                    if detected_section == "Secondary Dental Plan" and any(existing_field.key == base_key for existing_field in fields):
+                        should_number = True
+                    
+                    # Check for children/minors section variations  
+                    elif (detected_section == "FOR CHILDREN/MINORS ONLY" and 
+                          any(existing_field.key == base_key for existing_field in fields)):
+                        should_number = True
+                    
+                    # Check for any duplicate in same section
+                    elif same_type_in_section:
+                        should_number = True
+                    
+                    if should_number:
+                        if base_key not in field_counters:
+                            field_counters[base_key] = len([f for f in fields if f.key.startswith(base_key)])
+                        field_counters[base_key] += 1
+                        key = f"{base_key}_{field_counters[base_key]}"
+                    else:
+                        if base_key not in field_counters:
+                            field_counters[base_key] = 1
+                        key = base_key
+                    
+                    field = FieldInfo(
+                        key=key,
+                        title=normalized_name,
+                        field_type=field_type,
+                        section=detected_section,
+                        optional=False,
+                        control=control,
+                        line_idx=i
+                    )
+                    fields.append(field)
+                
+                i += 1
+                continue
             
+            # Parse inline fields from the line - but prioritize key multi-field lines first  
+            inline_fields = self.parse_inline_fields(line)
             for field_name, full_line in inline_fields:
                 # Determine field type
                 field_type = self.detect_field_type(field_name)
@@ -2302,7 +2364,7 @@ class PDFFormFieldExtractor:
                 # Handle special cases
                 if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                     field_type = 'states'
-                    # Preserve existing hint but remove input_type for states
+                    # States should not have input_type according to reference
                     existing_hint = control.get('hint')
                     control = {'hint': existing_hint}
                 
@@ -2330,9 +2392,12 @@ class PDFFormFieldExtractor:
                 # Create unique key with numbering for duplicates with better context awareness
                 base_key = ModentoSchemaValidator.slugify(field_name)
                 
-                # Special case for Middle Initial to use "mi" key 
+                # Special case for Middle Initial to use "mi" key and correct input_type
                 if field_name.lower() in ["middle initial", "mi"]:
                     base_key = "mi"
+                    # Middle initial should have input_type "name" according to reference
+                    if field_type == 'input':
+                        control['input_type'] = 'name'
                 else:
                     base_key = ModentoSchemaValidator.slugify(field_name)
                 
@@ -2393,6 +2458,178 @@ class PDFFormFieldExtractor:
                 fields.append(field)
             
             i += 1
+        
+        # SECOND PASS: Process long text blocks and complex authorization content at the end
+        # Find the line numbers for text processing first to ensure proper ordering
+        text_lines_to_process = []
+        auth_line = None
+        
+        for i, line in enumerate(text_lines):
+            # Find patient responsibilities text (should be text_3)
+            if (len(line) > 100 and 
+                ('patient responsibilities' in line.lower() or 'payment' in line.lower()) and
+                'we are committed' in line.lower()):
+                text_lines_to_process.append(('text_3', i))
+            
+            # Find "I have read" text (should be text_4)  
+            elif ('read' in line.lower() and 'agree' in line.lower() and '(initial)' in line.lower()):
+                text_lines_to_process.append(('text_4', i))
+            
+            # Find authorization question
+            elif ('authorize' in line.lower() and 'personal information' in line.lower() and 
+                  'yes' in line.lower() and 'no' in line.lower()):
+                auth_line = i
+        
+        # Process in line order to maintain sequence
+        for field_type, line_idx in sorted(text_lines_to_process):
+            line = text_lines[line_idx]
+            
+            if field_type == 'text_3':
+                # Process patient responsibilities text block
+                text_content = [line]
+                j = line_idx + 1
+                
+                # Collect related content but stop before authorization
+                while j < len(text_lines) and j < len(text_lines) - 5:
+                    next_line = text_lines[j].strip()
+                    if (('authorize' in next_line.lower() and 'yes' in next_line.lower()) or
+                        'signature' in next_line.lower() and '___' in next_line or
+                        'read' in next_line.lower() and 'agree' in next_line.lower()):
+                        break
+                    if len(next_line) > 30:
+                        text_content.append(next_line)
+                    j += 1
+                
+                full_text = ' '.join(text_content)
+                html_text = self.format_text_as_html(full_text)
+                
+                field = FieldInfo(
+                    key="text_3",
+                    title="",
+                    field_type='text',
+                    section="Signature",
+                    optional=False,
+                    control={
+                        'html_text': html_text,
+                        'temporary_html_text': html_text,
+                        'text': ""
+                    },
+                    line_idx=line_idx
+                )
+                fields.append(field)
+                
+                # Add initials field after text_3
+                field = FieldInfo(
+                    key="initials",
+                    title="Initial",
+                    field_type='input',
+                    section="Signature",
+                    optional=False,
+                    control={'input_type': 'initials'},
+                    line_idx=line_idx
+                )
+                fields.append(field)
+            
+            elif field_type == 'text_4':
+                # Extract text before (initial)
+                text_part = re.split(r'\s*\(initial\)', line, flags=re.IGNORECASE)[0].strip()
+                if text_part:
+                    field = FieldInfo(
+                        key="text_4",
+                        title="",
+                        field_type='text',
+                        section="Signature",
+                        optional=False,
+                        control={
+                            'html_text': f"<p>{text_part}</p>",
+                            'temporary_html_text': f"<p>{text_part}</p>",
+                            'text': ""
+                        },
+                        line_idx=line_idx
+                    )
+                    fields.append(field)
+                    
+                    # Add initials_2 field
+                    field = FieldInfo(
+                        key="initials_2",
+                        title="Initial",
+                        field_type='input',
+                        section="Signature",
+                        optional=False,
+                        control={'input_type': 'initials'},
+                        line_idx=line_idx
+                    )
+                    fields.append(field)
+        
+        # Process authorization question at its proper position
+        if auth_line is not None:
+            line = text_lines[auth_line]
+            # More flexible pattern to handle "N O" spacing
+            question_match = re.match(r'^(.*?)\s+YES\s+N\s*O?\s*\(Check One\)', line, re.IGNORECASE)
+            if not question_match:
+                # Try alternative pattern
+                question_match = re.match(r'^(.*?)\s+YES\s+N\s+O\s*\(Check One\)', line, re.IGNORECASE)
+            
+            if question_match:
+                question = question_match.group(1).strip()
+                
+                field = FieldInfo(
+                    key="i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_",
+                    title=question,
+                    field_type='radio',
+                    section="Signature",
+                    optional=False,
+                    control={
+                        'options': [
+                            {"name": "Yes", "value": True},
+                            {"name": "No", "value": False}
+                        ],
+                        'hint': None,
+                        'text': "",
+                        'html_text': f"<p>{question}</p>",
+                        'temporary_html_text': f"<p>{question}</p>"
+                    },
+                    line_idx=auth_line
+                )
+                fields.append(field)
+                
+                # Add initials_3 field
+                field = FieldInfo(
+                    key="initials_3",
+                    title="Initial",
+                    field_type='input',
+                    section="Signature",
+                    optional=False,
+                    control={'input_type': 'initials'},
+                    line_idx=auth_line
+                )
+                fields.append(field)
+        
+        # Ensure signature and date_signed fields are present
+        has_signature = any(f.key == 'signature' for f in fields)
+        has_date_signed = any(f.key == 'date_signed' for f in fields)
+        
+        if not has_signature:
+            fields.append(FieldInfo(
+                key="signature",
+                title="Signature",
+                field_type='signature',
+                section="Signature",
+                optional=False,
+                control={'hint': None},
+                line_idx=9999  # Ensure it's at the end
+            ))
+        
+        if not has_date_signed:
+            fields.append(FieldInfo(
+                key="date_signed",
+                title="Date Signed",
+                field_type='date',
+                section="Signature",
+                optional=False,
+                control={'input_type': 'any', 'hint': None},
+                line_idx=9999  # Ensure it's at the end
+            ))
         
         # Post-process fields to fix specific extraction issues
         fields = self.post_process_fields(fields)

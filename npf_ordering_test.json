@@ -1,39 +1,5 @@
 [
   {
-    "key": "i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_",
-    "title": "I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. ",
-    "section": "Signature",
-    "optional": false,
-    "type": "radio",
-    "control": {
-      "options": [
-        {
-          "name": "Yes",
-          "value": true
-        },
-        {
-          "name": "No",
-          "value": false
-        }
-      ],
-      "hint": null,
-      "text": "",
-      "html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. ",
-      "temporary_html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. "
-    }
-  },
-  {
-    "key": "initials_3",
-    "title": "Initial",
-    "section": "Signature",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "initials",
-      "hint": null
-    }
-  },
-  {
     "key": "todays_date",
     "title": "Today's Date",
     "section": "Patient Information Form",

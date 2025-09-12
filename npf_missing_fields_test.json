@@ -1,39 +1,5 @@
 [
   {
-    "key": "i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_",
-    "title": "I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. ",
-    "section": "Signature",
-    "optional": false,
-    "type": "radio",
-    "control": {
-      "options": [
-        {
-          "name": "Yes",
-          "value": true
-        },
-        {
-          "name": "No",
-          "value": false
-        }
-      ],
-      "hint": null,
-      "text": "",
-      "html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. ",
-      "temporary_html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. "
-    }
-  },
-  {
-    "key": "initials_3",
-    "title": "Initial",
-    "section": "Signature",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "initials",
-      "hint": null
-    }
-  },
-  {
     "key": "todays_date",
     "title": "Today's Date",
     "section": "Patient Information Form",
@@ -201,6 +167,16 @@
     }
   },
   {
+    "key": "state_2",
+    "title": "State",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    }
+  },
+  {
     "key": "what_is_your_preferred_method_of_contact",
     "title": "What Is Your Preferred Method Of Contact",
     "section": "Patient Information Form",
@@ -251,6 +227,28 @@
     }
   },
   {
+    "key": "patient_employed_by",
+    "title": "Patient Employed By",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "occupation",
+    "title": "Occupation",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
     "key": "street_2",
     "title": "Street",
     "section": "Patient Information Form",
@@ -273,7 +271,7 @@
     }
   },
   {
-    "key": "state_2",
+    "key": "state_3",
     "title": "State",
     "section": "Patient Information Form",
     "optional": false,
@@ -346,6 +344,17 @@
     }
   },
   {
+    "key": "in_case_of_emergency_who_should_be_notified",
+    "title": "In case of emergency, who should be notified",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
     "key": "relationship_to_patient",
     "title": "Relationship To Patient",
     "section": "Patient Information Form",
@@ -410,6 +419,16 @@
           "value": false
         }
       ],
+      "hint": null
+    }
+  },
+  {
+    "key": "no_name_of_school",
+    "title": "No Name of School",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "radio",
+    "control": {
       "hint": null
     }
   },
@@ -536,6 +555,39 @@
     }
   },
   {
+    "key": "employer_if_different_from_above",
+    "title": "Employer (if different from above)",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "occupation_2",
+    "title": "Occupation",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "name_of_insured",
+    "title": "Name of Insured",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
     "key": "birthdate",
     "title": "Birthdate",
     "section": "Primary Dental Plan",
@@ -583,6 +635,17 @@
     }
   },
   {
+    "key": "plan_group_number",
+    "title": "Plan/Group Number",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number",
+      "hint": null
+    }
+  },
+  {
     "key": "id_number",
     "title": "ID Number",
     "section": "Primary Dental Plan",
@@ -608,6 +671,17 @@
     "key": "tel",
     "title": "Tel",
     "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "name_of_insured_2",
+    "title": "Name of Insured",
+    "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
@@ -660,6 +734,17 @@
       "extra": {
         "hint": "Insurance Company"
       }
+    }
+  },
+  {
+    "key": "plan_group_number_2",
+    "title": "Plan/Group Number",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number",
+      "hint": null
     }
   },
   {
