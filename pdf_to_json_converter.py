@@ -729,6 +729,11 @@ class PDFFormFieldExtractor:
                 ('Home', 'home'),
                 ('Work', 'work')
             ],
+            # E-mail and driver's license pattern
+            r'E-Mail\s*_{20,}.*?Drivers License #': [
+                ('E-Mail', 'e_mail'),
+                ('Drivers License #', 'drivers_license')
+            ],
             # E-mail and drivers license
             r'E-Mail\s*_{15,}.*?Drivers License #': [
                 ('E-Mail', 'e_mail'),
@@ -2124,7 +2129,6 @@ class PDFFormFieldExtractor:
                 r'^Address:?\s*$', 
                 r'^Phone:?\s*$',
                 r'^Work Address:?\s*$',
-                r'^Today\s*\'?s?\s*Date:?\s*$',
                 r'^Social Security No\.?:?\s*$',
                 r'^Date of Birth:?\s*$',
                 r'^Insurance Company:?\s*$',
