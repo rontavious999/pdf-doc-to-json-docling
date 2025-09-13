@@ -1,124 +1,5 @@
 [
   {
-    "key": "if_different_from_patient_street",
-    "title": "Street",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "extra": {
-        "hint": "If different from patient"
-      },
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 0
-    }
-  },
-  {
-    "key": "city_2_2",
-    "title": "City",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "extra": {
-        "hint": "(if different from above)"
-      },
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 1
-    }
-  },
-  {
-    "key": "state_2_2",
-    "title": "State",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "states",
-    "control": {
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 2
-    }
-  },
-  {
-    "key": "zip_2_2",
-    "title": "Zip",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "zip",
-      "extra": {
-        "hint": "(if different from above)"
-      },
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 3
-    }
-  },
-  {
-    "key": "dental_plan_name",
-    "title": "Dental Plan Name",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 4
-    }
-  },
-  {
-    "key": "ssn_3",
-    "title": "Social Security No.",
-    "section": "Secondary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "ssn",
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 5
-    }
-  },
-  {
-    "key": "dental_plan_name_2",
-    "title": "Dental Plan Name",
-    "section": "Secondary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 6
-    }
-  },
-  {
-    "key": "state_7",
-    "title": "State",
-    "section": "Secondary Dental Plan",
-    "optional": false,
-    "type": "states",
-    "control": {
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 7
-    }
-  },
-  {
     "key": "todays_date",
     "title": "Today's Date",
     "section": "Patient Information Form",
@@ -129,7 +10,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 8
+      "line_idx": 0
     }
   },
   {
@@ -143,7 +24,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 9
+      "line_idx": 1
     }
   },
   {
@@ -157,7 +38,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 10
+      "line_idx": 2
     }
   },
   {
@@ -171,7 +52,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 11
+      "line_idx": 3
     }
   },
   {
@@ -185,7 +66,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 12
+      "line_idx": 4
     }
   },
   {
@@ -199,7 +80,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 13
+      "line_idx": 5
     }
   },
   {
@@ -213,7 +94,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 14
+      "line_idx": 6
     }
   },
   {
@@ -227,7 +108,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 15
+      "line_idx": 7
     }
   },
   {
@@ -240,7 +121,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 16
+      "line_idx": 8
     }
   },
   {
@@ -254,7 +135,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 17
+      "line_idx": 9
     }
   },
   {
@@ -269,7 +150,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 18
+      "line_idx": 10
     }
   },
   {
@@ -284,7 +165,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 19
+      "line_idx": 11
     }
   },
   {
@@ -299,7 +180,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 20
+      "line_idx": 12
     }
   },
   {
@@ -313,7 +194,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 21
+      "line_idx": 13
     }
   },
   {
@@ -327,7 +208,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 22
+      "line_idx": 14
     }
   },
   {
@@ -358,7 +239,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 23
+      "line_idx": 15
     }
   },
   {
@@ -372,7 +253,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 24
+      "line_idx": 16
     }
   },
   {
@@ -386,7 +267,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 25
+      "line_idx": 17
     }
   },
   {
@@ -400,7 +281,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 26
+      "line_idx": 18
     }
   },
   {
@@ -414,7 +295,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 27
+      "line_idx": 19
     }
   },
   {
@@ -428,7 +309,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 28
+      "line_idx": 20
     }
   },
   {
@@ -442,7 +323,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 29
+      "line_idx": 21
     }
   },
   {
@@ -455,7 +336,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 30
+      "line_idx": 22
     }
   },
   {
@@ -469,7 +350,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 31
+      "line_idx": 23
     }
   },
   {
@@ -492,7 +373,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 32
+      "line_idx": 24
     }
   },
   {
@@ -527,7 +408,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 33
+      "line_idx": 25
     }
   },
   {
@@ -541,7 +422,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 34
+      "line_idx": 26
     }
   },
   {
@@ -572,7 +453,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 35
+      "line_idx": 27
     }
   },
   {
@@ -587,7 +468,7 @@
       "phone_prefix": "+1"
     },
     "meta": {
-      "line_idx": 36
+      "line_idx": 28
     }
   },
   {
@@ -602,7 +483,20 @@
       "phone_prefix": "+1"
     },
     "meta": {
-      "line_idx": 37
+      "line_idx": 29
+    }
+  },
+  {
+    "key": "state_2",
+    "title": "State",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 30
     }
   },
   {
@@ -625,7 +519,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 38
+      "line_idx": 31
     }
   },
   {
@@ -648,7 +542,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 39
+      "line_idx": 32
     }
   },
   {
@@ -661,7 +555,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 40
+      "line_idx": 33
     }
   },
   {
@@ -692,7 +586,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 41
+      "line_idx": 34
     }
   },
   {
@@ -731,7 +625,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 42
+      "line_idx": 35
     }
   },
   {
@@ -745,7 +639,88 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 43
+      "line_idx": 36
+    }
+  },
+  {
+    "key": "first_name_2",
+    "title": "First Name",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Name of Responsible Party"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 37
+    }
+  },
+  {
+    "key": "last_name_2",
+    "title": "Last Name",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Name of Responsible Party"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 38
+    }
+  },
+  {
+    "key": "date_of_birth_2",
+    "title": "Date of Birth",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "extra": {
+        "hint": "Responsible Party"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 39
+    }
+  },
+  {
+    "key": "city_3",
+    "title": "City",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "If different from patient"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 41
+    }
+  },
+  {
+    "key": "state_4",
+    "title": "State",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 42
     }
   },
   {
@@ -759,7 +734,39 @@
       "hint": null
     },
     "meta": {
+      "line_idx": 43
+    }
+  },
+  {
+    "key": "zip_3",
+    "title": "Zip",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "extra": {
+        "hint": "If different from patient"
+      },
+      "hint": null
+    },
+    "meta": {
       "line_idx": 44
+    }
+  },
+  {
+    "key": "mobile_2",
+    "title": "Mobile",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "hint": null,
+      "phone_prefix": "+1"
+    },
+    "meta": {
+      "line_idx": 45
     }
   },
   {
@@ -773,7 +780,37 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 45
+      "line_idx": 46
+    }
+  },
+  {
+    "key": "home_2",
+    "title": "Home",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "hint": null,
+      "phone_prefix": "+1"
+    },
+    "meta": {
+      "line_idx": 47
+    }
+  },
+  {
+    "key": "work_2",
+    "title": "Work",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "hint": null,
+      "phone_prefix": "+1"
+    },
+    "meta": {
+      "line_idx": 48
     }
   },
   {
@@ -787,7 +824,41 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 46
+      "line_idx": 49
+    }
+  },
+  {
+    "key": "occupation_2",
+    "title": "Occupation",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 50
+    }
+  },
+  {
+    "key": "street_3",
+    "title": "Street",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 51
     }
   },
   {
@@ -801,7 +872,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 47
+      "line_idx": 52
     }
   },
   {
@@ -819,7 +890,71 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 48
+      "line_idx": 53
+    }
+  },
+  {
+    "key": "city_2_2",
+    "title": "City",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 54
+    }
+  },
+  {
+    "key": "state_2_2",
+    "title": "State",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 55
+    }
+  },
+  {
+    "key": "zip_2_2",
+    "title": "Zip",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 56
+    }
+  },
+  {
+    "key": "if_different_from_patient_street",
+    "title": "Street",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "If different from patient"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 57
     }
   },
   {
@@ -833,7 +968,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 49
+      "line_idx": 58
     }
   },
   {
@@ -847,7 +982,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 50
+      "line_idx": 59
     }
   },
   {
@@ -861,7 +996,85 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 51
+      "line_idx": 60
+    }
+  },
+  {
+    "key": "street_4",
+    "title": "Street",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Insurance Company"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 61
+    }
+  },
+  {
+    "key": "city_5",
+    "title": "City",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Insurance Company"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 62
+    }
+  },
+  {
+    "key": "state_6",
+    "title": "State",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 63
+    }
+  },
+  {
+    "key": "zip_5",
+    "title": "Zip",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "extra": {
+        "hint": "Insurance Company"
+      },
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 64
+    }
+  },
+  {
+    "key": "dental_plan_name",
+    "title": "Dental Plan Name",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 65
     }
   },
   {
@@ -877,7 +1090,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 52
+      "line_idx": 66
     }
   },
   {
@@ -890,7 +1103,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 53
+      "line_idx": 67
     }
   },
   {
@@ -906,23 +1119,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 54
-    }
-  },
-  {
-    "key": "text_4_2",
-    "title": "",
-    "section": "Signature",
-    "optional": false,
-    "type": "text",
-    "control": {
-      "html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
-      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
-      "text": "",
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 55
+      "line_idx": 68
     }
   },
   {
@@ -935,7 +1132,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 56
+      "line_idx": 70
     }
   },
   {
@@ -961,7 +1158,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 57
+      "line_idx": 71
     }
   },
   {
@@ -974,7 +1171,189 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 58
+      "line_idx": 72
+    }
+  },
+  {
+    "key": "name_of_insured_2",
+    "title": "Name of Insured",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 73
+    }
+  },
+  {
+    "key": "birthdate_2",
+    "title": "Birthdate",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 74
+    }
+  },
+  {
+    "key": "ssn_3",
+    "title": "Social Security No.",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "ssn",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 75
+    }
+  },
+  {
+    "key": "insurance_company_2",
+    "title": "Insurance Company",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 76
+    }
+  },
+  {
+    "key": "phone_2",
+    "title": "Phone",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "hint": null,
+      "phone_prefix": "+1"
+    },
+    "meta": {
+      "line_idx": 77
+    }
+  },
+  {
+    "key": "street_5",
+    "title": "Street",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 78
+    }
+  },
+  {
+    "key": "city_6",
+    "title": "City",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 79
+    }
+  },
+  {
+    "key": "state_7",
+    "title": "State",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 80
+    }
+  },
+  {
+    "key": "zip_6",
+    "title": "Zip",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 81
+    }
+  },
+  {
+    "key": "dental_plan_name_2",
+    "title": "Dental Plan Name",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 82
+    }
+  },
+  {
+    "key": "plan_group_number_2",
+    "title": "Plan/Group Number",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 83
+    }
+  },
+  {
+    "key": "id_number_2",
+    "title": "ID Number",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 84
+    }
+  },
+  {
+    "key": "patient_relationship_to_insured_2",
+    "title": "Patient Relationship to Insured",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 85
     }
   },
   {
@@ -987,7 +1366,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 59
+      "line_idx": 86
     }
   },
   {
@@ -1001,7 +1380,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 60
+      "line_idx": 87
     }
   }
 ]
