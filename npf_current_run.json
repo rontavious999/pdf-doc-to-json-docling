@@ -104,6 +104,7 @@
     "title": "Mobile",
     "control": {
       "input_type": "phone",
+      "phone_prefix": "+1",
       "hint": null
     },
     "section": "Patient Information Form"
@@ -114,6 +115,7 @@
     "title": "Home",
     "control": {
       "input_type": "phone",
+      "phone_prefix": "+1",
       "hint": null
     },
     "section": "Patient Information Form"
@@ -124,6 +126,7 @@
     "title": "Work",
     "control": {
       "input_type": "phone",
+      "phone_prefix": "+1",
       "hint": null
     },
     "section": "Patient Information Form"
@@ -160,7 +163,7 @@
   {
     "key": "what_is_your_preferred_method_of_contact",
     "type": "radio",
-    "title": "What Is Your Preferred Method Of Contact",
+    "title": "What is your preferred method of contact",
     "control": {
       "options": [
         {
@@ -339,7 +342,8 @@
     "title": "Mobile Phone",
     "control": {
       "input_type": "phone",
-      "hint": null
+      "hint": null,
+      "phone_prefix": "+1"
     },
     "section": "Patient Information Form"
   },
@@ -349,14 +353,15 @@
     "title": "Home Phone",
     "control": {
       "input_type": "phone",
-      "hint": null
+      "hint": null,
+      "phone_prefix": "+1"
     },
     "section": "Patient Information Form"
   },
   {
     "key": "is_the_patient_a_minor",
     "type": "radio",
-    "title": "Is the Patient a Minor?",
+    "title": "Is the patient a Minor",
     "control": {
       "options": [
         {
@@ -379,12 +384,12 @@
     "control": {
       "options": [
         {
-          "name": "Yes",
-          "value": true
-        },
-        {
           "name": "No",
           "value": false
+        },
+        {
+          "name": "Yes",
+          "value": true
         }
       ],
       "hint": null
@@ -461,7 +466,7 @@
   {
     "key": "if_patient_is_a_minor_primary_residence",
     "type": "radio",
-    "title": "If Patient Is A Minor, Primary Residence",
+    "title": "If patient is a Minor, primary residence",
     "control": {
       "options": [
         {
@@ -538,6 +543,7 @@
     "title": "Mobile",
     "control": {
       "input_type": "phone",
+      "phone_prefix": "+1",
       "hint": "(if different from above)"
     },
     "section": "FOR CHILDREN/MINORS ONLY"
@@ -548,6 +554,7 @@
     "title": "Home",
     "control": {
       "input_type": "phone",
+      "phone_prefix": "+1",
       "hint": "(if different from above)"
     },
     "section": "FOR CHILDREN/MINORS ONLY"
@@ -558,6 +565,7 @@
     "title": "Work",
     "control": {
       "input_type": "phone",
+      "phone_prefix": "+1",
       "hint": "(if different from above)"
     },
     "section": "FOR CHILDREN/MINORS ONLY"
@@ -667,6 +675,7 @@
     "title": "Phone",
     "control": {
       "input_type": "phone",
+      "phone_prefix": "+1",
       "hint": "Insurance Company"
     },
     "section": "Primary Dental Plan"
@@ -796,6 +805,7 @@
     "title": "Phone",
     "control": {
       "input_type": "phone",
+      "phone_prefix": "+1",
       "hint": "Insurance Company"
     },
     "section": "Secondary Dental Plan"
