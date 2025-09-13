@@ -2334,7 +2334,6 @@ class PDFFormFieldExtractor:
                 elif 'SIGNATURE' in line_upper or 'CONSENT' in line_upper:
                     current_section = "Signature"
                 
-                print(f"Section detected: {current_section} from line: {line}")
                 i += 1
                 continue
 
