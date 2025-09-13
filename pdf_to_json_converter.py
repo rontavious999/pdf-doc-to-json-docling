@@ -345,11 +345,49 @@ class ModentoSchemaValidator:
         for idx, q in enumerate(spec):
             q.setdefault("meta", {}).setdefault("line_idx", idx)
         
+        # Apply field ordering fixes for specific issues
+        spec = ModentoSchemaValidator.fix_field_positioning_issues(spec)
+        
         spec.sort(key=lambda q: q.get("meta", {}).get("line_idx", 10**9))
         
         # Remove meta fields from final output
         for q in spec:
             q.pop("meta", None)
+        
+        return spec
+    
+    @staticmethod
+    def fix_field_positioning_issues(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Fix specific field positioning issues mentioned in requirements"""
+        
+        # Issue 1: relationship_to_patient_2 should appear earlier in children section
+        # Target: move it to appear right after date_of_birth_2
+        
+        relationship_field = None
+        relationship_idx = None
+        date_birth_2_idx = None
+        
+        # Find the relevant fields
+        for i, field in enumerate(spec):
+            if field.get("key") == "relationship_to_patient_2":
+                relationship_field = field
+                relationship_idx = i
+            elif field.get("key") == "date_of_birth_2":
+                date_birth_2_idx = i
+        
+        # If both fields exist and relationship is after date_birth_2, fix the ordering
+        if (relationship_field and relationship_idx is not None and 
+            date_birth_2_idx is not None and relationship_idx > date_birth_2_idx):
+            
+            # Remove relationship field from current position
+            spec.pop(relationship_idx)
+            
+            # Insert it right after date_of_birth_2
+            spec.insert(date_birth_2_idx + 1, relationship_field)
+            
+            # Adjust line_idx values to maintain the new order
+            for i, field in enumerate(spec):
+                field.setdefault("meta", {})["line_idx"] = i
         
         return spec
     
@@ -953,6 +991,11 @@ class PDFFormFieldExtractor:
             r'Mobile Phone\s*_{10,}.*?Home Phone': [
                 ('Mobile Phone', 'mobile_phone'),
                 ('Home Phone', 'home_phone')
+            ],
+            # Children section employer and relationship pattern - critical for field ordering
+            r'Employer \(if different from above\)\s*_{15,}.*?Relationship To Patient': [
+                ('Employer (if different from above)', 'employer_if_different_from_above'),
+                ('Relationship To Patient', 'relationship_to_patient_2')  # This should be detected earlier
             ]
         }
         
@@ -1935,12 +1978,25 @@ class PDFFormFieldExtractor:
                 # Check if next line has the expected field pattern
                 if re.search(r'Street.*City.*State.*Zip', next_line, re.IGNORECASE):
                     # Extract work address fields using exact reference keys
-                    work_address_mapping = [
-                        ('street_2', 'Street', 'input', {'hint': None, 'input_type': 'name'}),
-                        ('city_2', 'City', 'input', {'hint': None, 'input_type': 'name'}),
-                        ('state_3', 'State', 'states', {'hint': None, 'input_type': 'name'}),
-                        ('zip_2', 'Zip', 'input', {'hint': None, 'input_type': 'zip'})
-                    ]
+                    # Use different keys based on the current section context
+                    if current_section == "FOR CHILDREN/MINORS ONLY":
+                        # Work address in children section should be street_3, city_2_2, etc
+                        work_address_mapping = [
+                            ('street_3', 'Street', 'input', {'hint': None, 'input_type': 'name'}),
+                            ('city_2_2', 'City', 'input', {'hint': None, 'input_type': 'name'}),
+                            ('state_2_2', 'State', 'states', {'hint': None}),
+                            ('zip_2_2', 'Zip', 'input', {'hint': None, 'input_type': 'zip'})
+                        ]
+                        section_for_work_address = current_section  # Keep in children section
+                    else:
+                        # Work address in main patient section
+                        work_address_mapping = [
+                            ('street_2', 'Street', 'input', {'hint': None, 'input_type': 'name'}),
+                            ('city_2', 'City', 'input', {'hint': None, 'input_type': 'name'}),
+                            ('state_3', 'State', 'states', {'hint': None, 'input_type': 'name'}),
+                            ('zip_2', 'Zip', 'input', {'hint': None, 'input_type': 'zip'})
+                        ]
+                        section_for_work_address = "Patient Information Form"
                     
                     for key, title, field_type, control in work_address_mapping:
                         if key not in processed_keys:  # Only add if not already processed
@@ -1948,7 +2004,7 @@ class PDFFormFieldExtractor:
                                 key=key,
                                 title=title,
                                 field_type=field_type,
-                                section=current_section,
+                                section=section_for_work_address,  # Use proper section
                                 optional=False,
                                 control=control,
                                 line_idx=i+1
@@ -2337,15 +2393,6 @@ class PDFFormFieldExtractor:
                 # Handle section-based numbering for radio fields
                 if current_section == "FOR CHILDREN/MINORS ONLY" and key == "relationship_to_patient":
                     key = "relationship_to_patient_2"
-                
-                field = FieldInfo(
-                    key=key,
-                    title=title,
-                    field_type='radio',
-                    section=current_section,
-                    control={'options': options, 'hint': None},
-                    line_idx=i  # Add line index for proper ordering
-                )
                 fields.append(field)
                 i += 1
                 continue
@@ -2552,11 +2599,6 @@ class PDFFormFieldExtractor:
                 
                 # Better section detection using field content and current section context
                 detected_section = self.detect_section(field_name, text_lines[max(0, i-10):i+10], current_section)
-                
-                # Special handling for work address fields
-                context_lines_text = ' '.join(text_lines[max(0, i-3):i+3]).lower()
-                if 'work address:' in context_lines_text and field_name.lower() in ['street', 'city', 'state', 'zip']:
-                    detected_section = "Patient Information Form"  # Work address is part of patient info
                 
                 # Create control based on type
                 control = {}
