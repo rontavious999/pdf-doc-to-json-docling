@@ -281,14 +281,14 @@ class ModentoSchemaValidator:
         
         # Ensure we have signature_date if missing
         has_sig_date = any(
-            q.get("key") == "signature_date" and q.get("type") == "date" 
+            q.get("key") == "date_signed" and q.get("type") == "date" 
             for q in spec
         )
         if not has_sig_date:
             sig_date = {
                 "type": "date",
-                "key": "signature_date", 
-                "title": "Date",
+                "key": "date_signed", 
+                "title": "Date Signed",
                 "section": "Signature",
                 "optional": False,
                 "control": {"input_type": "any"}
