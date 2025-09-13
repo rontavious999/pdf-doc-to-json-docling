@@ -1,0 +1,339 @@
+[
+  {
+    "key": "text_1",
+    "title": "",
+    "section": "Signature",
+    "optional": false,
+    "type": "text",
+    "control": {
+      "html_text": "<p>The undersigned hereby authorizes Doctor to take x-rays, study models, photographs, or any other diagnostic aids deemed appropriate by Doctor to make a thorough diagnosis of the patient's dental needs. I also authorize Doctor to perform any and all forms of treatment, medication and therapy that may be indicated. I also understand the use of anesthetic agents embodies a certain risk. I have read, understand and agree to the above terms and conditions.</p><p>________________________________________       ___________________________         __________           ______________________________________ Signature of Patient/Legal guardian.</p>",
+      "temporary_html_text": "<p>The undersigned hereby authorizes Doctor to take x-rays, study models, photographs, or any other diagnostic aids deemed appropriate by Doctor to make a thorough diagnosis of the patient's dental needs. I also authorize Doctor to perform any and all forms of treatment, medication and therapy that may be indicated. I also understand the use of anesthetic agents embodies a certain risk. I have read, understand and agree to the above terms and conditions.</p><p>________________________________________       ___________________________         __________           ______________________________________ Signature of Patient/Legal guardian.</p>",
+      "text": "",
+      "hint": null
+    }
+  },
+  {
+    "key": "mobile_phone",
+    "title": "Mobile Phone",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "hint": null
+    }
+  },
+  {
+    "key": "home_phone",
+    "title": "Home Phone",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "hint": null
+    }
+  },
+  {
+    "key": "name_of_school",
+    "title": "Name of School",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "if_different_from_patient_street",
+    "title": "Street",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "If different from patient"
+      }
+    }
+  },
+  {
+    "key": "city_2_2",
+    "title": "City",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "(if different from above)"
+      }
+    }
+  },
+  {
+    "key": "state_2_2",
+    "title": "State",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    }
+  },
+  {
+    "key": "zip_2_2",
+    "title": "Zip",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "extra": {
+        "hint": "(if different from above)"
+      }
+    }
+  },
+  {
+    "key": "dental_plan_name",
+    "title": "Dental Plan Name",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "ssn_3",
+    "title": "Social Security No.",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "hint": null,
+      "input_type": "ssn"
+    }
+  },
+  {
+    "key": "dental_plan_name_2",
+    "title": "Dental Plan Name",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "state_7",
+    "title": "State",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    }
+  },
+  {
+    "key": "initials_2",
+    "title": "Initial",
+    "section": "Signature",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "initials",
+      "hint": null
+    }
+  },
+  {
+    "key": "text_3",
+    "title": "",
+    "section": "Signature",
+    "optional": false,
+    "type": "text",
+    "control": {
+      "html_text": "<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>",
+      "temporary_html_text": "<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>",
+      "text": "",
+      "hint": null
+    }
+  },
+  {
+    "key": "text_4",
+    "title": "",
+    "section": "Signature",
+    "optional": false,
+    "type": "text",
+    "control": {
+      "html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
+      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
+      "text": "",
+      "hint": null
+    }
+  },
+  {
+    "key": "todays_date",
+    "title": "Today's Date",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "any",
+      "hint": null
+    }
+  },
+  {
+    "key": "please_circle_one",
+    "title": "Please Circle One",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "full_time_student",
+    "title": "Full-time Student",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ],
+      "hint": null
+    }
+  },
+  {
+    "key": "who_can_we_thank_for_your_visit",
+    "title": "Who can we thank for your visit",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "please_share_the_following_dates",
+    "title": "Please share the following dates",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "on_a_scale_of_1_10_with_10_being_the_highest_rating",
+    "title": "On a scale of 1-10, with 10 being the highest rating",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "for_completion_by_dentist_only_additional_comments",
+    "title": "For completion by dentist only | Additional Comments",
+    "section": "Signature",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "field",
+    "title": "_ _",
+    "section": "Signature",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "field_2",
+    "title": "_ _",
+    "section": "Medical History",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "field_2_2",
+    "title": "_ _",
+    "section": "Medical History",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "please_list_family_history_of_any_conditions_marked",
+    "title": "Please list family history of any conditions marked",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "additional_comments",
+    "title": "Additional Comments",
+    "section": "Medical History",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "signature",
+    "title": "Signature",
+    "section": "Signature",
+    "optional": false,
+    "type": "signature",
+    "control": {
+      "hint": null
+    }
+  },
+  {
+    "key": "date_signed",
+    "title": "Date Signed",
+    "section": "Signature",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "any",
+      "hint": null
+    }
+  }
+]
