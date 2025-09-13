@@ -553,6 +553,14 @@ class PDFFormFieldExtractor:
         """Normalize field names to match expected patterns"""
         field_lower = field_name.lower().strip()
         
+        # Fix common OCR artifacts first
+        if field_lower.startswith('no ') and len(field_lower) > 5:
+            # Fix "No Name of School" -> "Name of School"
+            potential_field = field_lower[3:].strip()
+            if any(keyword in potential_field for keyword in ['name', 'school', 'address', 'phone']):
+                field_lower = potential_field
+                field_name = field_name[3:].strip()  # Also update the original field_name
+        
         # Handle common abbreviations and variations - EXACT matches from reference
         name_mappings = {
             'first': 'First Name',
@@ -579,9 +587,9 @@ class PDFFormFieldExtractor:
             'e-mail': 'E-Mail',
             'email': 'E-Mail',
             'mobile phone': 'Mobile Phone',
-            'mobile': 'Mobile',
+            'mobile': 'Mobile',  # Keep as Mobile when extracted correctly
             'home phone': 'Home Phone',
-            'home': 'Home',
+            'home': 'Home',     # Keep as Home when extracted correctly
             'work phone': 'Work Phone',
             'work': 'Work',
             'cell phone': 'Mobile Phone',
@@ -746,9 +754,9 @@ class PDFFormFieldExtractor:
             # Children section address pattern (if different from patient)
             r'Street\s*_{10,}.*?City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
                 ('Street', 'if_different_from_patient_street'),  # Special naming for children section
-                ('City', 'city_3'),
-                ('State', 'state_4'), 
-                ('Zip', 'zip_3')
+                ('City', 'city_2_2'),
+                ('State', 'state_2_2'), 
+                ('Zip', 'zip_2_2')
             ],
             # City/State/Zip pattern
             r'City\s*_{20,}.*?State\s*_{5,}.*?Zip\s*_{10,}': [
@@ -761,6 +769,11 @@ class PDFFormFieldExtractor:
                 ('Mobile', 'mobile'),
                 ('Home', 'home'),
                 ('Work', 'work')
+            ],
+            # Emergency contact phone pattern - longer field names
+            r'Mobile Phone\s*_{10,}.*?Home Phone': [
+                ('Mobile Phone', 'mobile_phone'),
+                ('Home Phone', 'home_phone')
             ],
             # Children section phone pattern 
             r'Mobile\s*_{15,}.*?Home\s*_{10,}.*?Work\s*_{10,}': [
@@ -1209,17 +1222,17 @@ class PDFFormFieldExtractor:
                 field.control['hint'] = None
                 
             # Fix input_type issues for states and signature fields
-            if field.field_type == 'states' and 'input_type' in field.control:
-                field.control = {k: v for k, v in field.control.items() if k != 'input_type'}
-                if 'hint' not in field.control:
-                    field.control['hint'] = None
-            elif field.field_type == 'signature' and 'input_type' in field.control:
-                field.control = {k: v for k, v in field.control.items() if k != 'input_type'}
-                if 'hint' not in field.control:
-                    field.control['hint'] = None
+            if field.field_type == 'states':
+                # States should not have input_type according to reference
+                existing_hint = field.control.get('hint')
+                field.control = {'hint': existing_hint}
+            elif field.field_type == 'signature':
+                # Signature fields should not have input_type  
+                existing_hint = field.control.get('hint')
+                field.control = {'hint': existing_hint}
                     
             # Fix mi field input_type to be 'initials' to match reference
-            if field.key == 'mi' and field.control.get('input_type') != 'initials':
+            if field.key == 'mi':
                 field.control['input_type'] = 'initials'
                 
             # Fix state fields that shouldn't have input_type
@@ -1234,45 +1247,29 @@ class PDFFormFieldExtractor:
         
         # Critical missing fields that should be added if not found
         required_fields = {
-            'date_signed': FieldInfo(
-                key="date_signed",
-                title="Date Signed", 
-                field_type='date',
-                section="Signature",
+            'mobile_phone': FieldInfo(
+                key="mobile_phone",
+                title="Mobile Phone", 
+                field_type='input',
+                section="Patient Information Form",
                 optional=False,
-                control={'input_type': 'any', 'hint': None}
+                control={'input_type': 'phone', 'hint': None}
             ),
-            'initials_2': FieldInfo(
-                key="initials_2",
-                title="Initial",
+            'home_phone': FieldInfo(
+                key="home_phone",
+                title="Home Phone",
                 field_type='input', 
-                section="Signature",
+                section="Patient Information Form",
                 optional=False,
-                control={'input_type': 'initials'}
+                control={'input_type': 'phone', 'hint': None}
             ),
-            'text_3': FieldInfo(
-                key="text_3",
-                title="",
-                field_type='text',
-                section="Signature", 
+            'name_of_school': FieldInfo(
+                key="name_of_school",
+                title="Name of School",
+                field_type='input',
+                section="FOR CHILDREN/MINORS ONLY",
                 optional=False,
-                control={
-                    'html_text': '<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>',
-                    'temporary_html_text': '<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>',
-                    'text': ''
-                }
-            ),
-            'text_4': FieldInfo(
-                key="text_4",
-                title="",
-                field_type='text',
-                section="Signature",
-                optional=False, 
-                control={
-                    'html_text': '<p>I have read the above and agree to the financial and scheduling terms.</p>',
-                    'temporary_html_text': '<p>I have read the above and agree to the financial and scheduling terms.</p>',
-                    'text': ''
-                }
+                control={'input_type': 'name', 'hint': None}
             ),
             'if_different_from_patient_street': FieldInfo(
                 key="if_different_from_patient_street",
@@ -1280,7 +1277,7 @@ class PDFFormFieldExtractor:
                 field_type='input',
                 section="FOR CHILDREN/MINORS ONLY",
                 optional=False,
-                control={'hint': 'If different from patient', 'input_type': 'address'}
+                control={'hint': 'If different from patient', 'input_type': 'name'}
             ),
             'city_2_2': FieldInfo(
                 key="city_2_2", 
@@ -1306,6 +1303,14 @@ class PDFFormFieldExtractor:
                 optional=False,
                 control={'hint': '(if different from above)', 'input_type': 'zip'}
             ),
+            'dental_plan_name': FieldInfo(
+                key="dental_plan_name",
+                title="Dental Plan Name",
+                field_type='input',
+                section="Primary Dental Plan",
+                optional=False,
+                control={'input_type': 'name', 'hint': None}
+            ),
             'ssn_3': FieldInfo(
                 key="ssn_3",
                 title="Social Security No.",
@@ -1314,6 +1319,14 @@ class PDFFormFieldExtractor:
                 optional=False,
                 control={'hint': None, 'input_type': 'ssn'}
             ),
+            'dental_plan_name_2': FieldInfo(
+                key="dental_plan_name_2",
+                title="Dental Plan Name",
+                field_type='input',
+                section="Secondary Dental Plan",
+                optional=False,
+                control={'input_type': 'name', 'hint': None}
+            ),
             'state_7': FieldInfo(
                 key="state_7", 
                 title="State",
@@ -1321,6 +1334,48 @@ class PDFFormFieldExtractor:
                 section="Secondary Dental Plan",
                 optional=False,
                 control={'hint': None}
+            ),
+            'date_signed': FieldInfo(
+                key="date_signed",
+                title="Date Signed", 
+                field_type='date',
+                section="Signature",
+                optional=False,
+                control={'input_type': 'any', 'hint': None}
+            ),
+            'initials_2': FieldInfo(
+                key="initials_2",
+                title="Initial",
+                field_type='input', 
+                section="Signature",
+                optional=False,
+                control={'input_type': 'initials', 'hint': None}
+            ),
+            'text_3': FieldInfo(
+                key="text_3",
+                title="",
+                field_type='text',
+                section="Signature", 
+                optional=False,
+                control={
+                    'html_text': '<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>',
+                    'temporary_html_text': '<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>',
+                    'text': '',
+                    'hint': None
+                }
+            ),
+            'text_4': FieldInfo(
+                key="text_4",
+                title="",
+                field_type='text',
+                section="Signature",
+                optional=False, 
+                control={
+                    'html_text': '<p>I have read the above and agree to the financial and scheduling terms.</p>',
+                    'temporary_html_text': '<p>I have read the above and agree to the financial and scheduling terms.</p>',
+                    'text': '',
+                    'hint': None
+                }
             )
         }
         
@@ -1827,6 +1882,8 @@ class PDFFormFieldExtractor:
                 'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any', 'hint': None}), 
                 'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
                 'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past', 'hint': None}),
+                'Mobile Phone': ('mobile_phone', 'Mobile Phone', 'input', {'input_type': 'phone', 'hint': None}),
+                'Home Phone': ('home_phone', 'Home Phone', 'input', {'input_type': 'phone', 'hint': None}),
                 'Marital Status': ('marital_status', 'Marital Status', 'radio', {
                     'options': [
                         {"name": "Married", "value": "Married"},
@@ -1836,12 +1893,6 @@ class PDFFormFieldExtractor:
                         {"name": "Widowed", "value": "Widowed"}
                     ], 'hint': None
                 }),
-                # Remove problematic radio fields that are handled elsewhere:
-                # - 'What Is Your Preferred Method Of Contact' 
-                # - 'Is the Patient a Minor?'
-                # - 'Full-time Student'
-                # - 'Relationship To Patient'
-                # - 'If Patient Is A Minor, Primary Residence'
                 'Date Signed': ('date_signed', 'Date Signed', 'date', {'input_type': 'any', 'hint': None}),
             }
             
@@ -2395,9 +2446,9 @@ class PDFFormFieldExtractor:
                 # Special case for Middle Initial to use "mi" key and correct input_type
                 if field_name.lower() in ["middle initial", "mi"]:
                     base_key = "mi"
-                    # Middle initial should have input_type "name" according to reference
+                    # Middle initial should have input_type "initials" according to reference
                     if field_type == 'input':
-                        control['input_type'] = 'name'
+                        control['input_type'] = 'initials'
                 else:
                     base_key = ModentoSchemaValidator.slugify(field_name)
                 
@@ -2633,6 +2684,9 @@ class PDFFormFieldExtractor:
         
         # Post-process fields to fix specific extraction issues
         fields = self.post_process_fields(fields)
+        
+        # Ensure required fields are present
+        fields = self.ensure_required_fields_present(fields)
         
         return fields
 
