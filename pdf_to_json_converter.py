@@ -105,6 +105,10 @@ class ModentoSchemaValidator:
                     prev_title and
                     len(current_title) > 2):  # Don't merge very short titles
                     
+                    # SPECIAL CASE: Don't merge State fields - they are intentionally multiple
+                    if current_title == "State" and prev_title == "State":
+                        continue
+                    
                     # Same section - likely duplicate
                     if prev_section == current_section:
                         return prev_idx
@@ -3324,6 +3328,32 @@ class PDFToJSONConverter:
         for field in normalized_spec:
             control = field.get('control', {})
             
+            # Fix state fields - they should have empty control in reference
+            if field.get('type') == 'states':
+                field['control'] = {}
+            
+            # Fix signature fields - they should have empty control in reference  
+            if field.get('type') == 'signature':
+                field['control'] = {}
+            
+            # Remove hint field from specific field types that don't have it in reference
+            if field.get('type') in ['states', 'text'] or field.get('key', '').startswith('initials'):
+                if 'hint' in control:
+                    del control['hint']
+            
+            # Clean up authorization field control - should only have options
+            if field.get('key') == 'i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_':
+                # Keep options and text fields for this radio field
+                options = control.get('options', [])
+                html_text = control.get('html_text', '<p>I have read the above and agree to the financial and scheduling terms.</p>')
+                temp_html_text = control.get('temporary_html_text', '<p>I have read the above and agree to the financial and scheduling terms.</p>')
+                field['control'] = {
+                    'temporary_html_text': temp_html_text,
+                    'html_text': html_text,
+                    'text': '',
+                    'options': options
+                }
+            
             # Clean up HTML text content
             for text_key in ['html_text', 'temporary_html_text']:
                 if text_key in control:
@@ -3337,6 +3367,15 @@ class PDFToJSONConverter:
                     # Clean up extra spaces
                     text = ' '.join(text.split())
                     control[text_key] = text if text.startswith('<p>') else f"<p>{text}</p>"
+            
+            # Clean up field titles - remove trailing spaces and Unicode characters
+            if 'title' in field:
+                title = field['title']
+                # Remove Unicode characters like \uf071
+                import re
+                title = re.sub(r'[\uf000-\uffff]', '', title)
+                title = title.replace('\uf071', '').rstrip()
+                field['title'] = title
         
         # Count sections
         sections = set(field.get("section", "Unknown") for field in normalized_spec)
