@@ -914,93 +914,89 @@ class PDFFormFieldExtractor:
             return fields
             
         # Handle EXACT patterns from reference analysis - these are the key multi-field lines
+        # NOTE: Text extraction produces escaped underscores (\_) - use simpler patterns focusing on field names
         exact_patterns = {
             # Main name line pattern - this is critical
-            r'First\s*_{10,}.*?MI\s*_{2,}.*?Last\s*_{10,}.*?Nickname\s*_{5,}': [
+            r'First.*?MI.*?Last.*?Nickname': [
                 ('First Name', 'first_name'),
                 ('Middle Initial', 'mi'),  # Use 'mi' key to match reference
                 ('Last Name', 'last_name'),
                 ('Nickname', 'nickname')
             ],
             # Children section name line - responsible party
-            r'First\s*_{10,}.*?Last\s*_{10,}': [
+            r'First.*?Last(?!.*Nickname)': [  # Make sure it's not the main name line
                 ('First Name', 'first_name_2'),  # numbered for children section
                 ('Last Name', 'last_name_2')
             ],
             # Address line pattern
-            r'Street\s*_{30,}.*?Apt/Unit/Suite\s*_{5,}': [
+            r'Street.*?Apt/Unit/Suite': [
                 ('Street', 'street'),
                 ('Apt/Unit/Suite', 'apt_unit_suite')
             ],
             # Children section address pattern (if different from patient)
-            r'Street\s*_{10,}.*?City\s*_{10,}.*?State\s*_{3,}.*?Zip\s*_{5,}': [
+            r'Street.*?City.*?State.*?Zip(?!.*Phone)': [  # Avoid phone line
                 ('Street', 'if_different_from_patient_street'),  # Special naming for children section
                 ('City', 'city_2_2'),
                 ('State', 'state_2_2'), 
                 ('Zip', 'zip_2_2')
             ],
-            # City/State/Zip pattern
-            r'City\s*_{20,}.*?State\s*_{5,}.*?Zip\s*_{10,}': [
+            # City/State/Zip pattern (main address)
+            r'City.*?State.*?Zip(?!.*Phone)': [
                 ('City', 'city'),
                 ('State', 'state'),
                 ('Zip', 'zip')
             ],
             # Main phone line pattern  
-            r'Mobile\s*_{10,}.*?Home\s*_{10,}.*?Work\s*_{10,}': [
+            r'Mobile.*?Home.*?Work(?!.*Address)': [  # Avoid work address
                 ('Mobile', 'mobile'),
                 ('Home', 'home'),
                 ('Work', 'work')
             ],
             # Emergency contact phone pattern - longer field names
-            r'Mobile Phone\s*_{10,}.*?Home Phone': [
+            r'Mobile Phone.*?Home Phone': [
                 ('Mobile Phone', 'mobile_phone'),
                 ('Home Phone', 'home_phone')
             ],
             # Children section phone pattern 
-            r'Mobile\s*_{15,}.*?Home\s*_{10,}.*?Work\s*_{10,}': [
+            r'Mobile.*?Home.*?Work.*?(?:Address|$)': [  # Ensure it's children section
                 ('Mobile', 'mobile_2'),
                 ('Home', 'home_2'), 
                 ('Work', 'work_2')
             ],
             # E-mail and driver's license pattern
-            r'E-Mail\s*_{20,}.*?Drivers License #': [
+            r'E-Mail.*?Drivers License #': [
                 ('E-Mail', 'e_mail'),
                 ('Drivers License #', 'drivers_license')
             ],
             # Work-related fields
-            r'Patient Employed By\s*_{15,}.*?Occupation\s*_{15,}': [
+            r'Patient Employed By.*?Occupation': [
                 ('Patient Employed By', 'patient_employed_by'),
                 ('Occupation', 'occupation')
             ],
             # Insurance fields
-            r'Name of Insured\s*_{15,}.*?Birthdate\s*_{5,}': [
+            r'Name of Insured.*?Birthdate': [
                 ('Name of Insured', 'name_of_insured'),
                 ('Birthdate', 'birthdate')
             ],
-            r'Insurance Company\s*_{15,}.*?Phone': [
+            r'Insurance Company.*?Phone': [
                 ('Insurance Company', 'insurance_company'),
                 ('Phone', 'phone')
             ],
-            r'Dental Plan Name\s*_{15,}.*?Plan/Group Number': [
+            r'Dental Plan Name.*?Plan/Group Number': [
                 ('Dental Plan Name', 'dental_plan_name'),
                 ('Plan/Group Number', 'plan_group_number')
             ],
-            r'ID Number\s*_{15,}.*?Patient Relationship to Insured': [
+            r'ID Number.*?Patient Relationship to Insured': [
                 ('ID Number', 'id_number'),
                 ('Patient Relationship to Insured', 'patient_relationship_to_insured')
             ],
             # Emergency contact
-            r'In case of emergency, who should be notified\?\s*_{15,}.*?Relationship to Patient': [
+            r'In case of emergency, who should be notified.*?Relationship to Patient': [
                 ('In case of emergency, who should be notified', 'in_case_of_emergency_who_should_be_notified'),
                 ('Relationship to Patient', 'relationship_to_patient')
             ],
-            # Children section phones with exact reference names
-            r'Mobile Phone\s*_{10,}.*?Home Phone': [
-                ('Mobile Phone', 'mobile_phone'),
-                ('Home Phone', 'home_phone')
-            ],
             # Children section employer and relationship pattern - critical for field ordering
-            r'Employer \(if different from above\)\s*_{15,}.*?Relationship To Patient': [
+            r'Employer \(if different from above\).*?Relationship To Patient': [
                 ('Employer (if different from above)', 'employer_if_different_from_above'),
                 ('Relationship To Patient', 'relationship_to_patient_2')  # This should be detected earlier
             ]
@@ -1263,7 +1259,7 @@ class PDFFormFieldExtractor:
         for line in text_lines:
             line = line.strip()
             # Skip very short lines, headers marked with ##, and obvious field lines
-            if len(line) > 10 and not line.startswith('##') and not re.search(r'_{3,}|\.{3,}|signature.*date', line.lower()):
+            if len(line) > 10 and not line.startswith('##') and not ('_' in line and any(word in line.lower() for word in ['signature', 'date'])):
                 content_lines.append(line)
         
         # Join content and create structured HTML
@@ -2361,7 +2357,7 @@ class PDFFormFieldExtractor:
                     # Stop if we hit a clear field or section boundary
                     if (len(next_line) < 10 or 
                         next_line.startswith('##') or
-                        re.search(r'[A-Za-z][A-Za-z\s]{1,30}_{3,}', next_line) or
+                        ('_' in next_line and any(word in next_line for word in ['initial', 'signature'])) or
                         'initial' in next_line.lower() and len(next_line) < 50):
                         break
                     if len(next_line) > 30:  # Only add substantial content
@@ -2396,9 +2392,9 @@ class PDFFormFieldExtractor:
                 continue
             
             # Handle signature fields with initials - using exact reference keys
-            if '(initial)' in line.lower() or re.search(r'_{3,}\s*\(initial\)', line, re.IGNORECASE):
+            if '(initial)' in line.lower() or '_' in line and '(initial)' in line:
                 # Extract the text before (initial)
-                text_part = re.split(r'\s*_{3,}\s*\(initial\)', line, flags=re.IGNORECASE)[0].strip()
+                text_part = re.split(r'\s*_+\s*\(initial\)', line, flags=re.IGNORECASE)[0].strip()
                 if text_part:
                     # Create the text field only if text_4 doesn't exist
                     if 'text_4' not in processed_keys:
@@ -2497,7 +2493,7 @@ class PDFFormFieldExtractor:
                 continue
             
             # Handle signature and date fields - using exact reference keys
-            if re.search(r'Signature\s*_{5,}.*?Date\s*_{3,}', line, re.IGNORECASE):
+            if 'Signature' in line and 'Date' in line and '_' in line:
                 # Add signature field only if not already added
                 if 'signature' not in processed_keys:
                     field = FieldInfo(
@@ -2611,7 +2607,7 @@ class PDFFormFieldExtractor:
             
             # Handle standalone field labels followed by underscores on next line
             if (line.strip().endswith(':') or 
-                (not re.search(r'_{3,}', line) and i + 1 < len(text_lines) and re.search(r'^_{5,}', text_lines[i + 1]))):
+                (not re.search(r'_', line) and i + 1 < len(text_lines) and '_' in text_lines[i + 1])):
                 
                 # Clean up the field name - handle OCR artifacts like "No Name of School" should be "Name of School"
                 field_name = line.strip().rstrip(':').rstrip('?')
