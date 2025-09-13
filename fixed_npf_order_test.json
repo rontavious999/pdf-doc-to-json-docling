@@ -356,12 +356,29 @@
   },
   {
     "key": "relationship_to_patient",
-    "title": "Relationship to Patient",
+    "title": "Relationship To Patient",
     "section": "Patient Information Form",
     "optional": false,
-    "type": "input",
+    "type": "radio",
     "control": {
-      "input_type": "name",
+      "options": [
+        {
+          "name": "Self",
+          "value": "Self"
+        },
+        {
+          "name": "Spouse",
+          "value": "Spouse"
+        },
+        {
+          "name": "Parent",
+          "value": "Parent"
+        },
+        {
+          "name": "Other",
+          "value": "Other"
+        }
+      ],
       "hint": null
     }
   },
@@ -434,6 +451,80 @@
     "title": "Name of School",
     "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
+    "type": "radio",
+    "control": {
+      "hint": null
+    }
+  },
+  {
+    "key": "relationship_to_patient_2",
+    "title": "Relationship To Patient",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Self",
+          "value": "Self"
+        },
+        {
+          "name": "Spouse",
+          "value": "Spouse"
+        },
+        {
+          "name": "Parent",
+          "value": "Parent"
+        },
+        {
+          "name": "Other",
+          "value": "Other"
+        }
+      ],
+      "hint": null
+    }
+  },
+  {
+    "key": "if_patient_is_a_minor_primary_residence",
+    "title": "If Patient Is A Minor, Primary Residence",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Both Parents",
+          "value": "Both Parents"
+        },
+        {
+          "name": "Mom",
+          "value": "Mom"
+        },
+        {
+          "name": "Dad",
+          "value": "Dad"
+        },
+        {
+          "name": "Step Parent",
+          "value": "Step Parent"
+        },
+        {
+          "name": "Shared Custody",
+          "value": "Shared Custody"
+        },
+        {
+          "name": "Guardian",
+          "value": "Guardian"
+        }
+      ],
+      "hint": null
+    }
+  },
+  {
+    "key": "employer_if_different_from_above",
+    "title": "Employer (if different from above)",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
     "type": "input",
     "control": {
       "input_type": "name",
@@ -476,53 +567,9 @@
     "type": "date",
     "control": {
       "input_type": "past",
-      "hint": null
-    }
-  },
-  {
-    "key": "if_patient_is_a_minor_primary_residence",
-    "title": "If Patient Is A Minor, Primary Residence",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "radio",
-    "control": {
-      "options": [
-        {
-          "name": "Both Parents",
-          "value": "Both Parents"
-        },
-        {
-          "name": "Mom",
-          "value": "Mom"
-        },
-        {
-          "name": "Dad",
-          "value": "Dad"
-        },
-        {
-          "name": "Step Parent",
-          "value": "Step Parent"
-        },
-        {
-          "name": "Shared Custody",
-          "value": "Shared Custody"
-        },
-        {
-          "name": "Guardian",
-          "value": "Guardian"
-        }
-      ],
-      "hint": null
-    }
-  },
-  {
-    "key": "if_different_from_patient_street",
-    "title": "Street",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
+      "extra": {
+        "hint": "Responsible Party"
+      },
       "hint": null
     }
   },
@@ -534,6 +581,9 @@
     "type": "input",
     "control": {
       "input_type": "name",
+      "extra": {
+        "hint": "If different from patient"
+      },
       "hint": null
     }
   },
@@ -548,6 +598,17 @@
     }
   },
   {
+    "key": "name_of_insured",
+    "title": "Name of Insured",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
     "key": "zip_3",
     "title": "Zip",
     "section": "FOR CHILDREN/MINORS ONLY",
@@ -555,6 +616,9 @@
     "type": "input",
     "control": {
       "input_type": "zip",
+      "extra": {
+        "hint": "If different from patient"
+      },
       "hint": null
     }
   },
@@ -566,7 +630,18 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "phone_prefix": "+1",
+      "hint": null,
+      "phone_prefix": "+1"
+    }
+  },
+  {
+    "key": "birthdate",
+    "title": "Birthdate",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "past",
       "hint": null
     }
   },
@@ -578,8 +653,8 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "phone_prefix": "+1",
-      "hint": null
+      "hint": null,
+      "phone_prefix": "+1"
     }
   },
   {
@@ -590,46 +665,18 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "phone_prefix": "+1",
-      "hint": null
+      "hint": null,
+      "phone_prefix": "+1"
     }
   },
   {
-    "key": "employer_if_different_from_above",
-    "title": "Employer (if different from above)",
-    "section": "FOR CHILDREN/MINORS ONLY",
+    "key": "ssn_2",
+    "title": "Social Security No.",
+    "section": "Primary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
-    "key": "relationship_to_patient_2",
-    "title": "Relationship To Patient",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "radio",
-    "control": {
-      "options": [
-        {
-          "name": "Self",
-          "value": "Self"
-        },
-        {
-          "name": "Spouse",
-          "value": "Spouse"
-        },
-        {
-          "name": "Parent",
-          "value": "Parent"
-        },
-        {
-          "name": "Other",
-          "value": "Other"
-        }
-      ],
+      "input_type": "ssn",
       "hint": null
     }
   },
@@ -650,76 +697,14 @@
   {
     "key": "street_3",
     "title": "Street",
-    "section": "Patient Information Form",
+    "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
     "type": "input",
     "control": {
       "input_type": "name",
-      "hint": null
-    }
-  },
-  {
-    "key": "city_2_2",
-    "title": "City",
-    "section": "Patient Information Form",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
-    "key": "state_2_2",
-    "title": "State",
-    "section": "Patient Information Form",
-    "optional": false,
-    "type": "states",
-    "control": {
-      "hint": null
-    }
-  },
-  {
-    "key": "zip_2_2",
-    "title": "Zip",
-    "section": "Patient Information Form",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "zip",
-      "hint": null
-    }
-  },
-  {
-    "key": "name_of_insured",
-    "title": "Name of Insured",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
-    "key": "birthdate",
-    "title": "Birthdate",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "date",
-    "control": {
-      "input_type": "past",
-      "hint": null
-    }
-  },
-  {
-    "key": "ssn_2",
-    "title": "Social Security No.",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "ssn",
+      "extra": {
+        "hint": "(if different from above)"
+      },
       "hint": null
     }
   },
@@ -746,6 +731,91 @@
       "extra": {
         "hint": "Insurance Company"
       },
+      "hint": null
+    }
+  },
+  {
+    "key": "city_2_2",
+    "title": "City",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
+    }
+  },
+  {
+    "key": "state_2_2",
+    "title": "State",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    }
+  },
+  {
+    "key": "zip_2_2",
+    "title": "Zip",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
+    }
+  },
+  {
+    "key": "if_different_from_patient_street",
+    "title": "Street",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "If different from patient"
+      },
+      "hint": null
+    }
+  },
+  {
+    "key": "plan_group_number",
+    "title": "Plan/Group Number",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number",
+      "hint": null
+    }
+  },
+  {
+    "key": "id_number",
+    "title": "ID Number",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number",
+      "hint": null
+    }
+  },
+  {
+    "key": "patient_relationship_to_insured",
+    "title": "Patient Relationship to Insured",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
       "hint": null
     }
   },
@@ -813,35 +883,13 @@
     }
   },
   {
-    "key": "plan_group_number",
-    "title": "Plan/Group Number",
-    "section": "Primary Dental Plan",
+    "key": "ssn_3",
+    "title": "Social Security No.",
+    "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "number",
-      "hint": null
-    }
-  },
-  {
-    "key": "id_number",
-    "title": "ID Number",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "number",
-      "hint": null
-    }
-  },
-  {
-    "key": "patient_relationship_to_insured",
-    "title": "Patient Relationship to Insured",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
+      "input_type": "ssn",
       "hint": null
     }
   },
@@ -868,14 +916,26 @@
     }
   },
   {
-    "key": "ssn_3",
-    "title": "Social Security No.",
+    "key": "insurance_company_2",
+    "title": "Insurance Company",
     "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "ssn",
+      "input_type": "name",
       "hint": null
+    }
+  },
+  {
+    "key": "phone_2",
+    "title": "Phone",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "hint": null,
+      "phone_prefix": "+1"
     }
   },
   {
@@ -886,9 +946,6 @@
     "type": "input",
     "control": {
       "input_type": "name",
-      "extra": {
-        "hint": "Insurance Company"
-      },
       "hint": null
     }
   },
@@ -900,9 +957,6 @@
     "type": "input",
     "control": {
       "input_type": "name",
-      "extra": {
-        "hint": "Insurance Company"
-      },
       "hint": null
     }
   },
@@ -924,9 +978,6 @@
     "type": "input",
     "control": {
       "input_type": "zip",
-      "extra": {
-        "hint": "Insurance Company"
-      },
       "hint": null
     }
   },
@@ -950,29 +1001,6 @@
     "control": {
       "input_type": "number",
       "hint": null
-    }
-  },
-  {
-    "key": "insurance_company_2",
-    "title": "Insurance Company",
-    "section": "Secondary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
-    "key": "phone_2",
-    "title": "Phone",
-    "section": "Secondary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "phone",
-      "hint": null,
-      "phone_prefix": "+1"
     }
   },
   {
@@ -1004,9 +1032,8 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "input",
+    "type": "initials",
     "control": {
-      "input_type": "initials",
       "hint": null
     }
   },
@@ -1039,9 +1066,8 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "input",
+    "type": "initials",
     "control": {
-      "input_type": "initials",
       "hint": null
     }
   },
@@ -1073,9 +1099,8 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "input",
+    "type": "initials",
     "control": {
-      "input_type": "initials",
       "hint": null
     }
   },

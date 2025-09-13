@@ -1222,6 +1222,188 @@
     }
   },
   {
+    "key": "name_of_insured_2",
+    "title": "Name of Insured",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 73
+    }
+  },
+  {
+    "key": "birthdate_2",
+    "title": "Birthdate",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 74
+    }
+  },
+  {
+    "key": "ssn_3",
+    "title": "Social Security No.",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "ssn",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 75
+    }
+  },
+  {
+    "key": "insurance_company_2",
+    "title": "Insurance Company",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 76
+    }
+  },
+  {
+    "key": "phone_2",
+    "title": "Phone",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "hint": null,
+      "phone_prefix": "+1"
+    },
+    "meta": {
+      "line_idx": 77
+    }
+  },
+  {
+    "key": "street_5",
+    "title": "Street",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 78
+    }
+  },
+  {
+    "key": "city_6",
+    "title": "City",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 79
+    }
+  },
+  {
+    "key": "state_7",
+    "title": "State",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 80
+    }
+  },
+  {
+    "key": "zip_6",
+    "title": "Zip",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 81
+    }
+  },
+  {
+    "key": "dental_plan_name_2",
+    "title": "Dental Plan Name",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 82
+    }
+  },
+  {
+    "key": "plan_group_number_2",
+    "title": "Plan/Group Number",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 83
+    }
+  },
+  {
+    "key": "id_number_2",
+    "title": "ID Number",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 84
+    }
+  },
+  {
+    "key": "patient_relationship_to_insured_2",
+    "title": "Patient Relationship to Insured",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 85
+    }
+  },
+  {
     "key": "signature",
     "title": "Signature",
     "section": "Signature",
@@ -1231,7 +1413,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 73
+      "line_idx": 86
     }
   },
   {
@@ -1245,7 +1427,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 74
+      "line_idx": 87
     }
   }
 ]

@@ -356,12 +356,29 @@
   },
   {
     "key": "relationship_to_patient",
-    "title": "Relationship to Patient",
+    "title": "Relationship To Patient",
     "section": "Patient Information Form",
     "optional": false,
-    "type": "input",
+    "type": "radio",
     "control": {
-      "input_type": "name",
+      "options": [
+        {
+          "name": "Self",
+          "value": "Self"
+        },
+        {
+          "name": "Spouse",
+          "value": "Spouse"
+        },
+        {
+          "name": "Parent",
+          "value": "Parent"
+        },
+        {
+          "name": "Other",
+          "value": "Other"
+        }
+      ],
       "hint": null
     }
   },
@@ -434,9 +451,8 @@
     "title": "Name of School",
     "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
-    "type": "input",
+    "type": "radio",
     "control": {
-      "input_type": "name",
       "hint": null
     }
   },
@@ -476,6 +492,34 @@
     "type": "date",
     "control": {
       "input_type": "past",
+      "hint": null
+    }
+  },
+  {
+    "key": "relationship_to_patient_2",
+    "title": "Relationship To Patient",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Self",
+          "value": "Self"
+        },
+        {
+          "name": "Spouse",
+          "value": "Spouse"
+        },
+        {
+          "name": "Parent",
+          "value": "Parent"
+        },
+        {
+          "name": "Other",
+          "value": "Other"
+        }
+      ],
       "hint": null
     }
   },
@@ -602,34 +646,6 @@
     "type": "input",
     "control": {
       "input_type": "name",
-      "hint": null
-    }
-  },
-  {
-    "key": "relationship_to_patient_2",
-    "title": "Relationship To Patient",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "radio",
-    "control": {
-      "options": [
-        {
-          "name": "Self",
-          "value": "Self"
-        },
-        {
-          "name": "Spouse",
-          "value": "Spouse"
-        },
-        {
-          "name": "Parent",
-          "value": "Parent"
-        },
-        {
-          "name": "Other",
-          "value": "Other"
-        }
-      ],
       "hint": null
     }
   },
@@ -802,17 +818,6 @@
     }
   },
   {
-    "key": "dental_plan_name",
-    "title": "Dental Plan Name",
-    "section": "Primary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "name",
-      "hint": null
-    }
-  },
-  {
     "key": "plan_group_number",
     "title": "Plan/Group Number",
     "section": "Primary Dental Plan",
@@ -846,9 +851,9 @@
     }
   },
   {
-    "key": "name_of_insured_2",
-    "title": "Name of Insured",
-    "section": "Secondary Dental Plan",
+    "key": "dental_plan_name",
+    "title": "Dental Plan Name",
+    "section": "Primary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
@@ -931,24 +936,13 @@
     }
   },
   {
-    "key": "dental_plan_name_2",
-    "title": "Dental Plan Name",
+    "key": "name_of_insured_2",
+    "title": "Name of Insured",
     "section": "Secondary Dental Plan",
     "optional": false,
     "type": "input",
     "control": {
       "input_type": "name",
-      "hint": null
-    }
-  },
-  {
-    "key": "plan_group_number_2",
-    "title": "Plan/Group Number",
-    "section": "Secondary Dental Plan",
-    "optional": false,
-    "type": "input",
-    "control": {
-      "input_type": "number",
       "hint": null
     }
   },
@@ -973,6 +967,28 @@
       "input_type": "phone",
       "hint": null,
       "phone_prefix": "+1"
+    }
+  },
+  {
+    "key": "dental_plan_name_2",
+    "title": "Dental Plan Name",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "plan_group_number_2",
+    "title": "Plan/Group Number",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number",
+      "hint": null
     }
   },
   {
@@ -1004,9 +1020,8 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "input",
+    "type": "initials",
     "control": {
-      "input_type": "initials",
       "hint": null
     }
   },
@@ -1039,9 +1054,8 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "input",
+    "type": "initials",
     "control": {
-      "input_type": "initials",
       "hint": null
     }
   },
@@ -1073,9 +1087,8 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "input",
+    "type": "initials",
     "control": {
-      "input_type": "initials",
       "hint": null
     }
   },

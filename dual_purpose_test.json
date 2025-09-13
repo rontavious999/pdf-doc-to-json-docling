@@ -202,8 +202,28 @@
           "value": "Yes"
         },
         {
-          "name": "No Full-time Student",
-          "value": "No Full-time Student"
+          "name": "No",
+          "value": "No"
+        }
+      ],
+      "hint": null
+    }
+  },
+  {
+    "key": "full_time_student",
+    "title": "Full-time Student",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "No",
+          "value": "No"
+        },
+        {
+          "name": "Yes",
+          "value": "Yes"
         }
       ],
       "hint": null

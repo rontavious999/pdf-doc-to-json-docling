@@ -1,0 +1,30 @@
+2025-09-13 08:48:51,499 - INFO - detected formats: [<InputFormat.PDF: 'pdf'>]
+2025-09-13 08:48:51,511 - INFO - Going to convert document batch...
+2025-09-13 08:48:51,511 - INFO - Initializing pipeline for StandardPdfPipeline with options hash e647edf348883bed75367b22fbe60347
+2025-09-13 08:48:51,517 - INFO - Loading plugin 'docling_defaults'
+2025-09-13 08:48:51,518 - INFO - Registered picture descriptions: ['vlm', 'api']
+2025-09-13 08:48:51,527 - INFO - Loading plugin 'docling_defaults'
+2025-09-13 08:48:51,528 - INFO - Registered ocr engines: ['easyocr', 'ocrmac', 'rapidocr', 'tesserocr', 'tesseract']
+2025-09-13 08:48:51,633 - INFO - Accelerator device: 'cpu'
+2025-09-13 08:48:51,634 - WARNING - Downloading detection model, please wait. This may take several minutes depending upon your network connection.
+2025-09-13 08:48:52,776 - INFO - Download complete
+2025-09-13 08:48:52,776 - WARNING - Downloading recognition model, please wait. This may take several minutes depending upon your network connection.
+2025-09-13 08:48:53,251 - INFO - Download complete.
+2025-09-13 08:48:54,650 - INFO - Accelerator device: 'cpu'
+2025-09-13 08:48:57,517 - INFO - Accelerator device: 'cpu'
+2025-09-13 08:48:57,830 - INFO - Processing document npf.pdf
+/home/runner/.local/lib/python3.12/site-packages/torch/utils/data/dataloader.py:666: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
+  warnings.warn(warn_msg)
+2025-09-13 08:49:08,114 - INFO - Finished converting document npf.pdf in 16.62 sec.
+[+] Processing npf.pdf ...
+Section detected: Patient Information Form from line: ## Patient Information Form
+Section detected: FOR CHILDREN/MINORS ONLY from line: ## FOR CHILDREN/MINORS ONLY:
+Section detected: Primary Dental Plan from line: ## Dental Benefit Plan Information Primary Dental Plan
+Section detected: Secondary Dental Plan from line: ## Secondary Dental Plan
+Section detected: Secondary Dental Plan from line: Our practice  IS  IS N OT (check one) a contracted provider with your dental benefit plan.
+Section detected: Signature from line: -  Authorizations: I understand that the information I have provided is correct to the best of my knowledge. I authorize this dental team to perform any necessary dental services that I may need and have consented to during diagnosis and treatment.\_\_\_\_\_\_\_\_ (initial)
+Section detected: Signature from line: Signature\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_  Date\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+[✓] Wrote JSON: pdfs/npf.json
+[i] Sections: 5 | Fields: 63
+[i] Pipeline/Model/Backend used: StandardPdfPipeline/DoclingParseDocumentBackend
+[x] OCR (EasyOCR): used

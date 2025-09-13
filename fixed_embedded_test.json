@@ -21,30 +21,12 @@
     }
   },
   {
-    "key": "what_is_your_preferred_method_of_contact",
-    "title": "What is your preferred method of contact",
+    "key": "state_2_2",
+    "title": "State",
     "section": "Patient Information Form",
     "optional": false,
-    "type": "radio",
+    "type": "states",
     "control": {
-      "options": [
-        {
-          "name": "Mobile Phone",
-          "value": "Mobile Phone"
-        },
-        {
-          "name": "Home Phone",
-          "value": "Home Phone"
-        },
-        {
-          "name": "Work Phone",
-          "value": "Work Phone"
-        },
-        {
-          "name": "E-mail",
-          "value": "E-mail"
-        }
-      ],
       "hint": null
     }
   },
@@ -190,20 +172,20 @@
     }
   },
   {
-    "key": "is_the_patient_a_minor",
-    "title": "Is the patient a Minor",
+    "key": "full_time_student",
+    "title": "Full-time Student",
     "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
     "type": "radio",
     "control": {
       "options": [
         {
-          "name": "Yes",
-          "value": "Yes"
+          "name": "No",
+          "value": "No"
         },
         {
-          "name": "No Full-time Student",
-          "value": "No Full-time Student"
+          "name": "Yes",
+          "value": "Yes"
         }
       ],
       "hint": null
@@ -429,7 +411,7 @@
     }
   },
   {
-    "key": "state_2_2",
+    "key": "state_2_2_2",
     "title": "State",
     "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
