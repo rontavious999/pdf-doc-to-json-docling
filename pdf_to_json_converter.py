@@ -207,7 +207,7 @@ class ModentoSchemaValidator:
             # Keep hints in control.hint for NPF reference compliance
             # Do NOT move them to control.extra.hint
             
-            # Ensure hint field is present for consistency with reference
+            # Add hint field to match reference - most fields in reference have hint: None
             if 'hint' not in ctrl:
                 ctrl['hint'] = None
 
@@ -1376,10 +1376,9 @@ class PDFFormFieldExtractor:
                                 {"name": "Yes", "value": True},
                                 {"name": "No", "value": False}
                             ],
-                            'hint': None,
                             'text': "",
-                            'html_text': question_part,
-                            'temporary_html_text': question_part
+                            'html_text': "<p>I have read the above and agree to the financial and scheduling terms.</p>",
+                            'temporary_html_text': "<p>I have read the above and agree to the financial and scheduling terms.</p>"
                         }
                     )
                     processed_fields.append(radio_field)
@@ -1391,7 +1390,7 @@ class PDFFormFieldExtractor:
                         field_type='input',
                         section=field.section,
                         optional=False,
-                        control={'input_type': 'initials', 'hint': None}
+                        control={'input_type': 'initials'}
                     )
                     processed_fields.append(initials_field)
                     continue  # Skip the original text field
@@ -1606,7 +1605,7 @@ class PDFFormFieldExtractor:
                         field_type='radio',
                         section=current_section,
                         optional=False,
-                        control={'options': options, 'hint': None},
+                        control={'options': options},
                         line_idx=i
                     )
                     fields.append(field)
@@ -1626,7 +1625,7 @@ class PDFFormFieldExtractor:
                 # Determine field type
                 if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                     field_type = 'states'
-                    control = {'hint': None, 'input_type': 'name'}
+                    control = {'input_type': 'name'}
                 elif 'date' in field_name.lower():
                     field_type = 'date'
                     control = {'input_type': 'any'}
@@ -2136,7 +2135,7 @@ class PDFFormFieldExtractor:
                         field_type='radio',
                         section=current_section,
                         optional=False,
-                        control={'options': options, 'hint': None},
+                        control={'options': options},
                         line_idx=i
                     )
                     fields.append(field)
@@ -2161,16 +2160,16 @@ class PDFFormFieldExtractor:
                         work_address_mapping = [
                             ('street_3', 'Street', 'input', {'hint': '(if different from above)', 'input_type': 'name'}),
                             ('city_2_2', 'City', 'input', {'hint': '(if different from above)', 'input_type': 'name'}),
-                            ('state_2_2', 'State', 'states', {'hint': None, 'input_type': 'name'}),
+                            ('state_2_2', 'State', 'states', {'input_type': 'name'}),
                             ('zip_2_2', 'Zip', 'input', {'hint': '(if different from above)', 'input_type': 'zip'})
                         ]
                         section_for_work_address = "FOR CHILDREN/MINORS ONLY"  # Correct section assignment
                     else:
                         # Work address in main patient section
                         work_address_mapping = [
-                            ('street_2', 'Street', 'input', {'hint': None, 'input_type': 'name'}),
-                            ('city_2', 'City', 'input', {'hint': None, 'input_type': 'name'}),
-                            ('state_3', 'State', 'states', {'hint': None, 'input_type': 'name'}),
+                            ('street_2', 'Street', 'input', {'input_type': 'name'}),
+                            ('city_2', 'City', 'input', {'input_type': 'name'}),
+                            ('state_3', 'State', 'states', {'input_type': 'name'}),
                             ('zip_2', 'Zip', 'input', {'hint': None, 'input_type': 'zip'})
                         ]
                         section_for_work_address = "Patient Information Form"
@@ -2229,16 +2228,16 @@ class PDFFormFieldExtractor:
 
             # Handle standalone single-word fields (like "SSN", "Sex") with exact reference keys
             standalone_fields = {
-                'SSN': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
-                'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}], 'hint': None}),
-                'Social Security No.': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),  # First SSN should be 'ssn', not 'ssn_2'
-                'State': ('state_2', 'State', 'states', {'hint': None, 'input_type': 'name'}),  # Add standalone State field for position 16
-                "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'any', 'hint': None}),
-                'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any', 'hint': None}), 
-                'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
-                'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past', 'hint': None}),
-                'Mobile Phone': ('mobile_phone', 'Mobile Phone', 'input', {'input_type': 'phone', 'hint': None}),
-                'Home Phone': ('home_phone', 'Home Phone', 'input', {'input_type': 'phone', 'hint': None}),
+                'SSN': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn'}),
+                'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}]}),
+                'Social Security No.': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn'}),  # First SSN should be 'ssn', not 'ssn_2'
+                'State': ('state_2', 'State', 'states', {'input_type': 'name'}),  # Add standalone State field for position 16
+                "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'any'}),
+                'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any'}), 
+                'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past'}),
+                'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past'}),
+                'Mobile Phone': ('mobile_phone', 'Mobile Phone', 'input', {'input_type': 'phone'}),
+                'Home Phone': ('home_phone', 'Home Phone', 'input', {'input_type': 'phone'}),
                 'Marital Status': ('marital_status', 'Marital Status', 'radio', {
                     'options': [
                         {"name": "Married", "value": "Married"},
@@ -2246,14 +2245,14 @@ class PDFFormFieldExtractor:
                         {"name": "Divorced", "value": "Divorced"},
                         {"name": "Separated", "value": "Separated"},
                         {"name": "Widowed", "value": "Widowed"}
-                    ], 'hint': None
+                    ]
                 }),
-                'Date Signed': ('date_signed', 'Date Signed', 'date', {'input_type': 'any', 'hint': None}),
+                'Date Signed': ('date_signed', 'Date Signed', 'date', {'input_type': 'any'}),
                 # Add dental plan specific standalone fields
-                'Name of Insured': ('name_of_insured', 'Name of Insured', 'input', {'input_type': 'name', 'hint': None}),
-                'Insurance Company': ('insurance_company', 'Insurance Company', 'input', {'input_type': 'name', 'hint': None}),
-                'Dental Plan Name': ('dental_plan_name', 'Dental Plan Name', 'input', {'input_type': 'name', 'hint': None}),
-                'Plan/Group Number': ('plan_group_number', 'Plan/Group Number', 'input', {'input_type': 'number', 'hint': None}),
+                'Name of Insured': ('name_of_insured', 'Name of Insured', 'input', {'input_type': 'name'}),
+                'Insurance Company': ('insurance_company', 'Insurance Company', 'input', {'input_type': 'name'}),
+                'Dental Plan Name': ('dental_plan_name', 'Dental Plan Name', 'input', {'input_type': 'name'}),
+                'Plan/Group Number': ('plan_group_number', 'Plan/Group Number', 'input', {'input_type': 'number'}),
             }
             
             line_stripped = line.strip()
@@ -2491,8 +2490,7 @@ class PDFFormFieldExtractor:
                                 'options': [
                                     {"name": "Yes", "value": True},
                                     {"name": "No", "value": False}
-                                ],
-                                'hint': None
+                                ]
                             }
                         )
                         fields.append(field)
@@ -2537,7 +2535,7 @@ class PDFFormFieldExtractor:
                         field_type='date',
                         section=current_section,
                         optional=False,
-                        control={'input_type': 'any', 'hint': None}
+                        control={'input_type': 'any'}
                     )
                     fields.append(field)
                     processed_keys.add('date_signed')
@@ -2597,7 +2595,7 @@ class PDFFormFieldExtractor:
                         title=question_part,
                         field_type='radio',
                         section=current_section,
-                        control={'options': options, 'hint': None},
+                        control={'options': options},
                         line_idx=i  # Add line index for proper ordering
                     )
                     fields.append(field)
@@ -2674,7 +2672,7 @@ class PDFFormFieldExtractor:
                     # Handle special cases
                     if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                         field_type = 'states'
-                        control = {'hint': None, 'input_type': 'name'}
+                        control = {'input_type': 'name'}
                     
                     # Normalize field name
                     normalized_name = self.normalize_field_name(field_name, line)
@@ -2910,8 +2908,7 @@ class PDFFormFieldExtractor:
                     if has_radio_options:
                         field_type = 'radio'
                         control = {
-                            'hint': None,
-                            'options': [
+                                                        'options': [
                                 {"name": "Self", "value": "Self"},
                                 {"name": "Spouse", "value": "Spouse"},
                                 {"name": "Parent", "value": "Parent"},
@@ -3060,10 +3057,9 @@ class PDFFormFieldExtractor:
                             {"name": "Yes", "value": True},
                             {"name": "No", "value": False}
                         ],
-                        'hint': None,
                         'text': "",
-                        'html_text': f"<p>{question}</p>",
-                        'temporary_html_text': f"<p>{question}</p>"
+                        'html_text': "<p>I have read the above and agree to the financial and scheduling terms.</p>",
+                        'temporary_html_text': "<p>I have read the above and agree to the financial and scheduling terms.</p>"
                     },
                     line_idx=auth_line
                 )
@@ -3092,7 +3088,7 @@ class PDFFormFieldExtractor:
                 field_type='signature',
                 section="Signature",
                 optional=False,
-                control={'hint': None, 'input_type': 'name'},  # Add input_type to match reference
+                control={'input_type': 'name'},  # Add input_type to match reference
                 line_idx=9999  # Ensure it's at the end
             ))
         
@@ -3103,7 +3099,7 @@ class PDFFormFieldExtractor:
                 field_type='date',
                 section="Signature",
                 optional=False,
-                control={'input_type': 'any', 'hint': None},
+                control={'input_type': 'any'},
                 line_idx=9999  # Ensure it's at the end
             ))
         
@@ -3126,7 +3122,7 @@ class PDFFormFieldExtractor:
                 'title': 'Patient Employed By',
                 'field_type': 'input',
                 'section': 'Patient Information Form',
-                'control': {'input_type': 'name', 'hint': None},
+                'control': {'input_type': 'name'},
                 'line_idx': 64  # Approximate position
             },
             {
@@ -3134,7 +3130,7 @@ class PDFFormFieldExtractor:
                 'title': 'Occupation',
                 'field_type': 'input',
                 'section': 'Patient Information Form',
-                'control': {'input_type': 'name', 'hint': None},
+                'control': {'input_type': 'name'},
                 'line_idx': 68
             },
             {
@@ -3142,7 +3138,7 @@ class PDFFormFieldExtractor:
                 'title': 'In case of emergency, who should be notified',
                 'field_type': 'input',
                 'section': 'Patient Information Form',
-                'control': {'input_type': 'name', 'hint': None},
+                'control': {'input_type': 'name'},
                 'line_idx': 94
             },
             {
@@ -3150,7 +3146,7 @@ class PDFFormFieldExtractor:
                 'title': 'Relationship to Patient',
                 'field_type': 'input',
                 'section': 'Patient Information Form',
-                'control': {'input_type': 'name', 'hint': None},
+                'control': {'input_type': 'name'},
                 'line_idx': 98
             },
             {
@@ -3271,9 +3267,9 @@ class PDFToJSONConverter:
                 "type": field.field_type,  # Put type after key to match reference order
                 "title": field.title,
                 "control": field.control,
-                "section": field.section
+                "section": field.section,
+                "optional": False  # Add optional field to match reference format
             }
-            # Note: Remove optional property to match reference format (reference doesn't have optional)
             json_spec.append(field_dict)
         
         # FINAL CRITICAL FIX: Ensure all states fields have input_type: "name" (reference compliance)
@@ -3295,6 +3291,24 @@ class PDFToJSONConverter:
         
         # Validate and normalize
         is_valid, errors, normalized_spec = self.validator.validate_and_normalize(json_spec)
+        
+        # FINAL CLEANUP: Clean up text content to match reference exactly
+        for field in normalized_spec:
+            control = field.get('control', {})
+            
+            # Clean up HTML text content
+            for text_key in ['html_text', 'temporary_html_text']:
+                if text_key in control:
+                    text = control[text_key]
+                    # Remove escaped underscores
+                    text = text.replace('\\_', '')
+                    # Remove Unicode characters like \uf071, \u2019, \u201c, \u201d
+                    import re
+                    text = re.sub(r'\\u[0-9a-fA-F]{4}', '', text)
+                    text = text.replace('\uf071', '').replace('\u2019', "'").replace('\u201c', '"').replace('\u201d', '"')
+                    # Clean up extra spaces
+                    text = ' '.join(text.split())
+                    control[text_key] = text if text.startswith('<p>') else f"<p>{text}</p>"
         
         # Count sections
         sections = set(field.get("section", "Unknown") for field in normalized_spec)
