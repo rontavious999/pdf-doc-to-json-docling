@@ -665,6 +665,20 @@
     }
   },
   {
+    "key": "name_of_responsible_party",
+    "title": "Name of Responsible Party",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 41
+    }
+  },
+  {
     "key": "relationship_to_patient_2",
     "title": "Relationship To Patient",
     "section": "FOR CHILDREN/MINORS ONLY",
@@ -692,7 +706,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 41
+      "line_idx": 42
     }
   },
   {
@@ -731,7 +745,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 42
+      "line_idx": 43
     }
   },
   {
@@ -745,7 +759,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 43
+      "line_idx": 44
     }
   },
   {
@@ -759,7 +773,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 44
+      "line_idx": 45
     }
   },
   {
@@ -773,7 +787,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 45
+      "line_idx": 46
     }
   },
   {
@@ -787,7 +801,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 46
+      "line_idx": 47
     }
   },
   {
@@ -801,7 +815,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 47
+      "line_idx": 48
     }
   },
   {
@@ -819,7 +833,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 48
+      "line_idx": 49
     }
   },
   {
@@ -833,7 +847,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 49
+      "line_idx": 50
     }
   },
   {
@@ -847,7 +861,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 50
+      "line_idx": 51
     }
   },
   {
@@ -861,7 +875,21 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 51
+      "line_idx": 52
+    }
+  },
+  {
+    "key": "tel",
+    "title": "Tel",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "meta": {
+      "line_idx": 53
     }
   },
   {
@@ -877,7 +905,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 52
+      "line_idx": 54
     }
   },
   {
@@ -890,7 +918,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 53
+      "line_idx": 55
     }
   },
   {
@@ -906,7 +934,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 54
+      "line_idx": 56
     }
   },
   {
@@ -922,7 +950,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 55
+      "line_idx": 57
     }
   },
   {
@@ -935,7 +963,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 56
+      "line_idx": 58
     }
   },
   {
@@ -961,7 +989,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 57
+      "line_idx": 59
     }
   },
   {
@@ -974,7 +1002,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 58
+      "line_idx": 60
     }
   },
   {
@@ -987,7 +1015,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 59
+      "line_idx": 61
     }
   },
   {
@@ -1001,7 +1029,7 @@
       "hint": null
     },
     "meta": {
-      "line_idx": 60
+      "line_idx": 62
     }
   }
 ]

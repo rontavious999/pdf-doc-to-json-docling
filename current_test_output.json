@@ -9,11 +9,7 @@
       "input_type": "name",
       "extra": {
         "hint": "If different from patient"
-      },
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 0
+      }
     }
   },
   {
@@ -26,11 +22,7 @@
       "input_type": "name",
       "extra": {
         "hint": "(if different from above)"
-      },
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 1
+      }
     }
   },
   {
@@ -41,9 +33,6 @@
     "type": "states",
     "control": {
       "hint": null
-    },
-    "meta": {
-      "line_idx": 2
     }
   },
   {
@@ -56,11 +45,7 @@
       "input_type": "zip",
       "extra": {
         "hint": "(if different from above)"
-      },
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 3
+      }
     }
   },
   {
@@ -72,9 +57,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 4
     }
   },
   {
@@ -84,11 +66,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "ssn",
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 5
+      "hint": null,
+      "input_type": "ssn"
     }
   },
   {
@@ -100,22 +79,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 6
-    }
-  },
-  {
-    "key": "state_7",
-    "title": "State",
-    "section": "Secondary Dental Plan",
-    "optional": false,
-    "type": "states",
-    "control": {
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 7
     }
   },
   {
@@ -127,9 +90,6 @@
     "control": {
       "input_type": "any",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 8
     }
   },
   {
@@ -141,9 +101,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 9
     }
   },
   {
@@ -155,9 +112,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 10
     }
   },
   {
@@ -169,9 +123,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 11
     }
   },
   {
@@ -183,9 +134,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 12
     }
   },
   {
@@ -197,9 +145,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 13
     }
   },
   {
@@ -211,9 +156,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 14
     }
   },
   {
@@ -225,9 +167,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 15
     }
   },
   {
@@ -238,9 +177,6 @@
     "type": "states",
     "control": {
       "hint": null
-    },
-    "meta": {
-      "line_idx": 16
     }
   },
   {
@@ -252,9 +188,6 @@
     "control": {
       "input_type": "zip",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 17
     }
   },
   {
@@ -267,9 +200,6 @@
       "input_type": "phone",
       "phone_prefix": "+1",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 18
     }
   },
   {
@@ -282,9 +212,6 @@
       "input_type": "phone",
       "phone_prefix": "+1",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 19
     }
   },
   {
@@ -297,9 +224,6 @@
       "input_type": "phone",
       "phone_prefix": "+1",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 20
     }
   },
   {
@@ -311,9 +235,6 @@
     "control": {
       "input_type": "email",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 21
     }
   },
   {
@@ -325,9 +246,16 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 22
+    }
+  },
+  {
+    "key": "state_2",
+    "title": "State",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
     }
   },
   {
@@ -356,9 +284,6 @@
         }
       ],
       "hint": null
-    },
-    "meta": {
-      "line_idx": 23
     }
   },
   {
@@ -370,9 +295,6 @@
     "control": {
       "input_type": "ssn",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 24
     }
   },
   {
@@ -384,9 +306,6 @@
     "control": {
       "input_type": "past",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 25
     }
   },
   {
@@ -398,9 +317,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 26
     }
   },
   {
@@ -412,9 +328,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 27
     }
   },
   {
@@ -424,11 +337,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name",
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 28
+      "hint": null,
+      "input_type": "name"
     }
   },
   {
@@ -438,11 +348,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name",
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 29
+      "hint": null,
+      "input_type": "name"
     }
   },
   {
@@ -453,9 +360,6 @@
     "type": "states",
     "control": {
       "hint": null
-    },
-    "meta": {
-      "line_idx": 30
     }
   },
   {
@@ -465,11 +369,8 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "zip",
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 31
+      "hint": null,
+      "input_type": "zip"
     }
   },
   {
@@ -490,9 +391,6 @@
         }
       ],
       "hint": null
-    },
-    "meta": {
-      "line_idx": 32
     }
   },
   {
@@ -525,9 +423,6 @@
         }
       ],
       "hint": null
-    },
-    "meta": {
-      "line_idx": 33
     }
   },
   {
@@ -539,9 +434,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 34
     }
   },
   {
@@ -570,9 +462,6 @@
         }
       ],
       "hint": null
-    },
-    "meta": {
-      "line_idx": 35
     }
   },
   {
@@ -583,11 +472,7 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "hint": null,
-      "phone_prefix": "+1"
-    },
-    "meta": {
-      "line_idx": 36
+      "hint": null
     }
   },
   {
@@ -598,11 +483,7 @@
     "type": "input",
     "control": {
       "input_type": "phone",
-      "hint": null,
-      "phone_prefix": "+1"
-    },
-    "meta": {
-      "line_idx": 37
+      "hint": null
     }
   },
   {
@@ -615,17 +496,14 @@
       "options": [
         {
           "name": "Yes",
-          "value": "Yes"
+          "value": true
         },
         {
           "name": "No",
-          "value": "No"
+          "value": false
         }
       ],
       "hint": null
-    },
-    "meta": {
-      "line_idx": 38
     }
   },
   {
@@ -638,17 +516,14 @@
       "options": [
         {
           "name": "Yes",
-          "value": "Yes"
+          "value": true
         },
         {
           "name": "No",
-          "value": "No"
+          "value": false
         }
       ],
       "hint": null
-    },
-    "meta": {
-      "line_idx": 39
     }
   },
   {
@@ -659,9 +534,54 @@
     "type": "radio",
     "control": {
       "hint": null
-    },
-    "meta": {
-      "line_idx": 40
+    }
+  },
+  {
+    "key": "name_of_responsible_party",
+    "title": "Name of Responsible Party",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "first_name_2",
+    "title": "First Name",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Name of Responsible Party"
+      }
+    }
+  },
+  {
+    "key": "last_name_2",
+    "title": "Last Name",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Name of Responsible Party"
+      }
+    }
+  },
+  {
+    "key": "date_of_birth_2",
+    "title": "Date of Birth",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
     }
   },
   {
@@ -690,9 +610,6 @@
         }
       ],
       "hint": null
-    },
-    "meta": {
-      "line_idx": 41
     }
   },
   {
@@ -729,9 +646,85 @@
         }
       ],
       "hint": null
-    },
-    "meta": {
-      "line_idx": 42
+    }
+  },
+  {
+    "key": "street_3",
+    "title": "Street",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "city_3",
+    "title": "City",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "state_4",
+    "title": "State",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    }
+  },
+  {
+    "key": "zip_3",
+    "title": "Zip",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "hint": null
+    }
+  },
+  {
+    "key": "mobile_2",
+    "title": "Mobile",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "phone_prefix": "+1",
+      "hint": null
+    }
+  },
+  {
+    "key": "home_2",
+    "title": "Home",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "phone_prefix": "+1",
+      "hint": null
+    }
+  },
+  {
+    "key": "work_2",
+    "title": "Work",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "phone_prefix": "+1",
+      "hint": null
     }
   },
   {
@@ -743,9 +736,60 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 43
+    }
+  },
+  {
+    "key": "occupation_2",
+    "title": "Occupation",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "street_4",
+    "title": "Street",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "city_4",
+    "title": "City",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "state_5",
+    "title": "State",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    }
+  },
+  {
+    "key": "zip_4",
+    "title": "Zip",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "hint": null
     }
   },
   {
@@ -757,9 +801,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 44
     }
   },
   {
@@ -771,9 +812,6 @@
     "control": {
       "input_type": "past",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 45
     }
   },
   {
@@ -785,9 +823,6 @@
     "control": {
       "input_type": "ssn",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 46
     }
   },
   {
@@ -799,9 +834,6 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 47
     }
   },
   {
@@ -815,11 +847,56 @@
       "phone_prefix": "+1",
       "extra": {
         "hint": "Insurance Company"
-      },
+      }
+    }
+  },
+  {
+    "key": "street_5",
+    "title": "Street",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Insurance Company"
+      }
+    }
+  },
+  {
+    "key": "city_5",
+    "title": "City",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Insurance Company"
+      }
+    }
+  },
+  {
+    "key": "state_6",
+    "title": "State",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "states",
+    "control": {
       "hint": null
-    },
-    "meta": {
-      "line_idx": 48
+    }
+  },
+  {
+    "key": "zip_5",
+    "title": "Zip",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "extra": {
+        "hint": "Insurance Company"
+      }
     }
   },
   {
@@ -831,9 +908,6 @@
     "control": {
       "input_type": "number",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 49
     }
   },
   {
@@ -845,9 +919,6 @@
     "control": {
       "input_type": "number",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 50
     }
   },
   {
@@ -859,9 +930,157 @@
     "control": {
       "input_type": "name",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 51
+    }
+  },
+  {
+    "key": "tel",
+    "title": "Tel",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "name_of_insured_2",
+    "title": "Name of Insured",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "birthdate_2",
+    "title": "Birthdate",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "date",
+    "control": {
+      "input_type": "past",
+      "hint": null
+    }
+  },
+  {
+    "key": "ssn_2_2",
+    "title": "Social Security No.",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "ssn",
+      "hint": null
+    }
+  },
+  {
+    "key": "insurance_company_2",
+    "title": "Insurance Company",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "phone_2",
+    "title": "Phone",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "phone",
+      "phone_prefix": "+1",
+      "extra": {
+        "hint": "Insurance Company"
+      }
+    }
+  },
+  {
+    "key": "street_6",
+    "title": "Street",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Insurance Company"
+      }
+    }
+  },
+  {
+    "key": "city_6",
+    "title": "City",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "Insurance Company"
+      }
+    }
+  },
+  {
+    "key": "state_7",
+    "title": "State",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "states",
+    "control": {
+      "hint": null
+    }
+  },
+  {
+    "key": "zip_6",
+    "title": "Zip",
+    "section": "Secondary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "zip",
+      "extra": {
+        "hint": "Insurance Company"
+      }
+    }
+  },
+  {
+    "key": "plan_group_number_2",
+    "title": "Plan/Group Number",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number",
+      "hint": null
+    }
+  },
+  {
+    "key": "id_number_2",
+    "title": "ID Number",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "number",
+      "hint": null
+    }
+  },
+  {
+    "key": "patient_relationship_to_insured_2",
+    "title": "Patient Relationship to Insured",
+    "section": "Primary Dental Plan",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
     }
   },
   {
@@ -875,9 +1094,6 @@
       "temporary_html_text": "<p>-  <strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care and helping you achieve your optimum oral health.</p><p><br></p><p>Toward these goals, we would like to explain your financial and scheduling responsibilities with our practice. -  <strong>Payment:</strong> <strong>Payment is due at the time services are rendered</strong>.</p><p>Financial arrangements are discussed during the initial visit and a financial agreement is completed in advance of performing any treatment with our practice. We accept the following forms of payment: Cash (US currency only), certified check or money order, credit card (Visa, Mastercard, Amex, Discover). Personal checks are also accepted from patients who have established a positive payment history with the practice.</p><p>Non-sufficient funds or returned checks may be grounds for declining future personal checks and an alternative form of payment may be requested, upon the discretion of the doctor. -  <strong>Dental Benefit Plans:</strong> Your dental insurance benefit is a contract between you or your employer and the dental benefit plan.</p><p><br></p><p>Benefits and payments received are based on the terms of the contract negotiated between you or your employer and the plan. We are happy to help our patients with dental benefit plans to understand and maximize their coverage. Our practice  IS  IS N OT (check one) a contracted provider with your dental benefit plan. If we are a contracted provider with your plan , you are responsible only for your portion of the approved fee as determined by your plan.</p><p>We are required to collect the patient's portion (deductible, co -insurance, co-pay, or any amount not covered by the dental benefit plan) in full at time of service. If our estimate of your portion is less than the amount determined by your plan, the amount billed to you will be adjusted to reflect this. If we are not a contracted provider with your dental benefit plan , it is the patient's responsibility to verify with the plan whether the plan allows patients to receive reimbursement for services from out-of-network providers.</p><p>If your plan allows reimbursement for services from out-of-network providers, our practice can file the claim with your plan and receive reimbursement directly from the plan if you 'assign benefits' to us. In this circumstance, you are responsible and will be billed for any unpaid balance for services rendered upon receipt of payment from the plan to our practice, even if that amount is different than our estimated patient portion of the bill.</p><p>If you choose to not 'assign benefits' to our practice, you are responsible for filing claims and obtaining reimbursement directly from your dental benefit plan and will be responsible for payment in full to our practice before or at the time of service.</p>",
       "text": "",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 52
     }
   },
   {
@@ -885,16 +1101,14 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "initials",
+    "type": "input",
     "control": {
+      "input_type": "initials",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 53
     }
   },
   {
-    "key": "text_4",
+    "key": "text_1",
     "title": "",
     "section": "Signature",
     "optional": false,
@@ -904,13 +1118,10 @@
       "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
       "text": "",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 54
     }
   },
   {
-    "key": "text_4_2",
+    "key": "text_4",
     "title": "",
     "section": "Signature",
     "optional": false,
@@ -920,9 +1131,6 @@
       "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms._________</p>",
       "text": "",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 55
     }
   },
   {
@@ -930,12 +1138,10 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "initials",
+    "type": "input",
     "control": {
+      "input_type": "initials",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 56
     }
   },
   {
@@ -948,20 +1154,17 @@
       "options": [
         {
           "name": "Yes",
-          "value": "Yes"
+          "value": true
         },
         {
           "name": "No",
-          "value": "No"
+          "value": false
         }
       ],
+      "hint": null,
       "text": "",
       "html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. </p>",
-      "temporary_html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. </p>",
-      "hint": null
-    },
-    "meta": {
-      "line_idx": 57
+      "temporary_html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. </p>"
     }
   },
   {
@@ -969,12 +1172,10 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "initials",
+    "type": "input",
     "control": {
+      "input_type": "initials",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 58
     }
   },
   {
@@ -985,9 +1186,6 @@
     "type": "signature",
     "control": {
       "hint": null
-    },
-    "meta": {
-      "line_idx": 59
     }
   },
   {
@@ -999,9 +1197,6 @@
     "control": {
       "input_type": "any",
       "hint": null
-    },
-    "meta": {
-      "line_idx": 60
     }
   }
 ]
