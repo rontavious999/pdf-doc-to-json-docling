@@ -1059,6 +1059,32 @@ class PDFFormFieldExtractor:
                 normalized_name = self.normalize_field_name(field_name, line)
                 fields.append((normalized_name, line))
         
+        # Enhanced fallback: Use improved underscore detection for single-field lines
+        # This helps with forms like npf1.pdf that have simpler field patterns
+        if not fields:  # Only if no exact patterns matched
+            # Use the same improved patterns from detect_input_field_universal
+            underscore_patterns = [
+                r'([A-Za-z\s]+?)(?:(?:\\_|_){2,})',  # Handle escaped or regular underscores
+                r'([A-Za-z\s]+?)(?:\s+(?:\\_|_){2,})',  # Label with space before underscores
+                r'([A-Za-z\s]+?)\s+(?:\\_|_)+',  # Label followed by space then underscores
+                r'([A-Za-z\s/\(\)#\.]+?)\s*(?:\\_|_){2,}',  # Include special chars, handle escapes
+            ]
+            
+            for pattern in underscore_patterns:
+                matches = re.finditer(pattern, line)
+                for match in matches:
+                    label = match.group(1).strip()
+                    # Filter out common false positives and ensure reasonable field names
+                    if (len(label) > 1 and len(label) < 60 and 
+                        not label.startswith('_') and
+                        not label.lower().startswith('page') and
+                        not label.lower().startswith('form') and
+                        not re.match(r'^[_\s]+$', label) and
+                        label not in seen_fields):  # Not just underscores/spaces
+                        normalized_name = self.normalize_field_name(label, line)
+                        fields.append((normalized_name, line))
+                        seen_fields.add(label)
+        
         return fields
     
     def collect_checkbox_run(self, lines: List[str], i: int) -> Tuple[List[Dict[str, Any]], int]:
@@ -2194,13 +2220,45 @@ class PDFFormFieldExtractor:
             if len(label) > 0 and len(label) < 50:  # Reasonable label length
                 fields.append((label, line))
         
-        # Pattern 2: "Label ___" pattern (underscores indicating input fields)
-        underscore_pattern = r'([A-Za-z\s]+?)(?:_{3,})'
-        matches = re.finditer(underscore_pattern, line)
+        # Pattern 2: Enhanced "Label ___" pattern (underscores indicating input fields)
+        # Match labels followed by 2 or more underscores (handle both escaped \_ and regular _)
+        underscore_patterns = [
+            r'([A-Za-z\s]+?)(?:(?:\\_|_){2,})',  # Handle escaped or regular underscores
+            r'([A-Za-z\s]+?)(?:\s+(?:\\_|_){2,})',  # Label with space before underscores
+            r'([A-Za-z\s]+?)\s+(?:\\_|_)+',  # Label followed by space then underscores
+            r'([A-Za-z\s/\(\)#\.]+?)\s*(?:\\_|_){2,}',  # Include special chars, handle escapes
+        ]
+        
+        for pattern in underscore_patterns:
+            matches = re.finditer(pattern, line)
+            for match in matches:
+                label = match.group(1).strip()
+                # Filter out common false positives and ensure reasonable field names
+                if (len(label) > 1 and len(label) < 60 and 
+                    not label.startswith('_') and
+                    not label.lower().startswith('page') and
+                    not label.lower().startswith('form') and
+                    not re.match(r'^[_\s]+$', label)):  # Not just underscores/spaces
+                    fields.append((label, line))
+        
+        # Pattern 3: Simple word patterns followed by parentheses with underscores (handle escapes)
+        paren_pattern = r'([A-Za-z\s]+?)\s*\(\s*(?:\\_|_)+\s*\)'
+        matches = re.finditer(paren_pattern, line)
         for match in matches:
             label = match.group(1).strip()
             if len(label) > 1 and len(label) < 50:
                 fields.append((label, line))
+                
+        # Pattern 4: "Label  (spaces)" pattern - common in forms
+        space_pattern = r'([A-Za-z\s]+?)\s{4,}'  # Label followed by 4+ spaces (indicating field)
+        if len(line) > 20:  # Only check longer lines to avoid false positives
+            matches = re.finditer(space_pattern, line)
+            for match in matches:
+                label = match.group(1).strip()
+                if (len(label) > 2 and len(label) < 50 and 
+                    not label.lower() in ['the', 'and', 'for', 'with', 'this', 'that']):
+                    # Only add if it looks like a field label
+                    fields.append((label, line))
         
         return fields
     
