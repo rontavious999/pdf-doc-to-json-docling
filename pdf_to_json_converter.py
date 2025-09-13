@@ -1323,7 +1323,7 @@ class PDFFormFieldExtractor:
         return ''.join(html_parts)
         
     def extract_consent_form_fields(self, text_lines: List[str]) -> List[FieldInfo]:
-        """Extract fields specifically for consent forms - more focused approach"""
+        """Extract fields specifically for consent forms - enhanced with universal field detection"""
         fields = []
         
         # Get the full text to create comprehensive consent text
@@ -1346,61 +1346,74 @@ class PDFFormFieldExtractor:
             line_idx=0
         ))
         
-        # Add relationship field
-        fields.append(FieldInfo(
-            key="relationship",
-            title="Relationship", 
-            field_type="input",
-            section="Signature",
-            optional=False,
-            control={
-                "hint": None,
-                "input_type": "name"
-            },
-            line_idx=1
-        ))
+        # ENHANCEMENT: Also detect input fields in consent forms using universal detection
+        # This ensures we don't miss form fields just because it's classified as consent
+        detected_fields = []
+        processed_keys = set()
         
-        # Add signature field
-        fields.append(FieldInfo(
-            key="signature",
-            title="Signature",
-            field_type="signature", 
-            section="Signature",
-            optional=False,
-            control={
-                "hint": None,
-                "input_type": None
-            },
-            line_idx=2
-        ))
+        for i, line in enumerate(text_lines):
+            # Skip empty lines
+            if len(line.strip()) < 3:
+                continue
+                
+            # Try to detect input fields using the enhanced universal detection
+            input_fields = self.detect_input_field_universal(line)
+            for field_name, full_line in input_fields:
+                key = ModentoSchemaValidator.slugify(field_name)
+                
+                # Skip if already processed or if it's a basic field we'll add manually
+                if key in processed_keys or key in ['signature', 'date_signed', 'relationship']:
+                    continue
+                    
+                # Determine field type and input type
+                field_type = self.detect_field_type(field_name)
+                if field_type == 'input':
+                    input_type = self.detect_input_type(field_name)
+                else:
+                    input_type = None
+                
+                # Create field info
+                field_info = FieldInfo(
+                    key=key,
+                    title=field_name,
+                    field_type=field_type,
+                    section="Signature",  # Put detected fields in signature section
+                    optional=False,
+                    control={
+                        "hint": None,
+                        "input_type": input_type
+                    } if field_type == 'input' else {},
+                    line_idx=i
+                )
+                
+                detected_fields.append(field_info)
+                processed_keys.add(key)
         
-        # Add date field
-        fields.append(FieldInfo(
-            key="date_signed",
-            title="Date Signed",
-            field_type="date",
-            section="Signature",
-            optional=False,
-            control={
-                "hint": None,
-                "input_type": "any"
-            },
-            line_idx=3
-        ))
+        # Add the detected fields before the standard signature fields
+        fields.extend(detected_fields)
         
-        # Add printed name field
-        fields.append(FieldInfo(
-            key="printed_name_if_signed_on_behalf",
-            title="Printed name if signed on behalf of the patient",
-            field_type="input",
-            section="Signature", 
-            optional=False,
-            control={
-                "hint": None,
-                "input_type": None
-            },
-            line_idx=4
-        ))
+        # Add standard consent signature fields (only if not already detected)
+        standard_fields = [
+            ("relationship", "Relationship", "input", "name"),
+            ("signature", "Signature", "signature", None),
+            ("date_signed", "Date Signed", "date", "any"),
+            ("printed_name_if_signed_on_behalf", "Printed name if signed on behalf of the patient", "input", "name")
+        ]
+        
+        for key, title, field_type, input_type in standard_fields:
+            if key not in processed_keys:
+                fields.append(FieldInfo(
+                    key=key,
+                    title=title,
+                    field_type=field_type,
+                    section="Signature",
+                    optional=False,
+                    control={
+                        "hint": None,
+                        "input_type": input_type
+                    } if field_type == 'input' else {},
+                    line_idx=len(fields)
+                ))
         
         return fields
     
@@ -2214,11 +2227,21 @@ class PDFFormFieldExtractor:
         
         # Fallback to generic patterns if no exact match
         
-        # Pattern 1: "Label:" pattern
+        # Pattern 1: Enhanced "Label:" pattern
         if ':' in line and not line.strip().startswith('##'):
-            label = line.split(':')[0].strip()
-            if len(label) > 0 and len(label) < 50:  # Reasonable label length
-                fields.append((label, line))
+            # Handle multiple colons - take the part before first colon as potential field
+            parts = line.split(':')
+            label = parts[0].strip()
+            # Check if this looks like a form field (not a sentence or header)
+            if (len(label) > 0 and len(label) < 50 and 
+                not label.lower().startswith('http') and  # Not a URL
+                not '.' in label or label.count('.') <= 1):  # Allow one period for abbreviations
+                # Additional check: if line after colon is mostly empty or underscores, it's likely a field
+                remainder = ':'.join(parts[1:]).strip()
+                if (not remainder or  # Empty after colon
+                    len(remainder) < 10 or  # Very short content
+                    re.match(r'^[\s_]*$', remainder)):  # Only spaces/underscores
+                    fields.append((label, line))
         
         # Pattern 2: Enhanced "Label ___" pattern (underscores indicating input fields)
         # Match labels followed by 2 or more underscores (handle both escaped \_ and regular _)
@@ -2227,19 +2250,28 @@ class PDFFormFieldExtractor:
             r'([A-Za-z\s]+?)(?:\s+(?:\\_|_){2,})',  # Label with space before underscores
             r'([A-Za-z\s]+?)\s+(?:\\_|_)+',  # Label followed by space then underscores
             r'([A-Za-z\s/\(\)#\.]+?)\s*(?:\\_|_){2,}',  # Include special chars, handle escapes
+            # Additional patterns for common form layouts
+            r'([A-Za-z\s]+?)\s*:\s*(?:\\_|_){2,}',  # "Label: ___" pattern
+            r'([A-Za-z\s]+?)\s*-:\s*(?:\\_|_){2,}',  # "Label-: ___" pattern (like Date of Birth-)
+            r'([A-Za-z\s/\(\)#\.]+?)\s+(?:\\_|_){8,}',  # Longer underscores for name fields
         ]
         
         for pattern in underscore_patterns:
             matches = re.finditer(pattern, line)
             for match in matches:
                 label = match.group(1).strip()
-                # Filter out common false positives and ensure reasonable field names
+                # Enhanced filtering for valid field names
                 if (len(label) > 1 and len(label) < 60 and 
                     not label.startswith('_') and
                     not label.lower().startswith('page') and
                     not label.lower().startswith('form') and
-                    not re.match(r'^[_\s]+$', label)):  # Not just underscores/spaces
-                    fields.append((label, line))
+                    not label.lower().startswith('see ') and  # Skip references
+                    not label.lower().startswith('the ') and  # Skip articles
+                    not re.match(r'^[_\s]+$', label) and  # Not just underscores/spaces
+                    not re.match(r'^\d+\.', label.strip())):  # Not numbered list items
+                    # Additional quality check: ensure it's not just connecting words
+                    if not label.lower().strip() in ['and', 'or', 'the', 'of', 'to', 'in', 'for', 'with']:
+                        fields.append((label, line))
         
         # Pattern 3: Simple word patterns followed by parentheses with underscores (handle escapes)
         paren_pattern = r'([A-Za-z\s]+?)\s*\(\s*(?:\\_|_)+\s*\)'
