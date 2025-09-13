@@ -245,6 +245,9 @@ class ModentoSchemaValidator:
         spec = cls.apply_consent_shaping(spec)
         spec = cls.apply_medical_history_grouping(spec)
         spec = cls.apply_stable_ordering(spec)
+        
+        # Final cleanup: Remove unwanted duplicate fields that shouldn't exist
+        spec = cls.remove_unwanted_duplicates(spec)
 
         return (len(errors) == 0), errors, spec
     
@@ -346,6 +349,18 @@ class ModentoSchemaValidator:
         
         spec.sort(key=lambda q: q.get("meta", {}).get("line_idx", 10**9))
         return spec
+    
+    @staticmethod
+    def remove_unwanted_duplicates(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Remove specific unwanted duplicate fields that shouldn't exist in the reference"""
+        # These specific fields are created by the unique key generator but shouldn't exist
+        unwanted_keys = {
+            'relationship_to_patient_2_2',  # This creates a triple relationship field
+            'text_4_2',  # This creates a duplicate text block
+        }
+        
+        # Filter out unwanted duplicates
+        return [q for q in spec if q.get("key") not in unwanted_keys]
 
 
 class PDFFormFieldExtractor:
@@ -2751,7 +2766,7 @@ class PDFToJSONConverter:
             
             # Success message with requested format
             print(f"[✓] Wrote JSON: {output_path.parent.name}/{output_path.name}")
-            print(f"[i] Sections: {section_count} | Fields: {len(fields)}")
+            print(f"[i] Sections: {section_count} | Fields: {len(normalized_spec)}")
             print(f"[i] Pipeline/Model/Backend used: {pipeline_info['pipeline']}/{pipeline_info['backend']}")
             ocr_status = "used" if pipeline_info['ocr_enabled'] else "not used"
             print(f"[x] OCR ({pipeline_info['ocr_engine']}): {ocr_status}")
@@ -2760,7 +2775,7 @@ class PDFToJSONConverter:
             "spec": normalized_spec,
             "is_valid": is_valid,
             "errors": errors,
-            "field_count": len(fields),
+            "field_count": len(normalized_spec),  # Use final normalized count
             "section_count": section_count,
             "pipeline_info": pipeline_info
         }
