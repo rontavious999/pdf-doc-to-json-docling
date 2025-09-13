@@ -2045,6 +2045,18 @@ class PDFFormFieldExtractor:
                         final_key = 'ssn_2'
                     elif current_section == "Secondary Dental Plan":
                         final_key = 'ssn_3'
+                elif base_key == 'date_of_birth':
+                    # Section-based date of birth numbering
+                    if current_section == "Patient Information Form":
+                        final_key = 'date_of_birth'
+                    elif current_section == "FOR CHILDREN/MINORS ONLY":
+                        final_key = 'date_of_birth_2'
+                elif base_key == 'birthdate':
+                    # Section-based birthdate numbering  
+                    if current_section == "Primary Dental Plan":
+                        final_key = 'birthdate'
+                    elif current_section == "Secondary Dental Plan":
+                        final_key = 'birthdate_2'
                 elif base_key == 'state_2':
                     # Handle state field positioning - first standalone State should be state_2
                     final_key = 'state_2'
@@ -2291,6 +2303,10 @@ class PDFFormFieldExtractor:
                 title, options = radio_result
                 key = ModentoSchemaValidator.slugify(title)
                 
+                # Handle section-based numbering for radio fields
+                if current_section == "FOR CHILDREN/MINORS ONLY" and key == "relationship_to_patient":
+                    key = "relationship_to_patient_2"
+                
                 field = FieldInfo(
                     key=key,
                     title=title,
@@ -2440,8 +2456,64 @@ class PDFFormFieldExtractor:
                 if field_name.lower() in ["middle initial", "mi"]:
                     base_key = "mi"
                 
+                # Handle section-based field numbering for common fields
+                final_key = base_key
+                if current_section == "FOR CHILDREN/MINORS ONLY":
+                    # Children section fields get _2 suffix
+                    if base_key in ['first_name', 'last_name', 'date_of_birth', 'mobile', 'home', 'work', 'occupation']:
+                        final_key = f"{base_key}_2"
+                    elif base_key == 'street':
+                        # Check context for proper numbering in children section
+                        context_check = ' '.join(text_lines[max(0, i-5):i+5]).lower()
+                        if 'if different from patient' in context_check:
+                            final_key = 'if_different_from_patient_street'
+                        else:
+                            # Second address in children section (employer address)
+                            final_key = 'street_3'
+                    elif base_key == 'city':
+                        # Check which address this is in children section
+                        context_check = ' '.join(text_lines[max(0, i-5):i+5]).lower()
+                        if 'if different from patient' in context_check:
+                            final_key = 'city_3'  # First address
+                        else:
+                            final_key = 'city_2_2'  # Second address (employer)
+                    elif base_key == 'state':
+                        # Check which address this is in children section
+                        context_check = ' '.join(text_lines[max(0, i-5):i+5]).lower()
+                        if 'if different from patient' in context_check:
+                            final_key = 'state_4'  # First address
+                        else:
+                            final_key = 'state_2_2'  # Second address (employer)
+                    elif base_key == 'zip':
+                        # Check which address this is in children section
+                        context_check = ' '.join(text_lines[max(0, i-5):i+5]).lower()
+                        if 'if different from patient' in context_check:
+                            final_key = 'zip_3'  # First address
+                        else:
+                            final_key = 'zip_2_2'  # Second address (employer)
+                elif current_section == "Primary Dental Plan":
+                    # Primary dental plan fields get different numbering
+                    if base_key == 'street':
+                        final_key = 'street_4'
+                    elif base_key == 'city':
+                        final_key = 'city_5'
+                    elif base_key == 'state':
+                        final_key = 'state_6'
+                    elif base_key == 'zip':
+                        final_key = 'zip_5'
+                elif current_section == "Secondary Dental Plan":
+                    # Secondary dental plan fields get different numbering
+                    if base_key == 'street':
+                        final_key = 'street_5'
+                    elif base_key == 'city':
+                        final_key = 'city_6'
+                    elif base_key == 'state':
+                        final_key = 'state_7'
+                    elif base_key == 'zip':
+                        final_key = 'zip_6'
+                
                 # Skip if already processed
-                if base_key in processed_keys:
+                if final_key in processed_keys:
                     continue
                 
                 # Determine field type
@@ -2522,7 +2594,7 @@ class PDFFormFieldExtractor:
                 is_required = self.is_field_required(field_name, detected_section, full_line)
                 
                 field = FieldInfo(
-                    key=base_key,
+                    key=final_key,
                     title=field_name,
                     field_type=field_type,
                     section=detected_section,
@@ -2531,7 +2603,7 @@ class PDFFormFieldExtractor:
                     line_idx=i
                 )
                 fields.append(field)
-                processed_keys.add(base_key)
+                processed_keys.add(final_key)
             
             i += 1
         
