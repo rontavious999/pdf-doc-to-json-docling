@@ -471,9 +471,13 @@ class PDFFormFieldExtractor:
             # Convert PDF using Docling
             result = self.converter.convert(str(pdf_path))
             
-            # Extract text with superior layout preservation
-            full_text = result.document.export_to_text()
-            text_lines = [line.strip() for line in full_text.split('\n') if line.strip()]
+            # Extract text with superior layout preservation - use markdown for checkbox preservation
+            full_text = result.document.export_to_markdown()  # Changed from export_to_text()
+            all_lines = full_text.split('\n')
+            # Keep empty lines for proper question-option proximity in radio detection
+            text_lines = [line.strip() for line in all_lines]  # Don't filter empty lines
+            
+            print(f"DEBUG: Extracted {len(all_lines)} total lines, keeping all for proper radio detection")
             
             # Update pipeline info with actual conversion details
             pipeline_info = self.pipeline_info.copy()
@@ -1584,19 +1588,27 @@ class PDFFormFieldExtractor:
             # Try to detect radio button questions first
             question, options, next_i = self.detect_radio_options_universal(text_lines, i)
             if question and options:
-                key = ModentoSchemaValidator.slugify(question)
-                if key not in processed_keys:  # Only add if not already processed
+                # Use exact reference key mapping
+                radio_key = self.get_radio_key_for_question(question, current_section)
+                
+                # Debug output
+                print(f"DEBUG: Found radio question '{question}' -> key '{radio_key}' in section '{current_section}'")
+                
+                if radio_key not in processed_keys:  # Only add if not already processed
                     field = FieldInfo(
-                        key=key,
+                        key=radio_key,
                         title=question,
                         field_type='radio',
                         section=current_section,
                         optional=False,
-                        control={'options': options},
+                        control={'options': options, 'hint': None},
                         line_idx=i
                     )
                     fields.append(field)
-                    processed_keys.add(key)
+                    processed_keys.add(radio_key)
+                    print(f"DEBUG: Added radio field '{radio_key}'")
+                else:
+                    print(f"DEBUG: Skipped duplicate radio field '{radio_key}'")
                 i = next_i
                 continue
             
@@ -1797,56 +1809,99 @@ class PDFFormFieldExtractor:
                 break
         return current_section
     
-    def detect_radio_options_universal(self, text_lines: List[str], start_idx: int) -> Tuple[Optional[str], List[Dict[str, Any]], int]:
-        """Detect radio button questions and their options"""
+    def get_radio_key_for_question(self, question: str, section: str) -> str:
+        """Map radio questions to exact reference keys with section awareness"""
+        question_lower = question.lower()
         
-        # Look for checkbox symbols or radio patterns
+        # Exact mapping to reference keys
+        if 'preferred method of contact' in question_lower:
+            return 'what_is_your_preferred_method_of_contact'
+        elif 'patient' in question_lower and 'minor' in question_lower and 'residence' not in question_lower:
+            return 'is_the_patient_a_minor'  
+        elif 'full-time student' in question_lower or 'full time student' in question_lower:
+            return 'full_time_student'
+        elif 'primary residence' in question_lower or ('patient' in question_lower and 'minor' in question_lower and 'residence' in question_lower):
+            return 'if_patient_is_a_minor_primary_residence'
+        elif 'relationship' in question_lower and 'patient' in question_lower:
+            # Section-aware relationship field naming
+            if section == "FOR CHILDREN/MINORS ONLY":
+                return 'relationship_to_patient_2'
+            else:
+                return 'relationship_to_patient'
+        elif 'marital status' in question_lower:
+            return 'marital_status'
+        elif 'sex' in question_lower:
+            return 'sex'
+        elif 'authorize' in question_lower and 'personal information' in question_lower:
+            return 'i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_'
+        else:
+            # Fallback to slugified version
+            return ModentoSchemaValidator.slugify(question)
+
+    def detect_radio_options_universal(self, text_lines: List[str], start_idx: int) -> Tuple[Optional[str], List[Dict[str, Any]], int]:
+        """Detect radio button questions and their options - enhanced for NPF patterns"""
+        
+        if start_idx >= len(text_lines):
+            return None, [], start_idx
+            
         line = text_lines[start_idx]
         
-        # Pattern 1: Question with checkboxes on same line
+        # Enhanced Pattern 1: Question with checkboxes on same line (like primary residence)
         checkbox_pattern = r'([^□☐!]+?)(?:□|☐|!)([^□☐!]+?)(?:□|☐|!)([^□☐!]*)'
         match = re.search(checkbox_pattern, line)
         if match:
             question = match.group(1).strip().rstrip(':')
-            if len(question) < 5:  # Too short to be a real question
-                return None, [], start_idx
+            if len(question) >= 5:  # Must be substantial question
+                # Extract options from the line
+                options = []
+                option_parts = re.split(r'[□☐!]', line)[1:]  # Skip the question part
+                for part in option_parts:
+                    option_text = part.strip()
+                    if option_text and len(option_text) > 0:
+                        # Clean up option text
+                        option_text = option_text.strip('(),. ')
+                        if option_text and option_text not in ['', ' ']:
+                            value = option_text.lower()
+                            if value in ['yes', 'true']:
+                                value = True
+                            elif value in ['no', 'false']:
+                                value = False
+                            else:
+                                value = option_text  # Keep original text for other options
+                            options.append({"name": option_text, "value": value})
                 
-            # Extract options from the line
-            options = []
-            option_parts = re.split(r'[□☐!]', line)[1:]  # Skip the question part
-            for part in option_parts:
-                option_text = part.strip()
-                if option_text and len(option_text) > 0:
-                    # Clean up option text
-                    option_text = option_text.strip('(),. ')
-                    if option_text and option_text not in ['', ' ']:
-                        value = option_text.lower()
-                        if value in ['yes', 'true']:
-                            value = True
-                        elif value in ['no', 'false']:
-                            value = False
-                        options.append({"name": option_text, "value": value})
+                if len(options) >= 2:
+                    return question, options, start_idx + 1
+
+        # Enhanced Pattern 2: Question followed by options on subsequent lines
+        # This handles "Is the patient a Minor?" and "What is your preferred method of contact?"
+        if (line.strip().endswith('?') or 
+            'preferred method of contact' in line.lower() or
+            'full-time student' in line.lower()) and not line.strip().startswith('##'):
             
-            if len(options) >= 2:
-                return question, options, start_idx + 1
-        
-        # Pattern 2: Question followed by options on subsequent lines
-        if (':' in line or line.strip().endswith('?')) and not line.strip().startswith('##'):
-            if ':' in line:
-                question = line.split(':')[0].strip()
-            else:
-                # Handle questions ending with ?
-                question = line.strip().rstrip('?').strip()
-            
+            question = line.strip().rstrip('?').strip()
             if len(question) < 5:
                 return None, [], start_idx
                 
             options = []
             next_idx = start_idx + 1
             
-            # Look ahead for option lines
-            while next_idx < len(text_lines) and next_idx < start_idx + 5:  # Limit lookahead
-                next_line = text_lines[next_idx]
+            # Look ahead for option lines - expanded lookahead for contact preferences
+            max_lookahead = 10 if 'contact' in question.lower() else 5
+            while next_idx < len(text_lines) and next_idx < start_idx + max_lookahead:
+                next_line = text_lines[next_idx].strip()
+                
+                # Skip empty lines
+                if not next_line:
+                    next_idx += 1
+                    continue
+                    
+                # Stop if we hit another question or section
+                if (next_line.endswith('?') or next_line.startswith('##') or 
+                    len(next_line) > 100):  # Probably not an option
+                    break
+                
+                # Check for checkbox options
                 if any(symbol in next_line for symbol in ['□', '☐', '!']):
                     # Extract option text
                     option_match = re.search(r'[□☐!]\s*([^□☐!]+)', next_line)
@@ -1858,7 +1913,45 @@ class PDFFormFieldExtractor:
                                 value = True
                             elif value in ['no', 'false']:
                                 value = False
+                            else:
+                                value = option_text  # Keep original for other options
                             options.append({"name": option_text, "value": value})
+                    next_idx += 1
+                else:
+                    # No more checkbox options found
+                    break
+            
+            if len(options) >= 2:
+                return question, options, next_idx
+
+        # Enhanced Pattern 3: Special case for "Full-time Student" where checkbox is mixed with text
+        # This handles "□ No Full-time Student" patterns
+        if 'full-time student' in line.lower() and any(symbol in line for symbol in ['□', '☐', '!']):
+            # Extract the question (Full-time Student)
+            question = "Full-time Student"
+            options = []
+            
+            # Parse this line for one option
+            if '□ no' in line.lower() or '☐ no' in line.lower():
+                options.append({"name": "No", "value": False})
+            elif '□ yes' in line.lower() or '☐ yes' in line.lower():
+                options.append({"name": "Yes", "value": True})
+            
+            # Look for the other option in next lines
+            next_idx = start_idx + 1
+            while next_idx < len(text_lines) and next_idx < start_idx + 3:
+                next_line = text_lines[next_idx].strip()
+                if not next_line:
+                    next_idx += 1
+                    continue
+                    
+                if any(symbol in next_line for symbol in ['□', '☐', '!']):
+                    if ('□ yes' in next_line.lower() or '☐ yes' in next_line.lower()) and \
+                       not any(opt['name'].lower() == 'yes' for opt in options):
+                        options.append({"name": "Yes", "value": True})
+                    elif ('□ no' in next_line.lower() or '☐ no' in next_line.lower()) and \
+                         not any(opt['name'].lower() == 'no' for opt in options):
+                        options.append({"name": "No", "value": False})
                     next_idx += 1
                 else:
                     break
@@ -1964,11 +2057,51 @@ class PDFFormFieldExtractor:
         # Track processed keys to prevent duplicates
         processed_keys = set()
         
+        print(f"DEBUG: Starting patient info extraction with {len(text_lines)} lines")
+        
         while i < len(text_lines):
             line = text_lines[i]
             
+            # Debug for specific radio lines
+            if any(pattern in line.lower() for pattern in ['contact', 'minor', 'student', 'residence']):
+                print(f"DEBUG: Processing potential radio line {i}: {line[:80]}...")
+                # Try radio detection on this line
+                question, options, next_i = self.detect_radio_options_universal(text_lines, i)
+                if question and options:
+                    print(f"  -> Radio detected: '{question}' with {len(options)} options")
+                else:
+                    print(f"  -> No radio detected")
+            
+            # Try to detect radio button questions first - MAIN RADIO DETECTION
+            question, options, next_i = self.detect_radio_options_universal(text_lines, i)
+            if question and options:
+                # Use exact reference key mapping
+                radio_key = self.get_radio_key_for_question(question, current_section)
+                
+                print(f"DEBUG: Found radio question '{question}' -> key '{radio_key}' in section '{current_section}'")
+                
+                if radio_key not in processed_keys:  # Only add if not already processed
+                    field = FieldInfo(
+                        key=radio_key,
+                        title=question,
+                        field_type='radio',
+                        section=current_section,
+                        optional=False,
+                        control={'options': options, 'hint': None},
+                        line_idx=i
+                    )
+                    fields.append(field)
+                    processed_keys.add(radio_key)
+                    print(f"DEBUG: Added radio field '{radio_key}'")
+                else:
+                    print(f"DEBUG: Skipped duplicate radio field '{radio_key}'")
+                i = next_i
+                continue
+            
             # Skip very short lines
             if len(line) < 3:
+                if any(pattern in line.lower() for pattern in ['contact', 'minor', 'student', 'residence']):
+                    print(f"  -> Skipped: too short")
                 i += 1
                 continue
             
