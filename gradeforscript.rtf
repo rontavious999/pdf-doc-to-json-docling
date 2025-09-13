@@ -1,516 +1,116 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2865
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Roman;\f1\fmodern\fcharset0 Courier-Bold;\f2\froman\fcharset0 Times-Bold;
-\f3\fmodern\fcharset0 Courier;\f4\froman\fcharset0 Times-BoldItalic;}
-{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red109\green109\blue109;}
-{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;\cssrgb\c50196\c50196\c50196;}
-{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{circle\}}{\leveltext\leveltemplateid2\'01\uc0\u9702 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listname ;}\listid1}
-{\list\listtemplateid2\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid101\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{circle\}}{\leveltext\leveltemplateid102\'01\uc0\u9702 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{square\}}{\leveltext\leveltemplateid103\'01\uc0\u9642 ;}{\levelnumbers;}\fi-360\li2160\lin2160 }{\listname ;}\listid2}
-{\list\listtemplateid3\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid201\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid3}
-{\list\listtemplateid4\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid301\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid4}
-{\list\listtemplateid5\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid401\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid5}
-{\list\listtemplateid6\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid501\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid6}}
-{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}{\listoverride\listid4\listoverridecount0\ls4}{\listoverride\listid5\listoverridecount0\ls5}{\listoverride\listid6\listoverridecount0\ls6}}
-\margl1440\margr1440\vieww24060\viewh16740\viewkind0
-\deftab720
-\pard\pardeftab720\sa240\partightenfactor0
+I reviewed your latest pdf_to_json_converter.py (the one you just uploaded) specifically against what Modento expects for forms and consents. Here’s a crisp, code-aware review: grade, what it nails, what will bite, and the exact fixes that will move it from “good” to “rock solid.”
 
-\f0\fs24 \cf0 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 I reviewed your latest 
-\f1\b\fs26 pdf_to_json_converter.py
-\f0\b0\fs24  (the one you just uploaded) specifically against what Modento expects for forms and consents. Here\'92s a crisp, code-aware review: grade, what it nails, what will bite, and the exact fixes that will move it from \'93good\'94 to \'93rock solid.\'94\
-\pard\pardeftab720\partightenfactor0
-\cf3 \strokec3 \
-\pard\pardeftab720\sa321\partightenfactor0
+Verdict
+Grade: B+ It’s a strong extractor with sensible heuristics and a decent validator. You’re quite close to production-ready for typical intake packets, but there are a few schema mismatches and two big functional gaps (consent shaping and medical-history grouping) that keep it from an A.
 
-\f2\b\fs48 \cf0 \strokec2 Verdict\
-\pard\pardeftab720\sa240\partightenfactor0
+What it does well
+	•	Docling-first extraction (good defaults): you configure OCR and table awareness and capture page text lines reliably—great for mixed digital/scanned packets.
+	•	Practical field detection:
+	◦	Inline Label: ____ parsing for inputs.
+	◦	Common radio patterns (sex, marital status, contact preference, minors, etc.).
+	•	Section detection: quick keyword switches (“Patient Information,” “Insurance,” “Medical History,” “Signature/Consent”) that map most dental packets reasonably.
+	•	Key hygiene: slugify + global uniqueness prevents key collisions; labels/sections are normalized to readable shapes.
+	•	Built-in validator: you check top-level array, ensure keys exist, and fill missing option.value via slugging.
 
-\fs24 \cf0 Grade: B+
-\f0\b0 \uc0\u8232 It\'92s a strong extractor with sensible heuristics and a decent validator. You\'92re quite close to production-ready for typical intake packets, but there are a few schema mismatches and two big functional gaps (consent shaping and medical-history grouping) that keep it from an A.\
-\pard\pardeftab720\partightenfactor0
-\cf3 \strokec3 \
-\pard\pardeftab720\sa321\partightenfactor0
+Where it will bite (and why)
+	1	Schema mismatches relative to Modento
+	◦	states control: you set control = {'hint': None, 'input_type': 'name'} when you detect “State.” In Modento, type: "states" must not carry input_type.
+	◦	initials: you model initials as type: "input" with control.input_type: "initials". In Modento, initials is its own type ({"type":"initials","control":{}}), not an input subtype.
+	◦	Yes/No values: you emit True/False booleans for several radio patterns; Modento import is safer/more consistent with string values "Yes"/"No".
+	2	Signature duplication
+	◦	Your add_signature_if_missing only checks for a key literally named "signature". If the extractor created a signature with another key (e.g., "patient_signature"), your code adds a second one.
+	3	No consent shaping
+	◦	Narrative consents (gingivectomy / crown & bridge / tooth removal) should become:
+	▪	context text or extra.hint (risks/benefits/alternatives),
+	▪	one acknowledgment checkbox (“I have read and understand…”),
+	▪	signature + signature_date. Right now you emit long text blocks but don’t enforce that structure.
+	4	No medical-history grouping
+	◦	Long lists like “AIDS/HIV,” “High blood pressure,” etc., should collapse into one checkbox field with ordered options. As is, you risk many separate items or mixed types.
+	5	Ordering isn’t guaranteed
+	◦	You compute things line-by-line but don’t apply a final stable sort (e.g., by meta.line_idx). Complex packets can end up slightly shuffled.
+	6	Bullet/checkbox symbol coverage
+	◦	Your option detection focuses on □. Real packets use a zoo of symbols (■ ☐ ☑ ✅ ◉ ● ○ • - – * [ ] ( )). You’ll miss options when symbols vary.
 
-\f2\b\fs48 \cf0 \strokec2 What it does well\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls1\ilvl0
-\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Docling-first extraction (good defaults):
-\f0\b0  you configure OCR and table awareness and capture page text lines reliably\'97great for mixed digital/scanned packets.\
-\ls1\ilvl0
-\f2\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Practical field detection:
-\f0\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls1\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9702 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Inline 
-\f3\fs26 Label: ____
-\f0\fs24  parsing for inputs.\
-\ls1\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9702 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Common radio patterns (sex, marital status, contact preference, minors, etc.).\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls1\ilvl0
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Section detection:
-\f0\b0  quick keyword switches (\'93Patient Information,\'94 \'93Insurance,\'94 \'93Medical History,\'94 \'93Signature/Consent\'94) that map most dental packets reasonably.\
-\ls1\ilvl0
-\f2\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Key hygiene:
-\f0\b0  
-\f3\fs26 slugify
-\f0\fs24  + global uniqueness prevents key collisions; labels/sections are normalized to readable shapes.\
-\ls1\ilvl0
-\f2\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Built-in validator:
-\f0\b0  you check top-level array, ensure keys exist, and fill missing 
-\f3\fs26 option.value
-\f0\fs24  via slugging.\
-\pard\pardeftab720\partightenfactor0
-\cf3 \strokec3 \
-\pard\pardeftab720\sa321\partightenfactor0
+Exact fixes to get you to an A
+1) Harden the validator (small, high-impact)
+	•	Signature uniqueness by type (not by key), and force canonical key 'signature': sig_idxs = [i for i,q in enumerate(spec) if q.get("type")=="signature"]
+	•	if sig_idxs:
+	•	    first = sig_idxs[0]
+	•	    spec[first]["key"] = "signature"
+	•	    for j in sig_idxs[1:]:
+	•	        spec[j]["__drop__"] = True
+	•	spec = [q for q in spec if not q.get("__drop__")]
+	•	if not sig_idxs:
+	•	    spec.append({"key":"signature","title":"Signature","section":"Signature","optional":False,"type":"signature","control":{}})
+	•	
+	•	states control must not carry input_type: if q_type == "states":
+	•	    q["control"].pop("input_type", None)
+	•	
+	•	initials must be a real type, not input: # if you receive input + input_type "initials", convert:
+	•	if q_type == "input" and q.get("control", {}).get("input_type") == "initials":
+	•	    q["type"] = "initials"
+	•	    q["control"].pop("input_type", None)
+	•	
+	•	Yes/No values to strings, and fill missing option values: if q_type in {"radio","checkbox","dropdown"}:
+	•	    for opt in q["control"].get("options", []):
+	•	        v = opt.get("value")
+	•	        if isinstance(v, bool):
+	•	            opt["value"] = "Yes" if v else "No"
+	•	        if not opt.get("value"):
+	•	            opt["value"] = slugify(opt.get("name","option"))
+	•	
+	•	Move hints to control.extra.hint consistently (you sometimes put control.hint): ctrl = q.setdefault("control", {})
+	•	if "hint" in ctrl:
+	•	    hint = ctrl.pop("hint")
+	•	    if hint:
+	•	        ctrl.setdefault("extra", {})["hint"] = hint
+	•	
+	•	Input types: keep to a safe set: {"name","email","phone","number","ssn","zip"}; for date, enforce {"any","past","future"}.
+2) Emit real initials in the extractor
+Where you currently do:
+elif 'initial' in text_lower and len(text) < 20:
+    return 'initials'  # as input_type
+Change the field creation path so that when input_type == 'initials' you switch the whole control:
+if field_type == 'input':
+    input_type = self.detect_input_type(field_name)
+    if input_type == 'initials':
+        field_type = 'initials'
+        control = {}
+    else:
+        control['input_type'] = input_type
+        if input_type == 'phone':
+            control['phone_prefix'] = '+1'
+        control['hint'] = None
+3) Consent shaping pass (post-process)
+After you build json_spec and before writing:
+	•	Detect consent paragraphs (long text with “risk/side effect/benefit/alternative/consent/i understand” tokens).
+	•	If no explicit ack exists, insert: {"type":"checkbox","key":"acknowledge","title":"I have read and understand the information above.",
+	•	 "section":"Consent","optional":False,"control":{"options":[{"name":"I agree","value":"I agree"}]}}
+	•	
+	•	Ensure you have exactly one signature and add signature_date if missing: if not any(q.get("key")=="signature_date" and q.get("type")=="date" for q in spec):
+	•	    spec.append({"type":"date","key":"signature_date","title":"Date",
+	•	                 "section":"Signature","optional":False,"control":{"input_type":"any"}})
+	•	
+4) Medical History grouping pass (post-process)
+	•	Scan “Medical History” section for contiguous runs of single-item checkbox/radio questions; if run length ≥ 6, replace them with a single checkbox with options in source order: grouped = {"type":"checkbox","key":"medical_history","title":"Medical History",
+	•	           "section":"Medical History","optional":True,"control":{"options":options}}
+	•	
+5) Broaden checkbox/radio symbol recognition
+Create one shared option regex and use it everywhere:
+CHECK = r"[□■☐☑✅◉●○•\-\–\*\[\]\(\)]"
+OPTION_RE = re.compile(rf"{CHECK}\s*([A-Za-z0-9][A-Za-z0-9\s\-/&\(\)']{{1,80}})(?=\s*{CHECK}|\s*$)")
+6) Stable ordering
+Right before you return/write:
+for idx, q in enumerate(spec):
+    q.setdefault("meta", {}).setdefault("line_idx", idx)
+spec.sort(key=lambda q: q.get("meta", {}).get("line_idx", 10**9))
+7) Tiny tests (catch regressions)
+	•	Initials → type: input with input_type:"initials" becomes type:"initials".
+	•	States cleaned: no input_type on states.
+	•	Yes/No strings: boolean option values → "Yes"/"No".
+	•	Consent: long paragraph → ack + signature + signature_date present exactly once.
+	•	Medical history: N singletons → exactly one grouped checkbox with N options.
 
-\f2\b\fs48 \cf0 \strokec2 Where it will bite (and why)\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls2\ilvl0
-\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Schema mismatches relative to Modento
-\f0\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls2\ilvl1
-\f1\b\fs26 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9702 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 states
-\f2\fs24  control:
-\f0\b0  you set 
-\f3\fs26 control = \{'hint': None, 'input_type': 'name'\}
-\f0\fs24  when you detect \'93State.\'94 In Modento, 
-\f3\fs26 type: "states"
-\f0\fs24  
-\f2\b must not
-\f0\b0  carry 
-\f3\fs26 input_type
-\f0\fs24 .\
-\ls2\ilvl1
-\f1\b\fs26 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9702 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 initials
-\f2\fs24 :
-\f0\b0  you model initials as 
-\f3\fs26 type: "input"
-\f0\fs24  with 
-\f3\fs26 control.input_type: "initials"
-\f0\fs24 . In Modento, 
-\f1\b\fs26 initials
-\f2\fs24  is its own type
-\f0\b0  (
-\f3\fs26 \{"type":"initials","control":\{\}\}
-\f0\fs24 ), not an input subtype.\
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls2\ilvl1
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9702 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Yes/No values:
-\f0\b0  you emit 
-\f3\fs26 True
-\f0\fs24 /
-\f3\fs26 False
-\f0\fs24  booleans for several radio patterns; Modento import is safer/more consistent with 
-\f2\b string
-\f0\b0  values 
-\f3\fs26 "Yes"
-\f0\fs24 /
-\f3\fs26 "No"
-\f0\fs24 .\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls2\ilvl0
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Signature duplication
-\f0\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls2\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9702 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Your 
-\f3\fs26 add_signature_if_missing
-\f0\fs24  only checks for a key literally named 
-\f3\fs26 "signature"
-\f0\fs24 . If the extractor created a signature with another key (e.g., 
-\f3\fs26 "patient_signature"
-\f0\fs24 ), your code 
-\f2\b adds a second one
-\f0\b0 .\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls2\ilvl0
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	3	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 No consent shaping
-\f0\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls2\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9702 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Narrative consents (gingivectomy / crown & bridge / tooth removal) should become:\
-\pard\tx1660\tx2160\pardeftab720\li2160\fi-2160\sa240\partightenfactor0
-\ls2\ilvl2
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9642 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 context 
-\f1\fs26 text
-\f0\b0\fs24  or 
-\f3\fs26 extra.hint
-\f0\fs24  (risks/benefits/alternatives),\
-\ls2\ilvl2
-\f2\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9642 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 one acknowledgment checkbox
-\f0\b0  (\'93I have read and understand\'85\'94),\
-\ls2\ilvl2
-\f2\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9642 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 signature
-\f0\b0  + 
-\f2\b signature_date
-\f0\b0 .\uc0\u8232 Right now you emit long 
-\f3\fs26 text
-\f0\fs24  blocks but don\'92t enforce that structure.\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls2\ilvl0
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	4	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 No medical-history grouping
-\f0\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls2\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9702 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Long lists like \'93AIDS/HIV,\'94 \'93High blood pressure,\'94 etc., should collapse into 
-\f2\b one
-\f0\b0  
-\f3\fs26 checkbox
-\f0\fs24  field with ordered 
-\f3\fs26 options
-\f0\fs24 . As is, you risk many separate items or mixed types.\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls2\ilvl0
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	5	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Ordering isn\'92t guaranteed
-\f0\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls2\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9702 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 You compute things line-by-line but don\'92t apply a 
-\f2\b final stable sort
-\f0\b0  (e.g., by 
-\f3\fs26 meta.line_idx
-\f0\fs24 ). Complex packets can end up slightly shuffled.\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls2\ilvl0
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	6	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Bullet/checkbox symbol coverage
-\f0\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls2\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u9702 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Your option detection focuses on 
-\f3\fs26 \uc0\u9633 
-\f0\fs24 . Real packets use a zoo of symbols (
-\f3\fs26 \uc0\u9632  \u9744  \u9745  \u9989  \u9673  \u9679  \u9675  \'95 - \'96 * [ ] ( )
-\f0\fs24 ). You\'92ll miss options when symbols vary.\
-\pard\pardeftab720\partightenfactor0
-\cf3 \strokec3 \
-\pard\pardeftab720\sa321\partightenfactor0
-
-\f2\b\fs48 \cf0 \strokec2 Exact fixes to get you to an A\
-\pard\pardeftab720\sa280\partightenfactor0
-
-\fs28 \cf0 1) Harden the validator (small, high-impact)\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Signature uniqueness by 
-\f4\i type
-\f0\i0\b0  (not by key), and force canonical key 
-\f3\fs26 'signature'
-\f0\fs24 :\uc0\u8232 
-\f3\fs26 sig_idxs = [i for i,q in enumerate(spec) if q.get("type")=="signature"]\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls3\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 if sig_idxs:\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2     first = sig_idxs[0]\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2     spec[first]["key"] = "signature"\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2     for j in sig_idxs[1:]:\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2         spec[j]["__drop__"] = True\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 spec = [q for q in spec if not q.get("__drop__")]\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 if not sig_idxs:\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2     spec.append(\{"key":"signature","title":"Signature","section":"Signature","optional":False,"type":"signature","control":\{\}\})\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls3\ilvl0
-\f0\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 \
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\f1\b\fs26 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 states
-\f2\fs24  control
-\f0\b0  must 
-\f2\b not
-\f0\b0  carry 
-\f3\fs26 input_type
-\f0\fs24 :\uc0\u8232 
-\f3\fs26 if q_type == "states":\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls3\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2     q["control"].pop("input_type", None)\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls3\ilvl0
-\f0\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 \
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\f1\b\fs26 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 initials
-\f0\b0\fs24  must be a 
-\f2\b real type
-\f0\b0 , not 
-\f3\fs26 input
-\f0\fs24 :\uc0\u8232 
-\f3\fs26 # if you receive input + input_type "initials", convert:\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls3\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 if q_type == "input" and q.get("control", \{\}).get("input_type") == "initials":\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2     q["type"] = "initials"\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2     q["control"].pop("input_type", None)\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls3\ilvl0
-\f0\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 \
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Yes/No
-\f0\b0  values to 
-\f2\b strings
-\f0\b0 , and fill missing option values:\uc0\u8232 
-\f3\fs26 if q_type in \{"radio","checkbox","dropdown"\}:\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls3\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2     for opt in q["control"].get("options", []):\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2         v = opt.get("value")\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2         if isinstance(v, bool):\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2             opt["value"] = "Yes" if v else "No"\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2         if not opt.get("value"):\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2             opt["value"] = slugify(opt.get("name","option"))\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls3\ilvl0
-\f0\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 \
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Move hints
-\f0\b0  to 
-\f3\fs26 control.extra.hint
-\f0\fs24  consistently (you sometimes put 
-\f3\fs26 control.hint
-\f0\fs24 ):\uc0\u8232 
-\f3\fs26 ctrl = q.setdefault("control", \{\})\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls3\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 if "hint" in ctrl:\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2     hint = ctrl.pop("hint")\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2     if hint:\
-\ls3\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2         ctrl.setdefault("extra", \{\})["hint"] = hint\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls3\ilvl0
-\f0\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 \
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Input types
-\f0\b0 : keep to a safe set: 
-\f3\fs26 \{"name","email","phone","number","ssn","zip"\}
-\f0\fs24 ; for 
-\f3\fs26 date
-\f0\fs24 , enforce 
-\f3\fs26 \{"any","past","future"\}
-\f0\fs24 .\
-\pard\pardeftab720\sa280\partightenfactor0
-
-\f2\b\fs28 \cf0 2) Emit real 
-\f1\fs30\fsmilli15210 initials
-\f2\fs28  in the extractor\
-\pard\pardeftab720\sa240\partightenfactor0
-
-\f0\b0\fs24 \cf0 Where you currently do:\
-\pard\pardeftab720\partightenfactor0
-
-\f3\fs26 \cf0 elif 'initial' in text_lower and len(text) < 20:\
-    return 'initials'  # as input_type\
-\pard\pardeftab720\sa240\partightenfactor0
-
-\f0\fs24 \cf0 Change the 
-\f2\b field creation
-\f0\b0  path so that when 
-\f3\fs26 input_type == 'initials'
-\f0\fs24  you 
-\f2\b switch
-\f0\b0  the whole control:\
-\pard\pardeftab720\partightenfactor0
-
-\f3\fs26 \cf0 if field_type == 'input':\
-    input_type = self.detect_input_type(field_name)\
-    if input_type == 'initials':\
-        field_type = 'initials'\
-        control = \{\}\
-    else:\
-        control['input_type'] = input_type\
-        if input_type == 'phone':\
-            control['phone_prefix'] = '+1'\
-        control['hint'] = None\
-\pard\pardeftab720\sa280\partightenfactor0
-
-\f2\b\fs28 \cf0 3) Consent shaping pass (post-process)\
-\pard\pardeftab720\sa240\partightenfactor0
-
-\f0\b0\fs24 \cf0 After you build 
-\f3\fs26 json_spec
-\f0\fs24  and before writing:\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls4\ilvl0
-\f2\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Detect consent paragraphs
-\f0\b0  (long 
-\f3\fs26 text
-\f0\fs24  with \'93risk/side effect/benefit/alternative/consent/i understand\'94 tokens).\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls4\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 If no explicit ack exists, insert:\uc0\u8232 
-\f3\fs26 \{"type":"checkbox","key":"acknowledge","title":"I have read and understand the information above.",\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls4\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2  "section":"Consent","optional":False,"control":\{"options":[\{"name":"I agree","value":"I agree"\}]\}\}\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls4\ilvl0
-\f0\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 \
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls4\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Ensure you have exactly one 
-\f1\b\fs26 signature
-\f0\b0\fs24  and add 
-\f1\b\fs26 signature_date
-\f0\b0\fs24  if missing:\uc0\u8232 
-\f3\fs26 if not any(q.get("key")=="signature_date" and q.get("type")=="date" for q in spec):\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls4\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2     spec.append(\{"type":"date","key":"signature_date","title":"Date",\
-\ls4\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2                  "section":"Signature","optional":False,"control":\{"input_type":"any"\}\})\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls4\ilvl0
-\f0\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 \
-\pard\pardeftab720\sa280\partightenfactor0
-
-\f2\b\fs28 \cf0 4) Medical History grouping pass (post-process)\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls5\ilvl0
-\f0\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Scan \'93Medical History\'94 section for 
-\f2\b contiguous runs
-\f0\b0  of single-item checkbox/radio questions; if run length \uc0\u8805  6, replace them with a 
-\f2\b single
-\f0\b0  
-\f3\fs26 checkbox
-\f0\fs24  with 
-\f3\fs26 options
-\f0\fs24  in source order:\uc0\u8232 
-\f3\fs26 grouped = \{"type":"checkbox","key":"medical_history","title":"Medical History",\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls5\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2            "section":"Medical History","optional":True,"control":\{"options":options\}\}\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
-\ls5\ilvl0
-\f0\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 \
-\pard\pardeftab720\sa280\partightenfactor0
-
-\f2\b\fs28 \cf0 5) Broaden checkbox/radio symbol recognition\
-\pard\pardeftab720\sa240\partightenfactor0
-
-\f0\b0\fs24 \cf0 Create one shared option regex and use it everywhere:\
-\pard\pardeftab720\partightenfactor0
-
-\f3\fs26 \cf0 CHECK = r"[\uc0\u9633 \u9632 \u9744 \u9745 \u9989 \u9673 \u9679 \u9675 \'95\\-\\\'96\\*\\[\\]\\(\\)]"\
-OPTION_RE = re.compile(rf"\{CHECK\}\\s*([A-Za-z0-9][A-Za-z0-9\\s\\-/&\\(\\)']\{\{1,80\}\})(?=\\s*\{CHECK\}|\\s*$)")\
-\pard\pardeftab720\sa280\partightenfactor0
-
-\f2\b\fs28 \cf0 6) Stable ordering\
-\pard\pardeftab720\sa240\partightenfactor0
-
-\f0\b0\fs24 \cf0 Right before you return/write:\
-\pard\pardeftab720\partightenfactor0
-
-\f3\fs26 \cf0 for idx, q in enumerate(spec):\
-    q.setdefault("meta", \{\}).setdefault("line_idx", idx)\
-spec.sort(key=lambda q: q.get("meta", \{\}).get("line_idx", 10**9))\
-\pard\pardeftab720\sa280\partightenfactor0
-
-\f2\b\fs28 \cf0 7) Tiny tests (catch regressions)\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls6\ilvl0
-\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Initials \uc0\u8594  type:
-\f0\b0  input with 
-\f3\fs26 input_type:"initials"
-\f0\fs24  becomes 
-\f3\fs26 type:"initials"
-\f0\fs24 .\
-\ls6\ilvl0
-\f2\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 States cleaned:
-\f0\b0  no 
-\f3\fs26 input_type
-\f0\fs24  on 
-\f3\fs26 states
-\f0\fs24 .\
-\ls6\ilvl0
-\f2\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Yes/No strings:
-\f0\b0  boolean option values \uc0\u8594  
-\f3\fs26 "Yes"
-\f0\fs24 /
-\f3\fs26 "No"
-\f0\fs24 .\
-\ls6\ilvl0
-\f2\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Consent:
-\f0\b0  long paragraph \uc0\u8594  ack + 
-\f3\fs26 signature
-\f0\fs24  + 
-\f3\fs26 signature_date
-\f0\fs24  present exactly once.\
-\ls6\ilvl0
-\f2\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Medical history:
-\f0\b0  N singletons \uc0\u8594  exactly one grouped checkbox with N options.\
-\pard\pardeftab720\partightenfactor0
-\cf3 \strokec3 \
-\pard\pardeftab720\sa298\partightenfactor0
-
-\f2\b\fs36 \cf0 \strokec2 Bottom line\
-\pard\pardeftab720\sa240\partightenfactor0
-
-\f0\b0\fs24 \cf0 You\'92ve got a solid core: Docling extraction, sensible sectioning, and a usable validator. To move from 
-\f2\b B+
-\f0\b0  to a confident 
-\f2\b A
-\f0\b0 , you need: (1) small schema fixes (
-\f3\fs26 states
-\f0\fs24 , 
-\f3\fs26 initials
-\f0\fs24 , Yes/No strings, signature uniqueness by type), and (2) two lightweight post-processing passes (consent shaping + medical-history grouping), plus a final stable sort. Add a few minimal tests to lock behavior, and you\'92ll have a converter that holds up across a wide variety of Modento packets.\
-If you want, I can fold these exact patches into your file and ship a drop-in version with a tiny test fixture\'97just say the word.\
-}
+Bottom line
+You’ve got a solid core: Docling extraction, sensible sectioning, and a usable validator. To move from B+ to a confident A, you need: (1) small schema fixes (states, initials, Yes/No strings, signature uniqueness by type), and (2) two lightweight post-processing passes (consent shaping + medical-history grouping), plus a final stable sort. Add a few minimal tests to lock behavior, and you’ll have a converter that holds up across a wide variety of Modento packets.
+If you want, I can fold these exact patches into your file and ship a drop-in version with a tiny test fixture—just say the word.
