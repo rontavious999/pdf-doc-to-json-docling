@@ -356,29 +356,12 @@
   },
   {
     "key": "relationship_to_patient",
-    "title": "Relationship To Patient",
+    "title": "Relationship to Patient",
     "section": "Patient Information Form",
     "optional": false,
-    "type": "radio",
+    "type": "input",
     "control": {
-      "options": [
-        {
-          "name": "Self",
-          "value": "Self"
-        },
-        {
-          "name": "Spouse",
-          "value": "Spouse"
-        },
-        {
-          "name": "Parent",
-          "value": "Parent"
-        },
-        {
-          "name": "Other",
-          "value": "Other"
-        }
-      ],
+      "input_type": "name",
       "hint": null
     }
   },
@@ -451,8 +434,9 @@
     "title": "Name of School",
     "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
-    "type": "radio",
+    "type": "input",
     "control": {
+      "input_type": "name",
       "hint": null
     }
   },
@@ -492,34 +476,6 @@
     "type": "date",
     "control": {
       "input_type": "past",
-      "hint": null
-    }
-  },
-  {
-    "key": "relationship_to_patient_2",
-    "title": "Relationship To Patient",
-    "section": "FOR CHILDREN/MINORS ONLY",
-    "optional": false,
-    "type": "radio",
-    "control": {
-      "options": [
-        {
-          "name": "Self",
-          "value": "Self"
-        },
-        {
-          "name": "Spouse",
-          "value": "Spouse"
-        },
-        {
-          "name": "Parent",
-          "value": "Parent"
-        },
-        {
-          "name": "Other",
-          "value": "Other"
-        }
-      ],
       "hint": null
     }
   },
@@ -646,6 +602,34 @@
     "type": "input",
     "control": {
       "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "relationship_to_patient_2",
+    "title": "Relationship To Patient",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "radio",
+    "control": {
+      "options": [
+        {
+          "name": "Self",
+          "value": "Self"
+        },
+        {
+          "name": "Spouse",
+          "value": "Spouse"
+        },
+        {
+          "name": "Parent",
+          "value": "Parent"
+        },
+        {
+          "name": "Other",
+          "value": "Other"
+        }
+      ],
       "hint": null
     }
   },
@@ -1020,8 +1004,9 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "initials",
+    "type": "input",
     "control": {
+      "input_type": "initials",
       "hint": null
     }
   },
@@ -1054,8 +1039,9 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "initials",
+    "type": "input",
     "control": {
+      "input_type": "initials",
       "hint": null
     }
   },
@@ -1087,8 +1073,9 @@
     "title": "Initial",
     "section": "Signature",
     "optional": false,
-    "type": "initials",
+    "type": "input",
     "control": {
+      "input_type": "initials",
       "hint": null
     }
   },

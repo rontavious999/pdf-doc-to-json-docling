@@ -195,11 +195,9 @@ class ModentoSchemaValidator:
 
             ctrl = q.setdefault("control", {})
             
-            # Convert input + input_type "initials" to type "initials"
-            if q_type == "input" and ctrl.get("input_type") == "initials":
-                q["type"] = "initials"
-                ctrl.pop("input_type", None)
-                q_type = "initials"
+            # NOTE: Keep input + input_type "initials" as-is for NPF compliance
+            # The reference JSON shows initials fields should remain as input type
+            # with input_type: "initials", not be converted to type: "initials"
             
             # States control must not carry input_type
             if q_type == "states":
@@ -217,7 +215,7 @@ class ModentoSchemaValidator:
 
             if q_type == "input":
                 t = ctrl.get("input_type")
-                if t not in {"name","email","phone","number","ssn","zip"}:
+                if t not in {"name","email","phone","number","ssn","zip","initials"}:
                     ctrl["input_type"] = "name"
                 if ctrl.get("input_type") == "phone":
                     ctrl["phone_prefix"] = "+1"
@@ -543,8 +541,10 @@ class PDFFormFieldExtractor:
         ]):
             return 'input'
         
-        # Check for yes/no questions
-        if re.search(r'\b(?:yes|no)\b', text_lower) or '?' in text:
+        # Check for yes/no questions - be more specific to avoid false positives
+        # Only treat as radio if it's clearly a question with yes/no options
+        if ('?' in text and re.search(r'\b(?:yes|no)\b', text_lower)) or \
+           (re.search(r'\b(?:yes|no)\b.*\b(?:yes|no)\b', text_lower)):
             return 'radio'
         
         return 'input'  # Default
@@ -589,10 +589,8 @@ class PDFFormFieldExtractor:
         if control is None:
             control = {}
         
-        # Grade review fix: Convert input + input_type "initials" to type "initials" at creation time
-        if field_type == 'input' and control.get('input_type') == 'initials':
-            field_type = 'initials'
-            control = {}  # initials type has empty control
+        # NOTE: Keep input + input_type "initials" as-is for NPF reference compliance
+        # Do not convert to type "initials" - reference shows they should remain as input
         
         return FieldInfo(
             key=key,
@@ -822,10 +820,10 @@ class PDFFormFieldExtractor:
                     {"name": "E-mail", "value": "E-mail"}
                 ]
             },
-            # Relationship to patient - exact match from reference
+            # Relationship to patient - ONLY for children/minors section (specific pattern)
             {
-                'pattern': r'relationship.*?to.*?patient',
-                'title': 'Relationship To Patient',
+                'pattern': r'relationship.*?to.*?patient.*(?:self|spouse|parent)',
+                'title': 'Relationship To Patient',  # Capital T for children section
                 'options': [
                     {"name": "Self", "value": "Self"},
                     {"name": "Spouse", "value": "Spouse"},
@@ -1373,6 +1371,10 @@ class PDFFormFieldExtractor:
             # Fix mi field input_type to be 'name' to match reference  
             if field.key == 'mi':
                 field.control['input_type'] = 'name'
+                
+            # Fix initials fields to have input_type 'initials' to match reference
+            if field.key in ['initials', 'initials_2', 'initials_3'] and field.field_type == 'input':
+                field.control['input_type'] = 'initials'
                 
             # Fix state fields that shouldn't have input_type
             if field.field_type == 'states':
