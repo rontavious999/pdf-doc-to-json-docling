@@ -88,6 +88,17 @@ class ModentoSchemaValidator:
             if '_' in current_key and current_key.split('_')[-1].isdigit():
                 return None
             
+            # Whitelist of generic fields that should NOT be merged across sections
+            # These fields commonly appear in multiple sections and should remain separate
+            generic_field_whitelist = {
+                "Date", "Phone", "Street", "City", "State", "Zip", "Name", "Address",
+                "First Name", "Last Name", "Email", "E-Mail", "SSN", "Social Security No.",
+                "Occupation", "Employer", "Insurance Company", "ID Number"
+            }
+            
+            # If this is a generic field, only merge within the exact same section
+            is_generic_field = current_title in generic_field_whitelist
+            
             # Look for existing field with same title in reasonable section
             for prev_idx in range(current_idx):
                 prev = spec[prev_idx]
@@ -109,14 +120,20 @@ class ModentoSchemaValidator:
                     if current_title == "State" and prev_title == "State":
                         continue
                     
+                    # For generic fields, only merge if in exact same section
+                    if is_generic_field and prev_section != current_section:
+                        continue
+                    
                     # Same section - likely duplicate
                     if prev_section == current_section:
                         return prev_idx
                     
                     # Related sections that could indicate same logical field
-                    patient_sections = ["Patient Information", "Patient Info", "Patient Information Form"]
-                    if (prev_section in patient_sections and current_section in patient_sections):
-                        return prev_idx
+                    # But only for non-generic fields
+                    if not is_generic_field:
+                        patient_sections = ["Patient Information", "Patient Info", "Patient Information Form"]
+                        if (prev_section in patient_sections and current_section in patient_sections):
+                            return prev_idx
                         
             return None
         
@@ -203,10 +220,11 @@ class ModentoSchemaValidator:
             # The reference JSON shows initials fields should remain as input type
             # with input_type: "initials", not be converted to type: "initials"
             
-            # States control should have input_type: "name" according to reference
+            # States control should have empty control according to user request and reference
+            # Remove any input_type from states fields
             if q_type == "states":
-                if "input_type" not in ctrl:
-                    ctrl["input_type"] = "name"
+                # Clear control object for states fields as shown in reference
+                ctrl.clear()
                 
             # Keep hints in control.hint for NPF reference compliance
             # Do NOT move them to control.extra.hint
@@ -410,6 +428,9 @@ class ModentoSchemaValidator:
 
 class PDFFormFieldExtractor:
     """Extract form fields from PDF documents using Docling's advanced capabilities"""
+    
+    # Centralized regex patterns for maintainability - expanded checkbox symbol coverage
+    CHECKBOX_SYMBOLS = r"[□■☐☑✅◉●○•\-\–\*\[\]\(\)]"
     
     def __init__(self):
         self.field_patterns = {
@@ -1041,10 +1062,11 @@ class PDFFormFieldExtractor:
         return fields
     
     def collect_checkbox_run(self, lines: List[str], i: int) -> Tuple[List[Dict[str, Any]], int]:
-        """Collect contiguous checkbox/bullet list items"""
+        """Collect contiguous checkbox/bullet list items using centralized pattern"""
         opts = []
         j = i
-        check_pat = re.compile(r'^(?:[\u25A1\u25A2\u2610\[\]\(\)]\s*)?([A-Za-z][A-Za-z0-9\-\s\/&]{2,})$')
+        # Use centralized checkbox pattern with broader symbol coverage
+        check_pat = re.compile(rf'^(?:{self.CHECKBOX_SYMBOLS}\s*)?([A-Za-z][A-Za-z0-9\-\s\/&]{{2,}})$')
         while j < len(lines):
             m = check_pat.match(lines[j])
             if not m: 
@@ -1103,10 +1125,9 @@ class PDFFormFieldExtractor:
 
     def looks_like_first_history_item(self, line: str) -> bool:
         """Check if line looks like the first item in a medical history list"""
-        # Look for checkbox patterns or bullet patterns common in medical history with improved symbols
-        CHECK = r"[□■☐☑✅◉●○•\-\–\*\[\]\(\)]"
+        # Use centralized checkbox pattern with expanded symbol coverage
         patterns = [
-            rf'^{CHECK}\s*[A-Za-z]',  # checkbox + text with improved symbols
+            rf'^{self.CHECKBOX_SYMBOLS}\s*[A-Za-z]',  # checkbox + text with improved symbols
             r'^[A-Za-z][A-Za-z\s]{2,}$'  # plain text that could be medical condition
         ]
         return any(re.match(pattern, line) for pattern in patterns)
@@ -1444,10 +1465,9 @@ class PDFFormFieldExtractor:
             return f'<div>{formatted_text}</div>'
 
     def extract_checkbox_options(self, line: str) -> List[str]:
-        """Extract checkbox options from a line with improved symbol recognition"""
-        # Improved checkbox symbol pattern from grade review
-        CHECK = r"[□■☐☑✅◉●○•\-\–\*\[\]\(\)]"
-        OPTION_RE = re.compile(rf"{CHECK}\s*([A-Za-z0-9][A-Za-z0-9\s\-/&\(\)']+?)(?=\s*{CHECK}|\s*$)")
+        """Extract checkbox options from a line using centralized checkbox pattern"""
+        # Use centralized checkbox symbol pattern for consistency
+        OPTION_RE = re.compile(rf"{self.CHECKBOX_SYMBOLS}\s*([A-Za-z0-9][A-Za-z0-9\s\-/&\(\)']+?)(?=\s*{self.CHECKBOX_SYMBOLS}|\s*$)")
         matches = OPTION_RE.findall(line)
         return [match.strip() for match in matches if match.strip()]
     
@@ -1508,12 +1528,8 @@ class PDFFormFieldExtractor:
             if 'hint' not in field.control:
                 field.control['hint'] = None
                 
-            # Fix input_type issues for states and signature fields
-            if field.field_type == 'states':
-                # States fields should have input_type: "name" according to reference
-                existing_hint = field.control.get('hint')
-                field.control = {'hint': existing_hint, 'input_type': 'name'}
-            elif field.field_type == 'signature':
+            # Fix input_type issues for signature fields only
+            if field.field_type == 'signature':
                 # Signature fields should not have input_type  
                 existing_hint = field.control.get('hint')
                 field.control = {'hint': existing_hint}
@@ -1732,7 +1748,7 @@ class PDFFormFieldExtractor:
                 # Determine field type
                 if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                     field_type = 'states'
-                    control = {'input_type': 'name'}
+                    control = {}  # States fields should have empty control
                 elif 'date' in field_name.lower():
                     field_type = 'date'
                     control = {'input_type': 'any'}
@@ -2786,7 +2802,7 @@ class PDFFormFieldExtractor:
                     # Handle special cases
                     if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                         field_type = 'states'
-                        control = {'input_type': 'name'}
+                        control = {}  # States fields should have empty control
                     
                     # Normalize field name
                     normalized_name = self.normalize_field_name(field_name, line)
@@ -3012,10 +3028,8 @@ class PDFFormFieldExtractor:
                 # Handle special cases
                 if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                     field_type = 'states'
-                    # States should have input_type: "name" according to reference
-                    existing_hint = control.get('hint')
-                    control = {'hint': existing_hint, 'input_type': 'name'}
-                    control = {'hint': existing_hint}
+                    # States should have empty control according to reference
+                    control = {}
                 
                 # Special handling for "Relationship To Patient" that should be radio in minors section
                 if (field_name.lower() == 'relationship to patient' and 
@@ -3397,19 +3411,20 @@ class PDFToJSONConverter:
                 field_dict["optional"] = False
             json_spec.append(field_dict)
         
-        # FINAL CRITICAL FIX: Ensure all states fields have input_type: "name" (reference compliance)
+        # Final cleanup: Fix specific field types to match reference exactly
         for field_dict in json_spec:
+            # States fields should have empty control
             if field_dict["type"] == "states":
-                field_dict["control"]["input_type"] = "name"
+                field_dict["control"] = {}
             # Fix specific field with special input_type
             if field_dict["key"] == "if_different_from_patient_street":
                 field_dict["control"]["input_type"] = "address"
             # Fix phone fields that should have hint: None instead of context hints
             if field_dict["key"] in ["mobile_2", "home_2", "work_2", "phone_2"]:
                 field_dict["control"]["hint"] = None
-            # Fix signature field to have input_type: "name"
+            # Fix signature field to have empty control
             if field_dict["key"] == "signature":
-                field_dict["control"]["input_type"] = "name"
+                field_dict["control"] = {}
             # Fix initials fields to not have hint in reference
             if field_dict["key"] == "initials_3":
                 field_dict["control"].pop("hint", None)
