@@ -431,6 +431,7 @@ class PDFFormFieldExtractor:
     
     # Centralized regex patterns for maintainability - expanded checkbox symbol coverage
     CHECKBOX_SYMBOLS = r"[□■☐☑✅◉●○•\-\–\*\[\]\(\)]"
+    CHECKBOX_CHAR_CLASS = r"□■☐☑✅◉●○•\-\–\*\[\]\(\)"
     
     def has_checkbox_symbol(self, text: str) -> bool:
         """Check if text contains any checkbox symbol"""
@@ -650,6 +651,10 @@ class PDFFormFieldExtractor:
         # Initials detection - be more specific
         elif ('initial' in text_lower or text_lower.strip() in ['mi', 'm.i.', 'middle initial', 'middle init']) and len(text) < 25:
             return 'initials'
+        
+        # Address detection for better field typing
+        elif any(word in text_lower for word in ['street', 'address', 'apt', 'unit', 'suite']):
+            return 'name'  # Keep as 'name' since Modento doesn't have 'address' input_type
         
         # Number detection - for IDs, license numbers, etc.
         elif (any(word in text_lower for word in ['number', 'id', '#']) 
@@ -1426,7 +1431,7 @@ class PDFFormFieldExtractor:
         return fields
     
     def create_comprehensive_consent_html(self, text_lines: List[str]) -> str:
-        """Create comprehensive consent HTML similar to reference format"""
+        """Create comprehensive consent HTML similar to reference format with improved length management"""
         # Filter out very short lines and combine content
         content_lines = []
         for line in text_lines:
@@ -1437,6 +1442,11 @@ class PDFFormFieldExtractor:
         
         # Join content and create structured HTML
         full_content = ' '.join(content_lines)
+        
+        # IMPORTANT: Do not truncate consent text as it contains legally required information
+        # that patients must see in full to provide proper informed consent.
+        # Any truncation could result in patients not seeing critical risk information,
+        # legal disclaimers, or other essential consent details.
         
         # Clean up the content
         full_content = full_content.replace('##', '').strip()
@@ -1585,22 +1595,15 @@ class PDFFormFieldExtractor:
             if field.key == 'mi':
                 field.control['input_type'] = 'name'
                 
-            # Fix initials fields to be type 'initials' instead of input with input_type 'initials'
-            if field.key in ['initials', 'initials_2', 'initials_3'] and field.field_type == 'input':
-                field.field_type = 'initials'
-                field.control = {'hint': field.control.get('hint')}
+            # NOTE: Keep initials fields as input + input_type 'initials' per reference
+            # Do not convert to type 'initials' - reference shows they should remain as input
                 
             # Fix specific field with special input_type
             if field.key == 'if_different_from_patient_street':
                 existing_hint = field.control.get('hint')
                 field.control = {'hint': existing_hint, 'input_type': 'address'}
             
-            # Fix boolean values in radio options to use strings instead
-            if field.field_type == 'radio' and 'options' in field.control:
-                options = field.control['options']
-                for option in options:
-                    if isinstance(option.get('value'), bool):
-                        option['value'] = "Yes" if option['value'] else "No"
+            # Boolean values in radio options should remain as booleans (per reference)
         
         return processed_fields
     
@@ -2812,7 +2815,7 @@ class PDFFormFieldExtractor:
             checkbox_options = self.extract_checkbox_options(line)
             if checkbox_options and len(checkbox_options) >= 2:
                 # Extract the question part before the checkboxes
-                question_part = re.split(rf'[{self.CHECKBOX_SYMBOLS}]', line)[0].strip()
+                question_part = re.split(f'[{self.CHECKBOX_CHAR_CLASS}]', line)[0].strip()
                 if question_part and len(question_part) > 3:
                     key = ModentoSchemaValidator.slugify(question_part)
                     

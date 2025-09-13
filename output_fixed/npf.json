@@ -358,11 +358,11 @@
       "options": [
         {
           "name": "Yes",
-          "value": "Yes"
+          "value": true
         },
         {
           "name": "No",
-          "value": "No"
+          "value": false
         }
       ],
       "hint": null
@@ -377,11 +377,11 @@
       "options": [
         {
           "name": "Yes",
-          "value": "Yes"
+          "value": true
         },
         {
           "name": "No",
-          "value": "No"
+          "value": false
         }
       ],
       "hint": null
@@ -886,9 +886,11 @@
   },
   {
     "key": "initials",
-    "type": "initials",
+    "type": "input",
     "title": "Initial",
-    "control": {},
+    "control": {
+      "input_type": "initials"
+    },
     "section": "Signature"
   },
   {
@@ -905,9 +907,11 @@
   },
   {
     "key": "initials_2",
-    "type": "initials",
+    "type": "input",
     "title": "Initial",
-    "control": {},
+    "control": {
+      "input_type": "initials"
+    },
     "section": "Signature"
   },
   {
@@ -921,11 +925,11 @@
       "options": [
         {
           "name": "Yes",
-          "value": "Yes"
+          "value": true
         },
         {
           "name": "No",
-          "value": "No"
+          "value": false
         }
       ]
     },
@@ -934,9 +938,11 @@
   },
   {
     "key": "initials_3",
-    "type": "initials",
+    "type": "input",
     "title": "Initial",
-    "control": {},
+    "control": {
+      "input_type": "initials"
+    },
     "section": "Signature"
   },
   {

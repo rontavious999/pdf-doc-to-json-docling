@@ -5,7 +5,7 @@
     "fields": 10,
     "sections": 2,
     "valid": true,
-    "output": "output_batch/consent_crown_bridge_prosthetics.json",
+    "output": "output_fixed/consent_crown_bridge_prosthetics.json",
     "pipeline_info": {
       "pipeline": "StandardPdfPipeline",
       "backend": "DoclingParseDocumentBackend",
@@ -23,7 +23,7 @@
     "fields": 8,
     "sections": 2,
     "valid": true,
-    "output": "output_batch/CFGingivectomy.json",
+    "output": "output_fixed/CFGingivectomy.json",
     "pipeline_info": {
       "pipeline": "StandardPdfPipeline",
       "backend": "DoclingParseDocumentBackend",
@@ -41,7 +41,7 @@
     "fields": 57,
     "sections": 5,
     "valid": true,
-    "output": "output_batch/Chicago-Dental-Solutions_Form.json",
+    "output": "output_fixed/Chicago-Dental-Solutions_Form.json",
     "pipeline_info": {
       "pipeline": "StandardPdfPipeline",
       "backend": "DoclingParseDocumentBackend",
@@ -59,7 +59,7 @@
     "fields": 7,
     "sections": 2,
     "valid": true,
-    "output": "output_batch/tooth20removal20consent20form.json",
+    "output": "output_fixed/tooth20removal20consent20form.json",
     "pipeline_info": {
       "pipeline": "StandardPdfPipeline",
       "backend": "DoclingParseDocumentBackend",
@@ -77,7 +77,7 @@
     "fields": 61,
     "sections": 5,
     "valid": true,
-    "output": "output_batch/npf1.json",
+    "output": "output_fixed/npf1.json",
     "pipeline_info": {
       "pipeline": "StandardPdfPipeline",
       "backend": "DoclingParseDocumentBackend",
@@ -95,7 +95,7 @@
     "fields": 86,
     "sections": 5,
     "valid": true,
-    "output": "output_batch/npf.json",
+    "output": "output_fixed/npf.json",
     "pipeline_info": {
       "pipeline": "StandardPdfPipeline",
       "backend": "DoclingParseDocumentBackend",

@@ -565,9 +565,11 @@
   },
   {
     "key": "initials_2",
-    "type": "initials",
+    "type": "input",
     "title": "Initial",
-    "control": {},
+    "control": {
+      "input_type": "initials"
+    },
     "section": "Signature"
   },
   {

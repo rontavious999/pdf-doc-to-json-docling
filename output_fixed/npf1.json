@@ -1,8 +1,28 @@
 [
   {
+    "key": "todays_date",
+    "type": "date",
+    "title": "Today's Date",
+    "control": {
+      "input_type": "any",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
     "key": "first_name",
     "type": "input",
     "title": "First Name",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "mi",
+    "type": "input",
+    "title": "Middle Initial",
     "control": {
       "input_type": "name",
       "hint": null
@@ -38,11 +58,11 @@
     "optional": false
   },
   {
-    "key": "zip",
+    "key": "e_mail",
     "type": "input",
-    "title": "Zip",
+    "title": "E-Mail",
     "control": {
-      "input_type": "zip",
+      "input_type": "email",
       "hint": null
     },
     "section": "Patient Information Form"
@@ -124,37 +144,6 @@
     "section": "Patient Information Form"
   },
   {
-    "key": "marital_status",
-    "type": "radio",
-    "title": "Marital Status",
-    "control": {
-      "options": [
-        {
-          "name": "Married",
-          "value": "Married"
-        },
-        {
-          "name": "Single",
-          "value": "Single"
-        },
-        {
-          "name": "Divorced",
-          "value": "Divorced"
-        },
-        {
-          "name": "Separated",
-          "value": "Separated"
-        },
-        {
-          "name": "Widowed",
-          "value": "Widowed"
-        }
-      ],
-      "hint": null
-    },
-    "section": "Patient Information Form"
-  },
-  {
     "key": "in_case_of_emergency_who_should_be_notified",
     "type": "input",
     "title": "In case of emergency, who should be notified",
@@ -187,9 +176,28 @@
   {
     "key": "home_phone",
     "type": "input",
-    "title": "Home Phone",
+    "title": "Home Phone  (",
     "control": {
       "input_type": "phone",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "full_time_student",
+    "type": "radio",
+    "title": "Full-time Student",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ],
       "hint": null
     },
     "section": "Patient Information Form"
@@ -388,6 +396,16 @@
     "section": "FOR CHILDREN/MINORS ONLY"
   },
   {
+    "key": "phone",
+    "type": "input",
+    "title": "Phone #  (",
+    "control": {
+      "input_type": "name",
+      "hint": "Insurance Company"
+    },
+    "section": "Patient Information Form"
+  },
+  {
     "key": "street_4",
     "type": "input",
     "title": "Street",
@@ -564,10 +582,24 @@
     "section": "Secondary Dental Plan"
   },
   {
+    "key": "text_3",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<p>The undersigned hereby authorizes Doctor to take x-rays, study models, photographs, or any other diagnostic aids deemed appropriate by Doctor to make a thorough diagnosis of the patient's dental needs. I also authorize Doctor to perform any and all forms of treatment, medication and therapy that may be indicated. I also understand the use of anesthetic agents embodies a certain risk. I have read, understand and agree to the above terms and conditions.</p>",
+      "temporary_html_text": "<p>The undersigned hereby authorizes Doctor to take x-rays, study models, photographs, or any other diagnostic aids deemed appropriate by Doctor to make a thorough diagnosis of the patient's dental needs. I also authorize Doctor to perform any and all forms of treatment, medication and therapy that may be indicated. I also understand the use of anesthetic agents embodies a certain risk. I have read, understand and agree to the above terms and conditions.</p>",
+      "text": ""
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
     "key": "initials_2",
-    "type": "initials",
+    "type": "input",
     "title": "Initial",
-    "control": {},
+    "control": {
+      "input_type": "initials"
+    },
     "section": "Signature"
   },
   {
