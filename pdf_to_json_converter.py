@@ -1588,6 +1588,10 @@ class PDFFormFieldExtractor:
                 i += 1
                 continue
             
+            # Debug: track processing in FOR CHILDREN/MINORS ONLY section
+            if current_section == "FOR CHILDREN/MINORS ONLY" and 'student' in line.lower():
+                print(f"DEBUG CHILDREN: Processing line {i} in section '{current_section}': {repr(line)}", flush=True)
+            
             # Try to detect radio button questions first
             question, options, next_i = self.detect_radio_options_universal(text_lines, i)
             if question and options:
@@ -1595,7 +1599,7 @@ class PDFFormFieldExtractor:
                 radio_key = self.get_radio_key_for_question(question, current_section)
                 
                 # Debug output
-                print(f"DEBUG: Found radio question '{question}' -> key '{radio_key}' in section '{current_section}'")
+                print(f"DEBUG: Found radio question '{question}' -> key '{radio_key}' in section '{current_section}'", flush=True)
                 
                 if radio_key not in processed_keys:  # Only add if not already processed
                     field = FieldInfo(
@@ -1609,11 +1613,29 @@ class PDFFormFieldExtractor:
                     )
                     fields.append(field)
                     processed_keys.add(radio_key)
-                    print(f"DEBUG: Added radio field '{radio_key}'")
+                    print(f"DEBUG: Added radio field '{radio_key}'", flush=True)
                 else:
-                    print(f"DEBUG: Skipped duplicate radio field '{radio_key}'")
+                    print(f"DEBUG: Skipped duplicate radio field '{radio_key}'", flush=True)
                 i = next_i
                 continue
+            
+            # Debug: check for potential missed full-time student patterns
+            line_lower = line.lower()
+            if 'student' in line_lower:
+                print(f"DEBUG: Line {i} contains 'student': {repr(line)}", flush=True)
+                if 'full' in line_lower:
+                    print(f"DEBUG: Line {i} contains both 'full' and 'student': {repr(line)}", flush=True)
+                    print(f"DEBUG: Current section: {current_section}", flush=True)
+                    # Check if any checkbox symbols are present
+                    if any(symbol in line for symbol in ['□', '☐', '!']):
+                        print(f"DEBUG: Line {i} has checkbox symbols!", flush=True)
+                    # Check next few lines for context
+                    for j in range(i+1, min(len(text_lines), i+4)):
+                        if text_lines[j].strip():
+                            print(f"DEBUG: Context line {j}: {repr(text_lines[j])}", flush=True)
+                            if any(symbol in text_lines[j] for symbol in ['□', '☐', '!']):
+                                print(f"DEBUG: Context line {j} has checkbox symbols!", flush=True)
+                    print(flush=True)
             
             # Try to detect input fields
             input_fields = self.detect_input_field_universal(line)
@@ -1911,6 +1933,29 @@ class PDFFormFieldExtractor:
                     if option_match:
                         option_text = option_match.group(1).strip()
                         if option_text:
+                            # Check if this option text contains embedded question content
+                            # If so, this is likely a separate question, not an option for current question
+                            embedded_question_indicators = [
+                                'full-time student', 'name of school', 'name of insured',
+                                'occupation', 'employer', 'street', 'city', 'state', 'zip'
+                            ]
+                            
+                            is_embedded_question = any(indicator in option_text.lower() 
+                                                     for indicator in embedded_question_indicators)
+                            
+                            # Special case: for simple Yes/No questions, don't treat "Mobile Phone", "Home Phone" etc. as embedded
+                            # unless they're clearly field names rather than contact options
+                            if ('phone' in option_text.lower() and 
+                                'contact' in question.lower() and 
+                                option_text.lower() in ['mobile phone', 'home phone', 'work phone']):
+                                is_embedded_question = False
+                            
+                            if is_embedded_question:
+                                # This is likely a separate question embedded in a checkbox
+                                # Stop processing options for current question
+                                print(f"DEBUG RADIO: Found embedded question in option text: {repr(option_text)}, stopping option collection", flush=True)
+                                break
+                            
                             value = option_text.lower()
                             if value in ['yes', 'true']:
                                 value = True
@@ -1940,7 +1985,24 @@ class PDFFormFieldExtractor:
             elif '□ yes' in line.lower() or '☐ yes' in line.lower():
                 options.append({"name": "Yes", "value": True})
             
-            # Look for the other option in next lines
+            # Look for the other option in PREVIOUS lines (Yes often comes before No)
+            prev_idx = start_idx - 1
+            while prev_idx >= max(0, start_idx - 3) and prev_idx >= 0:
+                prev_line = text_lines[prev_idx].strip()
+                if not prev_line:
+                    prev_idx -= 1
+                    continue
+                    
+                if any(symbol in prev_line for symbol in ['□', '☐', '!']):
+                    if ('□ yes' in prev_line.lower() or '☐ yes' in prev_line.lower()) and \
+                       not any(opt['name'].lower() == 'yes' for opt in options):
+                        options.append({"name": "Yes", "value": True})
+                    elif ('□ no' in prev_line.lower() or '☐ no' in prev_line.lower()) and \
+                         not any(opt['name'].lower() == 'no' for opt in options):
+                        options.append({"name": "No", "value": False})
+                prev_idx -= 1
+            
+            # Also look for the other option in next lines (as in original logic)
             next_idx = start_idx + 1
             while next_idx < len(text_lines) and next_idx < start_idx + 3:
                 next_line = text_lines[next_idx].strip()
@@ -1959,8 +2021,15 @@ class PDFFormFieldExtractor:
                 else:
                     break
             
+            # Debug output for full-time student detection
+            print(f"DEBUG FULLTIME: Found 'full-time student' pattern at line {start_idx}: {repr(line)}", flush=True)
+            print(f"DEBUG FULLTIME: Extracted {len(options)} options: {options}", flush=True)
+            
             if len(options) >= 2:
-                return question, options, next_idx
+                print(f"DEBUG FULLTIME: Returning question '{question}' with {len(options)} options", flush=True)
+                return question, options, start_idx + 1
+            else:
+                print(f"DEBUG FULLTIME: Not enough options found ({len(options)}), skipping", flush=True)
         
         return None, [], start_idx
     
@@ -2060,11 +2129,29 @@ class PDFFormFieldExtractor:
         # Track processed keys to prevent duplicates
         processed_keys = set()
         
+        print(f"DEBUG PATIENT: Starting extraction with {len(text_lines)} lines", flush=True)
+        
         while i < len(text_lines):
             line = text_lines[i]
             
+            # Debug: track progress
+            if i % 20 == 0 or i > 110:
+                print(f"DEBUG PROGRESS: Processing line {i} of {len(text_lines)}", flush=True)
+            
+            # Debug: specifically track line 116 (the full-time student line)
+            if i == 116:
+                print(f"DEBUG LINE 116: Processing line {i}: {repr(line)}", flush=True)
+                print(f"DEBUG LINE 116: Current section: {current_section}", flush=True)
+                print(f"DEBUG LINE 116: Line length: {len(line)}", flush=True)
+            
+            # Debug: track all lines in children section
+            if current_section == "FOR CHILDREN/MINORS ONLY" and line.strip():
+                print(f"DEBUG CHILDREN LINE {i}: section='{current_section}', line={repr(line)}", flush=True)
+            
             # Skip very short lines
             if len(line) < 3:
+                if i == 116:
+                    print(f"DEBUG LINE 116: Skipped due to length < 3", flush=True)
                 i += 1
                 continue
             
@@ -2073,6 +2160,9 @@ class PDFFormFieldExtractor:
             if question and options:
                 # Use exact reference key mapping
                 radio_key = self.get_radio_key_for_question(question, current_section)
+                
+                # Debug output
+                print(f"DEBUG PATIENT: Found radio question '{question}' -> key '{radio_key}' in section '{current_section}'", flush=True)
                 
                 if radio_key not in processed_keys:  # Only add if not already processed
                     field = FieldInfo(
@@ -2086,8 +2176,27 @@ class PDFFormFieldExtractor:
                     )
                     fields.append(field)
                     processed_keys.add(radio_key)
+                    print(f"DEBUG PATIENT: Added radio field '{radio_key}'", flush=True)
+                else:
+                    print(f"DEBUG PATIENT: Skipped duplicate radio field '{radio_key}'", flush=True)
                 i = next_i
                 continue
+                
+            # Debug: check for potential missed full-time student patterns
+            line_lower = line.lower()
+            if 'student' in line_lower:
+                print(f"DEBUG PATIENT: Line {i} contains 'student': {repr(line)}", flush=True)
+                print(f"DEBUG PATIENT: Current section: {current_section}", flush=True)
+                if 'full' in line_lower:
+                    print(f"DEBUG PATIENT: Line {i} contains both 'full' and 'student': {repr(line)}", flush=True)
+                    # Check if any checkbox symbols are present
+                    if any(symbol in line for symbol in ['□', '☐', '!']):
+                        print(f"DEBUG PATIENT: Line {i} has checkbox symbols!", flush=True)
+                        print(f"DEBUG PATIENT: Calling detect_radio_options_universal for this line...", flush=True)
+                        # Test the radio detection on this specific line
+                        test_question, test_options, test_next = self.detect_radio_options_universal(text_lines, i)
+                        print(f"DEBUG PATIENT: Radio detection result: question='{test_question}', options={test_options}, next={test_next}", flush=True)
+                    print(flush=True)
             if re.match(r'^Work Address:\s*$', line, re.IGNORECASE) and i + 1 < len(text_lines):
                 next_line = text_lines[i + 1].strip()
                 # Check if next line has the expected field pattern
@@ -2150,6 +2259,7 @@ class PDFFormFieldExtractor:
                     current_section = "Patient Information Form"
                 elif 'CHILDREN' in line_upper or 'MINOR' in line_upper:
                     current_section = "FOR CHILDREN/MINORS ONLY"
+                    print(f"DEBUG PATIENT: Section changed to '{current_section}' at line {i}", flush=True)
                 elif 'SECONDARY DENTAL' in line_upper:
                     current_section = "Secondary Dental Plan"
                 elif 'PRIMARY DENTAL' in line_upper or 'DENTAL BENEFIT PLAN INFORMATION PRIMARY' in line_upper:

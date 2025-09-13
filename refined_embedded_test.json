@@ -190,20 +190,20 @@
     }
   },
   {
-    "key": "is_the_patient_a_minor",
-    "title": "Is the patient a Minor",
+    "key": "full_time_student",
+    "title": "Full-time Student",
     "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
     "type": "radio",
     "control": {
       "options": [
         {
-          "name": "Yes",
-          "value": "Yes"
+          "name": "No",
+          "value": "No"
         },
         {
-          "name": "No Full-time Student",
-          "value": "No Full-time Student"
+          "name": "Yes",
+          "value": "Yes"
         }
       ],
       "hint": null
