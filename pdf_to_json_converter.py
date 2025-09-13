@@ -2014,6 +2014,11 @@ class PDFFormFieldExtractor:
                     ], 'hint': None
                 }),
                 'Date Signed': ('date_signed', 'Date Signed', 'date', {'input_type': 'any', 'hint': None}),
+                # Add dental plan specific standalone fields
+                'Name of Insured': ('name_of_insured', 'Name of Insured', 'input', {'input_type': 'name', 'hint': None}),
+                'Insurance Company': ('insurance_company', 'Insurance Company', 'input', {'input_type': 'name', 'hint': None}),
+                'Dental Plan Name': ('dental_plan_name', 'Dental Plan Name', 'input', {'input_type': 'name', 'hint': None}),
+                'Plan/Group Number': ('plan_group_number', 'Plan/Group Number', 'input', {'input_type': 'number', 'hint': None}),
             }
             
             line_stripped = line.strip()
@@ -2057,6 +2062,30 @@ class PDFFormFieldExtractor:
                         final_key = 'birthdate'
                     elif current_section == "Secondary Dental Plan":
                         final_key = 'birthdate_2'
+                elif base_key == 'name_of_insured':
+                    # Section-based name_of_insured numbering
+                    if current_section == "Primary Dental Plan":
+                        final_key = 'name_of_insured'
+                    elif current_section == "Secondary Dental Plan":
+                        final_key = 'name_of_insured_2'
+                elif base_key == 'insurance_company':
+                    # Section-based insurance_company numbering
+                    if current_section == "Primary Dental Plan":
+                        final_key = 'insurance_company'
+                    elif current_section == "Secondary Dental Plan":
+                        final_key = 'insurance_company_2'
+                elif base_key == 'dental_plan_name':
+                    # Section-based dental_plan_name numbering
+                    if current_section == "Primary Dental Plan":
+                        final_key = 'dental_plan_name'
+                    elif current_section == "Secondary Dental Plan":
+                        final_key = 'dental_plan_name_2'
+                elif base_key == 'plan_group_number':
+                    # Section-based plan_group_number numbering
+                    if current_section == "Primary Dental Plan":
+                        final_key = 'plan_group_number'
+                    elif current_section == "Secondary Dental Plan":
+                        final_key = 'plan_group_number_2'
                 elif base_key == 'state_2':
                     # Handle state field positioning - first standalone State should be state_2
                     final_key = 'state_2'
