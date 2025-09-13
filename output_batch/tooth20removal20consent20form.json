@@ -37,12 +37,32 @@
     "section": "Signature"
   },
   {
+    "key": "i_understand_that_there_are_risks_associated_with_any_dental_surgical_and_anesthetic_procedure_these_include_but_are_not_limited_to",
+    "type": "input",
+    "title": "I understand that there are risks associated with any dental, surgical, and anesthetic procedure. These include, but are not limited to",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
     "key": "printed_name_if_signed_on_behalf",
     "type": "input",
     "title": "Printed name if signed on behalf of the patient",
     "control": {
       "hint": null,
       "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "date",
+    "type": "date",
+    "title": "Date",
+    "control": {
+      "hint": null,
+      "input_type": "any"
     },
     "section": "Signature"
   }

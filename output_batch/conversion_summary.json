@@ -2,7 +2,7 @@
   {
     "file": "consent_crown_bridge_prosthetics.pdf",
     "success": true,
-    "fields": 5,
+    "fields": 10,
     "sections": 2,
     "valid": true,
     "output": "output_batch/consent_crown_bridge_prosthetics.json",
@@ -20,7 +20,7 @@
   {
     "file": "CFGingivectomy.pdf",
     "success": true,
-    "fields": 5,
+    "fields": 8,
     "sections": 2,
     "valid": true,
     "output": "output_batch/CFGingivectomy.json",
@@ -56,7 +56,7 @@
   {
     "file": "tooth20removal20consent20form.pdf",
     "success": true,
-    "fields": 5,
+    "fields": 7,
     "sections": 2,
     "valid": true,
     "output": "output_batch/tooth20removal20consent20form.json",
@@ -74,8 +74,8 @@
   {
     "file": "npf1.pdf",
     "success": true,
-    "fields": 19,
-    "sections": 3,
+    "fields": 61,
+    "sections": 5,
     "valid": true,
     "output": "output_batch/npf1.json",
     "pipeline_info": {

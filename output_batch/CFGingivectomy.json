@@ -1,5 +1,15 @@
 [
   {
+    "key": "date_of_birth",
+    "type": "date",
+    "title": "Date of Birth",
+    "control": {
+      "hint": null,
+      "input_type": "any"
+    },
+    "section": "Signature"
+  },
+  {
     "key": "signature",
     "type": "signature",
     "title": "Signature",
@@ -43,6 +53,26 @@
     "control": {
       "hint": null,
       "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "name_of_patient",
+    "type": "input",
+    "title": "Name of Patient",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "date",
+    "type": "date",
+    "title": "Date",
+    "control": {
+      "hint": null,
+      "input_type": "any"
     },
     "section": "Signature"
   }

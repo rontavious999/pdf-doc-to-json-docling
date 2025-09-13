@@ -45,5 +45,55 @@
       "input_type": "name"
     },
     "section": "Signature"
+  },
+  {
+    "key": "i_am_freely_giving_my_consent_to_allow_and_authorize_dr",
+    "type": "input",
+    "title": "I am freely giving my consent to allow and authorize Dr.",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "tooth_no_s",
+    "type": "input",
+    "title": "Tooth No(s).",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "date",
+    "type": "date",
+    "title": "Date",
+    "control": {
+      "hint": null,
+      "input_type": "any"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "legally_authorized",
+    "type": "input",
+    "title": "legally authorized",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "printed_name_if_signed_on_behalf_of_the",
+    "type": "input",
+    "title": "Printed name if signed on behalf of the",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
   }
 ]
