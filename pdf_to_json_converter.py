@@ -3267,9 +3267,9 @@ class PDFToJSONConverter:
                 "type": field.field_type,  # Put type after key to match reference order
                 "title": field.title,
                 "control": field.control,
-                "section": field.section
+                "section": field.section,
+                "optional": False  # Add optional field to match reference format
             }
-            # Note: Remove optional property to match reference format (reference doesn't have optional)
             json_spec.append(field_dict)
         
         # FINAL CRITICAL FIX: Ensure all states fields have input_type: "name" (reference compliance)
@@ -3302,11 +3302,13 @@ class PDFToJSONConverter:
                     text = control[text_key]
                     # Remove escaped underscores
                     text = text.replace('\\_', '')
-                    # Remove Unicode characters like \uf071
-                    text = text.replace('\uf071', '').strip()
+                    # Remove Unicode characters like \uf071, \u2019, \u201c, \u201d
+                    import re
+                    text = re.sub(r'\\u[0-9a-fA-F]{4}', '', text)
+                    text = text.replace('\uf071', '').replace('\u2019', "'").replace('\u201c', '"').replace('\u201d', '"')
                     # Clean up extra spaces
                     text = ' '.join(text.split())
-                    control[text_key] = f"<p>{text}</p>" if not text.startswith('<p>') else text
+                    control[text_key] = text if text.startswith('<p>') else f"<p>{text}</p>"
         
         # Count sections
         sections = set(field.get("section", "Unknown") for field in normalized_spec)
