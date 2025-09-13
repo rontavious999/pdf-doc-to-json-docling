@@ -3542,6 +3542,28 @@ class PDFToJSONConverter:
         # Validate and normalize
         is_valid, errors, normalized_spec = self.validator.validate_and_normalize(json_spec)
         
+        # SIGNATURE VALIDATION: Ensure exactly one signature field with canonical key
+        signature_fields = [field for field in normalized_spec if field.get('type') == 'signature']
+        if len(signature_fields) > 1:
+            # Keep only the first one and set canonical key
+            first_sig = signature_fields[0]
+            first_sig['key'] = 'signature'
+            # Remove others
+            normalized_spec = [field for field in normalized_spec if not (field.get('type') == 'signature' and field != first_sig)]
+        elif len(signature_fields) == 1:
+            # Ensure canonical key
+            signature_fields[0]['key'] = 'signature'
+        elif len(signature_fields) == 0:
+            # Add missing signature field
+            normalized_spec.append({
+                "key": "signature",
+                "title": "Signature", 
+                "section": "Signature",
+                "optional": False,
+                "type": "signature",
+                "control": {}
+            })
+        
         # FINAL CLEANUP: Clean up text content to match reference exactly
         for field in normalized_spec:
             control = field.get('control', {})

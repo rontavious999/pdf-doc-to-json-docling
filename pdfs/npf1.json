@@ -191,11 +191,11 @@
       "options": [
         {
           "name": "Yes",
-          "value": true
+          "value": "Yes"
         },
         {
           "name": "No",
-          "value": false
+          "value": "No"
         }
       ],
       "hint": null
@@ -595,11 +595,9 @@
   },
   {
     "key": "initials_2",
-    "type": "input",
+    "type": "initials",
     "title": "Initial",
-    "control": {
-      "input_type": "initials"
-    },
+    "control": {},
     "section": "Signature"
   },
   {
