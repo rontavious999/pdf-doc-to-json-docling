@@ -1,145 +1,137 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2865
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\margl1440\margr1440\vieww11520\viewh8400\viewkind0
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+Modento PDF → JSON Extractor: Code Review & Recommendations
+===========================================================
 
-\f0\fs24 \cf0 Modento PDF \uc0\u8594  JSON Extractor: Code Review & Recommendations\
-===========================================================\
-\
-File reviewed: pdf_to_json_converter.py\
-Scope: Evaluate compliance with Modento form schema (questions array), robustness on NPF/medical-history packets and narrative consents, and portability across clinics.\
-\
-Verdict (Grade)\
----------------\
-A-  (very close to A)\
-Strong extractor with sound validation, consent shaping, and medical-history grouping. A few schema mismatches and robustness nits remain.\
-\
-What It Does Well\
------------------\
-1) Extraction backbone\
-   - Docling-first extraction with OCR/table awareness handles mixed digital/scanned PDFs.\
-   - Clear section detection (Patient Info, Insurance, Medical History, Consent/Signature).\
-\
-2) Consent shaping (\uc0\u9989 )\
-   - Converts long narrative consent paragraphs into:\
-     \'95 text block (context)\
-     \'95 single acknowledgment checkbox (\'93I have read and understand\'85\'94)\
-     \'95 signature + signature_date\
-\
-3) Medical History grouping (\uc0\u9989 )\
-   - Collapses long runs of single items (\'93AIDS/HIV\'94, \'93High blood pressure\'94, \'85) into one checkbox field with ordered options.\
-\
-4) Schema guardrails\
-   - Top-level array enforced.\
-   - Signature uniqueness by type; first signature becomes key='signature', extras dropped; adds one if missing.\
-   - Option value backfill via slug of option name.\
-   - States post-fix removes input_type.\
-   - Key hygiene: global uniqueness + readable labels/sections.\
-\
-5) Ordering\
-   - Retains a line/order index so grouped/derived fields preserve on-page order for clinician familiarity.\
-\
-Where It Can Bite (Issues/Risks)\
---------------------------------\
-1) Initials control shape\
-   - Current output sometimes uses type='input' with control.input_type='initials'.\
-   - Modento expects type='initials' as its own control (no input_type).\
-\
-2) Bullet/checkbox symbol coverage\
-   - Option detection misses some symbols used across clinics: \uc0\u9632  \u9744  \u9745  \u9989  \u9673  \u9679  \u9675  \'95 \'96 * [ ] ( ).\
-\
-3) Hint storage\
-   - Inconsistent use of control.hint vs control.extra.hint; sometimes leaves hint=None noise.\
-\
-4) Duplicate-merge guardrails\
-   - Merging by title can over-merge generic fields across sections (e.g., multiple \'93Date\'94 fields).\
-\
-Concrete Fixes (How-to)\
------------------------\
-A) Make initials a real control\
-   - When detecting initials:\
-     BEFORE:  type='input', control.input_type='initials'\
-     AFTER:   type='initials', control=\{\}\
-\
-   Validator rule:\
-     \'95 Remove 'initials' from VALID_INPUT_TYPES.\
-     \'95 If a question arrives as input+initials, coerce to type='initials' and drop input_type.\
-\
-B) Centralize broader option regex\
-   CHECK = r\\"[\uc0\u9633 \u9632 \u9744 \u9745 \u9989 \u9673 \u9679 \u9675 \'95\\\\-\\\\\'96\\\\*\\\\[\\\\]\\\\(\\\\)]\\"\
-   OPTION_RE = re.compile(rf\\"\{CHECK\}\\\\s*([A-Za-z0-9][A-Za-z0-9\\\\s\\\\-/&\\\\(\\\\)']\{\{1,80\}\})(?=\\\\s*\{CHECK\}|\\\\s*$)\\")\
-\
-C) Normalize hints consistently\
-   - Always move control.hint \uc0\u8594  control.extra.hint and drop empty hints:\
-     hint = ctrl.pop('hint', None)\
-     if hint:\
-         ctrl.setdefault('extra', \{\})['hint'] = hint\
-\
-D) States control cleanup\
-   - For type='states', ensure control has NO input_type:\
-     ctrl.pop('input_type', None)\
-\
-E) Signature uniqueness by type (canonical key)\
-   sig_idxs = [i for i,q in enumerate(spec) if q.get('type') == 'signature']\
-   if sig_idxs:\
-       spec[sig_idxs[0]]['key'] = 'signature'\
-       for j in sig_idxs[1:]: spec[j]['__drop__'] = True\
-       spec = [q for q in spec if not q.get('__drop__')]\
-   else:\
-       spec.append(\{'key':'signature','title':'Signature','section':'Signature','optional':False,'type':'signature','control':\{\}\})\
-\
-F) Final stable sort\
-   - Before writing JSON, guarantee deterministic order:\
-     for idx, q in enumerate(spec):\
-         q.setdefault('meta', \{\}).setdefault('line_idx', idx)\
-     spec.sort(key=lambda q: q.get('meta', \{\}).get('line_idx', 10**9))\
-\
-G) Safer de-duplication\
-   - Don\'92t merge across different sections unless whitelisted.\
-   - Exclude generic keys/titles (date, name, phone) from auto-merge logic.\
-\
-Quick Compliance Checklist (Modento)\
-------------------------------------\
-\'95 Top-level: JSON must be an array of question objects.  \
-\'95 Required keys per question:\
-  - type \uc0\u8712  \{input, radio, checkbox, dropdown, states, date, signature, initials, text, header\}\
-  - key (snake_case, unique)\
-  - title (patient-visible label)\
-  - section (group name)\
-  - control (object; may be empty on signature/initials/text/header/states)\
-\'95 input.input_type \uc0\u8712  \{name, email, phone, number, ssn, zip\}\
-\'95 date.input_type \uc0\u8712  \{any, past, future\}\
-\'95 states: NO input_type\
-\'95 initials: type='initials' (no input_type)\
-\'95 radio/checkbox/dropdown: control.options = [\{name, value\}], value is string\
-\'95 signature uniqueness: exactly one signature; canonical key 'signature'\
-\'95 consent shaping: text \uc0\u8594  ack checkbox \u8594  signature + signature_date\
-\'95 medical history: single checkbox field with ordered options\
-\
-Minimal Test Ideas (to prevent regressions)\
--------------------------------------------\
-1) Initials becomes a real control\
-   - input+initials \uc0\u8594  type='initials', no input_type\
-\
-2) States cleaned\
-   - states never has input_type after validation\
-\
-3) Consent shaping guaranteed\
-   - Long consent paragraph \uc0\u8594  ack checkbox + signature + signature_date\
-\
-4) Medical History grouped\
-   - N singleton items under \'93Medical History\'94 \uc0\u8594  one checkbox with N options in order\
-\
-5) Deterministic order\
-   - Add/derive fields do not reshuffle existing ones; final sort by meta.line_idx\
-\
-Summary / Next Steps\
---------------------\
-\'95 Implement initials-as-type, Yes/No string coercion, hint relocation, and broaden option glyphs.  \
-\'95 Add OCR flag and safe de-dup guards.  \
-\'95 Keep final stable sort.  \
-\'95 Add a tiny test suite to lock behavior.  \
-With these changes, you\'92ll move cleanly from A- to an A-grade converter that travels well across different clinics and consent styles.\
-}
+File reviewed: pdf_to_json_converter.py
+Scope: Evaluate compliance with Modento form schema (questions array), robustness on NPF/medical-history packets and narrative consents, and portability across clinics.
+
+Verdict (Grade)
+---------------
+A-  (very close to A)
+Strong extractor with sound validation, consent shaping, and medical-history grouping. A few schema mismatches and robustness nits remain.
+
+What It Does Well
+-----------------
+1) Extraction backbone
+   - Docling-first extraction with OCR/table awareness handles mixed digital/scanned PDFs.
+   - Clear section detection (Patient Info, Insurance, Medical History, Consent/Signature).
+
+2) Consent shaping (✅)
+   - Converts long narrative consent paragraphs into:
+     • text block (context)
+     • single acknowledgment checkbox (“I have read and understand…”)
+     • signature + signature_date
+
+3) Medical History grouping (✅)
+   - Collapses long runs of single items (“AIDS/HIV”, “High blood pressure”, …) into one checkbox field with ordered options.
+
+4) Schema guardrails
+   - Top-level array enforced.
+   - Signature uniqueness by type; first signature becomes key='signature', extras dropped; adds one if missing.
+   - Option value backfill via slug of option name.
+   - States post-fix removes input_type.
+   - Key hygiene: global uniqueness + readable labels/sections.
+
+5) Ordering
+   - Retains a line/order index so grouped/derived fields preserve on-page order for clinician familiarity.
+
+Where It Can Bite (Issues/Risks)
+--------------------------------
+1) Initials control shape
+   - Current output sometimes uses type='input' with control.input_type='initials'.
+   - Modento expects type='initials' as its own control (no input_type).
+
+2) Bullet/checkbox symbol coverage
+   - Option detection misses some symbols used across clinics: ■ ☐ ☑ ✅ ◉ ● ○ • – * [ ] ( ).
+
+3) Hint storage
+   - Inconsistent use of control.hint vs control.extra.hint; sometimes leaves hint=None noise.
+
+4) Duplicate-merge guardrails
+   - Merging by title can over-merge generic fields across sections (e.g., multiple “Date” fields).
+
+Concrete Fixes (How-to)
+-----------------------
+A) Make initials a real control
+   - When detecting initials:
+     BEFORE:  type='input', control.input_type='initials'
+     AFTER:   type='initials', control={}
+
+   Validator rule:
+     • Remove 'initials' from VALID_INPUT_TYPES.
+     • If a question arrives as input+initials, coerce to type='initials' and drop input_type.
+
+B) Centralize broader option regex
+   CHECK = r\"[□■☐☑✅◉●○•\\-\\–\\*\\[\\]\\(\\)]\"
+   OPTION_RE = re.compile(rf\"{CHECK}\\s*([A-Za-z0-9][A-Za-z0-9\\s\\-/&\\(\\)']{{1,80}})(?=\\s*{CHECK}|\\s*$)\")
+
+C) Normalize hints consistently
+   - Always move control.hint → control.extra.hint and drop empty hints:
+     hint = ctrl.pop('hint', None)
+     if hint:
+         ctrl.setdefault('extra', {})['hint'] = hint
+
+D) States control cleanup
+   - For type='states', ensure control has NO input_type:
+     ctrl.pop('input_type', None)
+
+E) Signature uniqueness by type (canonical key)
+   sig_idxs = [i for i,q in enumerate(spec) if q.get('type') == 'signature']
+   if sig_idxs:
+       spec[sig_idxs[0]]['key'] = 'signature'
+       for j in sig_idxs[1:]: spec[j]['__drop__'] = True
+       spec = [q for q in spec if not q.get('__drop__')]
+   else:
+       spec.append({'key':'signature','title':'Signature','section':'Signature','optional':False,'type':'signature','control':{}})
+
+F) Final stable sort
+   - Before writing JSON, guarantee deterministic order:
+     for idx, q in enumerate(spec):
+         q.setdefault('meta', {}).setdefault('line_idx', idx)
+     spec.sort(key=lambda q: q.get('meta', {}).get('line_idx', 10**9))
+
+G) Safer de-duplication
+   - Don’t merge across different sections unless whitelisted.
+   - Exclude generic keys/titles (date, name, phone) from auto-merge logic.
+
+Quick Compliance Checklist (Modento)
+------------------------------------
+• Top-level: JSON must be an array of question objects.  
+• Required keys per question:
+  - type ∈ {input, radio, checkbox, dropdown, states, date, signature, initials, text, header}
+  - key (snake_case, unique)
+  - title (patient-visible label)
+  - section (group name)
+  - control (object; may be empty on signature/initials/text/header/states)
+• input.input_type ∈ {name, email, phone, number, ssn, zip}
+• date.input_type ∈ {any, past, future}
+• states: NO input_type
+• initials: type='initials' (no input_type)
+• radio/checkbox/dropdown: control.options = [{name, value}], value is string
+• signature uniqueness: exactly one signature; canonical key 'signature'
+• consent shaping: text → ack checkbox → signature + signature_date
+• medical history: single checkbox field with ordered options
+
+Minimal Test Ideas (to prevent regressions)
+-------------------------------------------
+1) Initials becomes a real control
+   - input+initials → type='initials', no input_type
+
+2) States cleaned
+   - states never has input_type after validation
+
+3) Consent shaping guaranteed
+   - Long consent paragraph → ack checkbox + signature + signature_date
+
+4) Medical History grouped
+   - N singleton items under “Medical History” → one checkbox with N options in order
+
+5) Deterministic order
+   - Add/derive fields do not reshuffle existing ones; final sort by meta.line_idx
+
+Summary / Next Steps
+--------------------
+• Implement initials-as-type, Yes/No string coercion, hint relocation, and broaden option glyphs.  
+• Add OCR flag and safe de-dup guards.  
+• Keep final stable sort.  
+• Add a tiny test suite to lock behavior.  
+With these changes, you’ll move cleanly from A- to an A-grade converter that travels well across different clinics and consent styles.
