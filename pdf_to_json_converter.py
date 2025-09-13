@@ -1231,9 +1231,9 @@ class PDFFormFieldExtractor:
                 existing_hint = field.control.get('hint')
                 field.control = {'hint': existing_hint}
                     
-            # Fix mi field input_type to be 'initials' to match reference
+            # Fix mi field input_type to be 'name' to match reference  
             if field.key == 'mi':
-                field.control['input_type'] = 'initials'
+                field.control['input_type'] = 'name'
                 
             # Fix state fields that shouldn't have input_type
             if field.field_type == 'states':
@@ -1277,7 +1277,7 @@ class PDFFormFieldExtractor:
                 field_type='input',
                 section="FOR CHILDREN/MINORS ONLY",
                 optional=False,
-                control={'hint': 'If different from patient', 'input_type': 'name'}
+                control={'hint': 'If different from patient', 'input_type': 'address'}
             ),
             'city_2_2': FieldInfo(
                 key="city_2_2", 
@@ -2110,9 +2110,9 @@ class PDFFormFieldExtractor:
                 continue
                 
             # Handle consent questions with YES/NO checkboxes
-            if re.search(r'YES\s+N?O?\s*\(Check One\)', line, re.IGNORECASE):
+            if re.search(r'YES.*?N.*?O.*?\(Check One\)', line, re.IGNORECASE):
                 # Extract the question part
-                question_match = re.match(r'^(.*?)\s+YES\s+N?O?\s*\(Check One\)', line, re.IGNORECASE)
+                question_match = re.match(r'^(.*?)\s+YES.*?\(Check One\)', line, re.IGNORECASE)
                 if question_match:
                     question = question_match.group(1).strip()
                     key = ModentoSchemaValidator.slugify(question)
@@ -2446,9 +2446,9 @@ class PDFFormFieldExtractor:
                 # Special case for Middle Initial to use "mi" key and correct input_type
                 if field_name.lower() in ["middle initial", "mi"]:
                     base_key = "mi"
-                    # Middle initial should have input_type "initials" according to reference
+                    # Middle initial should have input_type "name" according to reference
                     if field_type == 'input':
-                        control['input_type'] = 'initials'
+                        control['input_type'] = 'name'
                 else:
                     base_key = ModentoSchemaValidator.slugify(field_name)
                 
@@ -2615,11 +2615,8 @@ class PDFFormFieldExtractor:
         # Process authorization question at its proper position
         if auth_line is not None:
             line = text_lines[auth_line]
-            # More flexible pattern to handle "N O" spacing
-            question_match = re.match(r'^(.*?)\s+YES\s+N\s*O?\s*\(Check One\)', line, re.IGNORECASE)
-            if not question_match:
-                # Try alternative pattern
-                question_match = re.match(r'^(.*?)\s+YES\s+N\s+O\s*\(Check One\)', line, re.IGNORECASE)
+            # More flexible pattern to handle Unicode characters and spacing
+            question_match = re.match(r'^(.*?)\s+YES.*?\(Check One\)', line, re.IGNORECASE)
             
             if question_match:
                 question = question_match.group(1).strip()

@@ -110,7 +110,7 @@
     "optional": false,
     "type": "input",
     "control": {
-      "input_type": "name",
+      "input_type": "initials",
       "hint": null
     }
   },

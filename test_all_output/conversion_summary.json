@@ -1,0 +1,110 @@
+[
+  {
+    "file": "consent_crown_bridge_prosthetics.pdf",
+    "success": true,
+    "fields": 5,
+    "sections": 2,
+    "valid": true,
+    "output": "test_all_output/consent_crown_bridge_prosthetics.json",
+    "pipeline_info": {
+      "pipeline": "StandardPdfPipeline",
+      "backend": "DoclingParseDocumentBackend",
+      "ocr_enabled": true,
+      "ocr_engine": "EasyOCR",
+      "table_structure": true,
+      "images_scale": 2.0,
+      "document_name": "consent_crown_bridge_prosthetics",
+      "elements_extracted": 32
+    }
+  },
+  {
+    "file": "CFGingivectomy.pdf",
+    "success": true,
+    "fields": 5,
+    "sections": 2,
+    "valid": true,
+    "output": "test_all_output/CFGingivectomy.json",
+    "pipeline_info": {
+      "pipeline": "StandardPdfPipeline",
+      "backend": "DoclingParseDocumentBackend",
+      "ocr_enabled": true,
+      "ocr_engine": "EasyOCR",
+      "table_structure": true,
+      "images_scale": 2.0,
+      "document_name": "CFGingivectomy",
+      "elements_extracted": 29
+    }
+  },
+  {
+    "file": "Chicago-Dental-Solutions_Form.pdf",
+    "success": true,
+    "fields": 51,
+    "sections": 5,
+    "valid": true,
+    "output": "test_all_output/Chicago-Dental-Solutions_Form.json",
+    "pipeline_info": {
+      "pipeline": "StandardPdfPipeline",
+      "backend": "DoclingParseDocumentBackend",
+      "ocr_enabled": true,
+      "ocr_engine": "EasyOCR",
+      "table_structure": true,
+      "images_scale": 2.0,
+      "document_name": "Chicago-Dental-Solutions_Form",
+      "elements_extracted": 219
+    }
+  },
+  {
+    "file": "tooth20removal20consent20form.pdf",
+    "success": true,
+    "fields": 5,
+    "sections": 2,
+    "valid": true,
+    "output": "test_all_output/tooth20removal20consent20form.json",
+    "pipeline_info": {
+      "pipeline": "StandardPdfPipeline",
+      "backend": "DoclingParseDocumentBackend",
+      "ocr_enabled": true,
+      "ocr_engine": "EasyOCR",
+      "table_structure": true,
+      "images_scale": 2.0,
+      "document_name": "tooth20removal20consent20form",
+      "elements_extracted": 15
+    }
+  },
+  {
+    "file": "npf1.pdf",
+    "success": true,
+    "fields": 29,
+    "sections": 6,
+    "valid": true,
+    "output": "test_all_output/npf1.json",
+    "pipeline_info": {
+      "pipeline": "StandardPdfPipeline",
+      "backend": "DoclingParseDocumentBackend",
+      "ocr_enabled": true,
+      "ocr_engine": "EasyOCR",
+      "table_structure": true,
+      "images_scale": 2.0,
+      "document_name": "npf1",
+      "elements_extracted": 304
+    }
+  },
+  {
+    "file": "npf.pdf",
+    "success": true,
+    "fields": 95,
+    "sections": 5,
+    "valid": true,
+    "output": "test_all_output/npf.json",
+    "pipeline_info": {
+      "pipeline": "StandardPdfPipeline",
+      "backend": "DoclingParseDocumentBackend",
+      "ocr_enabled": true,
+      "ocr_engine": "EasyOCR",
+      "table_structure": true,
+      "images_scale": 2.0,
+      "document_name": "npf",
+      "elements_extracted": 136
+    }
+  }
+]
