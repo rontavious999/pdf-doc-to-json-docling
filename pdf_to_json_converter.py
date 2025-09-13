@@ -474,10 +474,13 @@ class PDFFormFieldExtractor:
             # Extract text with superior layout preservation - use markdown for checkbox preservation
             full_text = result.document.export_to_markdown()  # Changed from export_to_text()
             all_lines = full_text.split('\n')
-            # Keep empty lines for proper question-option proximity in radio detection
-            text_lines = [line.strip() for line in all_lines]  # Don't filter empty lines
-            
-            print(f"DEBUG: Extracted {len(all_lines)} total lines, keeping all for proper radio detection")
+            # Keep empty lines for proper question-option proximity in radio detection, but limit empty line runs
+            text_lines = []
+            for line in all_lines:
+                stripped = line.strip()
+                # Keep line but avoid excessive empty line runs
+                if stripped or (text_lines and text_lines[-1].strip()):
+                    text_lines.append(stripped)
             
             # Update pipeline info with actual conversion details
             pipeline_info = self.pipeline_info.copy()
@@ -2057,28 +2060,19 @@ class PDFFormFieldExtractor:
         # Track processed keys to prevent duplicates
         processed_keys = set()
         
-        print(f"DEBUG: Starting patient info extraction with {len(text_lines)} lines")
-        
         while i < len(text_lines):
             line = text_lines[i]
             
-            # Debug for specific radio lines
-            if any(pattern in line.lower() for pattern in ['contact', 'minor', 'student', 'residence']):
-                print(f"DEBUG: Processing potential radio line {i}: {line[:80]}...")
-                # Try radio detection on this line
-                question, options, next_i = self.detect_radio_options_universal(text_lines, i)
-                if question and options:
-                    print(f"  -> Radio detected: '{question}' with {len(options)} options")
-                else:
-                    print(f"  -> No radio detected")
+            # Skip very short lines
+            if len(line) < 3:
+                i += 1
+                continue
             
             # Try to detect radio button questions first - MAIN RADIO DETECTION
             question, options, next_i = self.detect_radio_options_universal(text_lines, i)
             if question and options:
                 # Use exact reference key mapping
                 radio_key = self.get_radio_key_for_question(question, current_section)
-                
-                print(f"DEBUG: Found radio question '{question}' -> key '{radio_key}' in section '{current_section}'")
                 
                 if radio_key not in processed_keys:  # Only add if not already processed
                     field = FieldInfo(
@@ -2092,20 +2086,8 @@ class PDFFormFieldExtractor:
                     )
                     fields.append(field)
                     processed_keys.add(radio_key)
-                    print(f"DEBUG: Added radio field '{radio_key}'")
-                else:
-                    print(f"DEBUG: Skipped duplicate radio field '{radio_key}'")
                 i = next_i
                 continue
-            
-            # Skip very short lines
-            if len(line) < 3:
-                if any(pattern in line.lower() for pattern in ['contact', 'minor', 'student', 'residence']):
-                    print(f"  -> Skipped: too short")
-                i += 1
-                continue
-            
-            # Handle work address context - extract as exact reference fields
             if re.match(r'^Work Address:\s*$', line, re.IGNORECASE) and i + 1 < len(text_lines):
                 next_line = text_lines[i + 1].strip()
                 # Check if next line has the expected field pattern
