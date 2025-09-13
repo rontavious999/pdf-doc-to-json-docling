@@ -498,8 +498,8 @@
     "type": "input",
     "title": "Street",
     "control": {
-      "input_type": "name",
-      "hint": "If different from patient"
+      "hint": "If different from patient",
+      "input_type": "name"
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },

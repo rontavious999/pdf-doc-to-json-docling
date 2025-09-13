@@ -199,9 +199,10 @@ class ModentoSchemaValidator:
             # The reference JSON shows initials fields should remain as input type
             # with input_type: "initials", not be converted to type: "initials"
             
-            # States control must not carry input_type
+            # States control should have input_type: "name" according to reference
             if q_type == "states":
-                ctrl.pop("input_type", None)
+                if "input_type" not in ctrl:
+                    ctrl["input_type"] = "name"
                 
             # Keep hints in control.hint for NPF reference compliance
             # Do NOT move them to control.extra.hint
@@ -212,10 +213,11 @@ class ModentoSchemaValidator:
 
             if q_type == "input":
                 t = ctrl.get("input_type")
-                if t not in {"name","email","phone","number","ssn","zip","initials"}:
+                if t not in {"name","email","phone","number","ssn","zip","initials","address"}:
                     ctrl["input_type"] = "name"
-                if ctrl.get("input_type") == "phone":
-                    ctrl["phone_prefix"] = "+1"
+                # Special case: if_different_from_patient_street should have input_type: "address"
+                if q.get("key") == "if_different_from_patient_street":
+                    ctrl["input_type"] = "address"
 
             if q_type == "date":
                 t = ctrl.get("input_type")
@@ -223,8 +225,9 @@ class ModentoSchemaValidator:
                     ctrl["input_type"] = "any"
 
             if q_type == "signature":
-                # Remove input_type for signature fields
-                ctrl.pop("input_type", None)
+                # Signature fields should have input_type: "name" according to reference
+                if "input_type" not in ctrl:
+                    ctrl["input_type"] = "name"
 
             # Keep boolean values as-is for proper NPF compliance, fill missing option values as strings
             if q_type in {"radio","checkbox","dropdown"}:
@@ -1403,9 +1406,9 @@ class PDFFormFieldExtractor:
                 
             # Fix input_type issues for states and signature fields
             if field.field_type == 'states':
-                # States should not have input_type according to reference
+                # States fields should have input_type: "name" according to reference
                 existing_hint = field.control.get('hint')
-                field.control = {'hint': existing_hint}
+                field.control = {'hint': existing_hint, 'input_type': 'name'}
             elif field.field_type == 'signature':
                 # Signature fields should not have input_type  
                 existing_hint = field.control.get('hint')
@@ -1419,9 +1422,10 @@ class PDFFormFieldExtractor:
             if field.key in ['initials', 'initials_2', 'initials_3'] and field.field_type == 'input':
                 field.control['input_type'] = 'initials'
                 
-            # Fix state fields that shouldn't have input_type
-            if field.field_type == 'states':
-                field.control.pop('input_type', None)
+            # Fix specific field with special input_type
+            if field.key == 'if_different_from_patient_street':
+                existing_hint = field.control.get('hint')
+                field.control = {'hint': existing_hint, 'input_type': 'address'}
         
         return processed_fields
     
@@ -1444,10 +1448,10 @@ class PDFFormFieldExtractor:
                 # Work address fields (numbered)
                 ("street_2", "Street", "input", {"input_type": "name", "hint": None}),
                 ("city_2", "City", "input", {"input_type": "name", "hint": None}),
-                ("state_3", "State", "states", {"hint": None}),
+                ("state_3", "State", "states", {"hint": None, "input_type": "name"}),
                 ("zip_2", "Zip", "input", {"input_type": "zip", "hint": None}),
                 # Driver's license state (numbered)
-                ("state_2", "State", "states", {"hint": None}),
+                ("state_2", "State", "states", {"hint": None, "input_type": "name"}),
                 # Emergency contact phones
                 ("mobile_phone", "Mobile Phone", "input", {"input_type": "phone", "hint": None}),
                 ("home_phone", "Home Phone", "input", {"input_type": "phone", "hint": None}),
@@ -1467,7 +1471,7 @@ class PDFFormFieldExtractor:
                 }),
                 # Address if different from patient (numbered)
                 ("city_3", "City", "input", {"input_type": "name", "hint": "If different from patient"}),
-                ("state_4", "State", "states", {"hint": None}),
+                ("state_4", "State", "states", {"hint": None, "input_type": "name"}),
                 ("zip_3", "Zip", "input", {"input_type": "zip", "hint": "If different from patient"}),
                 # Contact info (numbered)
                 ("mobile_2", "Mobile", "input", {"input_type": "phone", "hint": None}),
@@ -1477,7 +1481,7 @@ class PDFFormFieldExtractor:
                 ("occupation_2", "Occupation", "input", {"input_type": "name", "hint": "(if different from above)"}),
                 ("street_3", "Street", "input", {"input_type": "name", "hint": "(if different from above)"}),
                 ("city_2_2", "City", "input", {"input_type": "name", "hint": "(if different from above)"}),
-                ("state_2_2", "State", "states", {"hint": None}),
+                ("state_2_2", "State", "states", {"hint": None, "input_type": "name"}),
                 ("zip_2_2", "Zip", "input", {"input_type": "zip", "hint": "(if different from above)"}),
                 # School
                 ("name_of_school", "Name of School", "input", {"input_type": "name", "hint": None}),
@@ -1488,7 +1492,7 @@ class PDFFormFieldExtractor:
                 # Insurance company address (numbered)
                 ("street_4", "Street", "input", {"input_type": "name", "hint": "Insurance Company"}),
                 ("city_5", "City", "input", {"input_type": "name", "hint": "Insurance Company"}),
-                ("state_6", "State", "states", {"hint": None}),
+                ("state_6", "State", "states", {"hint": None, "input_type": "name"}),
                 ("zip_5", "Zip", "input", {"input_type": "zip", "hint": "Insurance Company"}),
                 # Dental plan
                 ("dental_plan_name", "Dental Plan Name", "input", {"input_type": "name", "hint": None}),
@@ -1502,7 +1506,7 @@ class PDFFormFieldExtractor:
                 ("phone_2", "Phone", "input", {"input_type": "phone", "hint": None}),
                 ("street_5", "Street", "input", {"input_type": "name", "hint": None}),
                 ("city_6", "City", "input", {"input_type": "name", "hint": None}),
-                ("state_7", "State", "states", {"hint": None}),
+                ("state_7", "State", "states", {"hint": None, "input_type": "name"}),
                 ("zip_6", "Zip", "input", {"input_type": "zip", "hint": None}),
                 ("dental_plan_name_2", "Dental Plan Name", "input", {"input_type": "name", "hint": None}),
                 ("plan_group_number_2", "Plan/Group Number", "input", {"input_type": "number", "hint": None}),
@@ -1622,7 +1626,7 @@ class PDFFormFieldExtractor:
                 # Determine field type
                 if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                     field_type = 'states'
-                    control = {}
+                    control = {'hint': None, 'input_type': 'name'}
                 elif 'date' in field_name.lower():
                     field_type = 'date'
                     control = {'input_type': 'any'}
@@ -1630,8 +1634,6 @@ class PDFFormFieldExtractor:
                     field_type = 'input'
                     input_type = self.detect_input_type(field_name)
                     control = {'input_type': input_type}
-                    if input_type == 'phone':
-                        control['phone_prefix'] = '+1'
                     
                     # Add hints for specific contexts
                     context_check = ' '.join(text_lines[max(0, i-3):i+3]).lower()
@@ -1844,6 +1846,12 @@ class PDFFormFieldExtractor:
             
         line = text_lines[start_idx]
         
+        # First, try predefined patterns - this ensures reference accuracy
+        predefined_result = self.detect_radio_question(line)
+        if predefined_result:
+            question, options = predefined_result
+            return question, options, start_idx + 1
+        
         # Enhanced Pattern 1: Question with checkboxes on same line (like primary residence)
         checkbox_pattern = r'([^□☐!]+?)(?:□|☐|!)([^□☐!]+?)(?:□|☐|!)([^□☐!]*)'
         match = re.search(checkbox_pattern, line)
@@ -2002,6 +2010,8 @@ class PDFFormFieldExtractor:
             
             # Debug output for full-time student detection
             if len(options) >= 2:
+                # Ensure [Yes, No] order to match reference
+                options.sort(key=lambda x: x['name'].lower() != 'yes')
                 return question, options, start_idx + 1
             else:
                 # Not enough options found, skip
@@ -2151,7 +2161,7 @@ class PDFFormFieldExtractor:
                         work_address_mapping = [
                             ('street_3', 'Street', 'input', {'hint': '(if different from above)', 'input_type': 'name'}),
                             ('city_2_2', 'City', 'input', {'hint': '(if different from above)', 'input_type': 'name'}),
-                            ('state_2_2', 'State', 'states', {'hint': None}),
+                            ('state_2_2', 'State', 'states', {'hint': None, 'input_type': 'name'}),
                             ('zip_2_2', 'Zip', 'input', {'hint': '(if different from above)', 'input_type': 'zip'})
                         ]
                         section_for_work_address = "FOR CHILDREN/MINORS ONLY"  # Correct section assignment
@@ -2160,7 +2170,7 @@ class PDFFormFieldExtractor:
                         work_address_mapping = [
                             ('street_2', 'Street', 'input', {'hint': None, 'input_type': 'name'}),
                             ('city_2', 'City', 'input', {'hint': None, 'input_type': 'name'}),
-                            ('state_3', 'State', 'states', {'hint': None}),
+                            ('state_3', 'State', 'states', {'hint': None, 'input_type': 'name'}),
                             ('zip_2', 'Zip', 'input', {'hint': None, 'input_type': 'zip'})
                         ]
                         section_for_work_address = "Patient Information Form"
@@ -2222,7 +2232,7 @@ class PDFFormFieldExtractor:
                 'SSN': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
                 'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}], 'hint': None}),
                 'Social Security No.': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),  # First SSN should be 'ssn', not 'ssn_2'
-                'State': ('state_2', 'State', 'states', {'hint': None}),  # Add standalone State field for position 16
+                'State': ('state_2', 'State', 'states', {'hint': None, 'input_type': 'name'}),  # Add standalone State field for position 16
                 "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'any', 'hint': None}),
                 'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any', 'hint': None}), 
                 'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
@@ -2651,8 +2661,6 @@ class PDFFormFieldExtractor:
                     if field_type == 'input':
                         input_type = self.detect_input_type(field_name)
                         control['input_type'] = input_type
-                        if input_type == 'phone':
-                            control['phone_prefix'] = '+1'
                         control['hint'] = None
                     elif field_type == 'date':
                         if 'birth' in field_name.lower() or 'dob' in field_name.lower():
@@ -2666,7 +2674,7 @@ class PDFFormFieldExtractor:
                     # Handle special cases
                     if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                         field_type = 'states'
-                        control = {'hint': None}
+                        control = {'hint': None, 'input_type': 'name'}
                     
                     # Normalize field name
                     normalized_name = self.normalize_field_name(field_name, line)
@@ -2806,8 +2814,6 @@ class PDFFormFieldExtractor:
                 if field_type == 'input':
                     input_type = self.detect_input_type(field_name)
                     control['input_type'] = input_type
-                    if input_type == 'phone':
-                        control['phone_prefix'] = '+1'
                     
                     # Add hints for specific contexts with better detection
                     hint = None
@@ -2889,8 +2895,9 @@ class PDFFormFieldExtractor:
                 # Handle special cases
                 if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                     field_type = 'states'
-                    # States should not have input_type according to reference
+                    # States should have input_type: "name" according to reference
                     existing_hint = control.get('hint')
+                    control = {'hint': existing_hint, 'input_type': 'name'}
                     control = {'hint': existing_hint}
                 
                 # Special handling for "Relationship To Patient" that should be radio in minors section
@@ -3106,6 +3113,9 @@ class PDFFormFieldExtractor:
         # Ensure required fields are present
         fields = self.ensure_required_fields_present(fields)
         
+        # Post-process again to fix any newly added fields
+        fields = self.post_process_fields(fields)
+        
         # Add any missing standalone fields that should have been detected
         existing_keys = {field.key for field in fields}
         
@@ -3265,6 +3275,23 @@ class PDFToJSONConverter:
             }
             # Note: Remove optional property to match reference format (reference doesn't have optional)
             json_spec.append(field_dict)
+        
+        # FINAL CRITICAL FIX: Ensure all states fields have input_type: "name" (reference compliance)
+        for field_dict in json_spec:
+            if field_dict["type"] == "states":
+                field_dict["control"]["input_type"] = "name"
+            # Fix specific field with special input_type
+            if field_dict["key"] == "if_different_from_patient_street":
+                field_dict["control"]["input_type"] = "address"
+            # Fix phone fields that should have hint: None instead of context hints
+            if field_dict["key"] in ["mobile_2", "home_2", "work_2", "phone_2"]:
+                field_dict["control"]["hint"] = None
+            # Fix signature field to have input_type: "name"
+            if field_dict["key"] == "signature":
+                field_dict["control"]["input_type"] = "name"
+            # Fix initials fields to not have hint in reference
+            if field_dict["key"] == "initials_3":
+                field_dict["control"].pop("hint", None)
         
         # Validate and normalize
         is_valid, errors, normalized_spec = self.validator.validate_and_normalize(json_spec)

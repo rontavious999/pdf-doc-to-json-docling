@@ -160,7 +160,7 @@
   {
     "key": "what_is_your_preferred_method_of_contact",
     "type": "radio",
-    "title": "What Is Your Preferred Method Of Contact",
+    "title": "What is your preferred method of contact",
     "control": {
       "options": [
         {
@@ -356,7 +356,7 @@
   {
     "key": "is_the_patient_a_minor",
     "type": "radio",
-    "title": "Is the Patient a Minor?",
+    "title": "Is the patient a Minor",
     "control": {
       "options": [
         {
@@ -379,12 +379,12 @@
     "control": {
       "options": [
         {
-          "name": "Yes",
-          "value": true
-        },
-        {
           "name": "No",
           "value": false
+        },
+        {
+          "name": "Yes",
+          "value": true
         }
       ],
       "hint": null
@@ -461,7 +461,7 @@
   {
     "key": "if_patient_is_a_minor_primary_residence",
     "type": "radio",
-    "title": "If Patient Is A Minor, Primary Residence",
+    "title": "If patient is a Minor, primary residence",
     "control": {
       "options": [
         {

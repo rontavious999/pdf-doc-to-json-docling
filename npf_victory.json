@@ -84,7 +84,8 @@
     "type": "states",
     "title": "State",
     "control": {
-      "hint": null
+      "hint": null,
+      "input_type": "name"
     },
     "section": "Patient Information Form"
   },
@@ -153,7 +154,8 @@
     "type": "states",
     "title": "State",
     "control": {
-      "hint": null
+      "hint": null,
+      "input_type": "name"
     },
     "section": "Patient Information Form"
   },
@@ -249,7 +251,8 @@
     "type": "states",
     "title": "State",
     "control": {
-      "hint": null
+      "hint": null,
+      "input_type": "name"
     },
     "section": "Patient Information Form"
   },
@@ -498,8 +501,8 @@
     "type": "input",
     "title": "Street",
     "control": {
-      "input_type": "name",
-      "hint": "If different from patient"
+      "hint": "If different from patient",
+      "input_type": "name"
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -518,7 +521,8 @@
     "type": "states",
     "title": "State",
     "control": {
-      "hint": null
+      "hint": null,
+      "input_type": "name"
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -607,7 +611,8 @@
     "type": "states",
     "title": "State",
     "control": {
-      "hint": null
+      "hint": null,
+      "input_type": "name"
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -696,7 +701,8 @@
     "type": "states",
     "title": "State",
     "control": {
-      "hint": null
+      "hint": null,
+      "input_type": "name"
     },
     "section": "Primary Dental Plan"
   },
@@ -825,7 +831,8 @@
     "type": "states",
     "title": "State",
     "control": {
-      "hint": null
+      "hint": null,
+      "input_type": "name"
     },
     "section": "Secondary Dental Plan"
   },
