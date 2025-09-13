@@ -227,6 +227,28 @@
     }
   },
   {
+    "key": "patient_employed_by",
+    "title": "Patient Employed By",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "occupation",
+    "title": "Occupation",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
     "key": "sex",
     "title": "Sex",
     "section": "Patient Information Form",
@@ -275,6 +297,28 @@
           "value": "Widowed"
         }
       ],
+      "hint": null
+    }
+  },
+  {
+    "key": "in_case_of_emergency_who_should_be_notified",
+    "title": "In case of emergency, who should be notified",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    }
+  },
+  {
+    "key": "relationship_to_patient",
+    "title": "Relationship to Patient",
+    "section": "Patient Information Form",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
       "hint": null
     }
   },
@@ -527,6 +571,20 @@
   {
     "key": "occupation_2",
     "title": "Occupation",
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false,
+    "type": "input",
+    "control": {
+      "input_type": "name",
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
+    }
+  },
+  {
+    "key": "employer_if_different_from_above",
+    "title": "Employer (if different from above)",
     "section": "FOR CHILDREN/MINORS ONLY",
     "optional": false,
     "type": "input",
