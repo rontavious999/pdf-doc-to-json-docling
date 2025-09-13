@@ -167,32 +167,26 @@ class ModentoSchemaValidator:
     
     @classmethod
     def validate_and_normalize(cls, spec: List[Dict[str, Any]]) -> Tuple[bool, List[str], List[Dict[str, Any]]]:
-        """Validate and normalize a Modento spec"""
+        """Validate and normalize a Modento spec - improved with grade review fixes"""
         errors = []
         if not isinstance(spec, list):
             return False, ["Spec must be a top-level JSON array"], spec
 
-        # 1) rename any existing signature to key='signature' (first one wins)
-        seen_signature = False
-        for q in spec:
-            if q.get("type") == "signature":
-                if not seen_signature:
-                    q["key"] = "signature"
-                    seen_signature = True
-                else:
-                    # drop subsequent signature controls
-                    q["__drop__"] = True
-
+        # 1) Fix signature uniqueness by type (not by key) and force canonical key 'signature'
+        sig_idxs = [i for i, q in enumerate(spec) if q.get("type") == "signature"]
+        if sig_idxs:
+            first = sig_idxs[0]
+            spec[first]["key"] = "signature"
+            for j in sig_idxs[1:]:
+                spec[j]["__drop__"] = True
         spec = [q for q in spec if not q.get("__drop__")]
-
-        # 2) if none exists, add one
-        if not any(q.get("type") == "signature" for q in spec):
+        if not sig_idxs:
             spec.append({"key":"signature","title":"Signature","section":"Signature","optional":False,"type":"signature","control":{}})
 
-        # 3) ensure unique keys (but keep 'signature' stable)
+        # 2) ensure unique keys (but keep 'signature' stable)
         spec = cls.ensure_unique_keys(spec)
 
-        # 4) per-question checks & normalizations
+        # 3) per-question checks & normalizations with grade review fixes
         for q in spec:
             q_type = q.get("type")
             if q_type not in cls.VALID_TYPES:
@@ -201,54 +195,157 @@ class ModentoSchemaValidator:
 
             ctrl = q.setdefault("control", {})
             
+            # Convert input + input_type "initials" to type "initials"
+            if q_type == "input" and ctrl.get("input_type") == "initials":
+                q["type"] = "initials"
+                ctrl.pop("input_type", None)
+                q_type = "initials"
+            
+            # States control must not carry input_type
+            if q_type == "states":
+                ctrl.pop("input_type", None)
+                
+            # Move hints to control.extra.hint consistently
+            if "hint" in ctrl:
+                hint = ctrl.pop("hint")
+                if hint:
+                    ctrl.setdefault("extra", {})["hint"] = hint
+            
             # Ensure hint field is present for consistency with reference
             if 'hint' not in ctrl:
                 ctrl['hint'] = None
-                
-            # move hint to control.extra.hint
-            if "hint" in ctrl and ctrl["hint"] is not None:
-                hint = ctrl.pop("hint")
-                if hint:
-                    extra = ctrl.setdefault("extra", {})
-                    extra["hint"] = hint
-                else:
-                    ctrl["hint"] = None
 
             if q_type == "input":
                 t = ctrl.get("input_type")
-                if t not in {"name","email","phone","number","ssn","zip","initials"}:
+                if t not in {"name","email","phone","number","ssn","zip"}:
                     ctrl["input_type"] = "name"
+                if ctrl.get("input_type") == "phone":
+                    ctrl["phone_prefix"] = "+1"
 
             if q_type == "date":
                 t = ctrl.get("input_type")
                 if t not in {"past","future","any"}:
                     ctrl["input_type"] = "any"
 
-            if q_type == "states":
-                # must not carry input_type, but preserve hint
-                ctrl.pop("input_type", None)
-                if 'hint' not in ctrl:
-                    ctrl['hint'] = None
-
             if q_type == "signature":
-                # Remove input_type for signature fields and ensure hint is present
+                # Remove input_type for signature fields
                 ctrl.pop("input_type", None)
-                if 'hint' not in ctrl:
-                    ctrl['hint'] = None
 
+            # Yes/No values to strings, and fill missing option values
             if q_type in {"radio","checkbox","dropdown"}:
                 opts = ctrl.get("options", [])
                 for opt in opts:
-                    # Keep original string casing from reference for radio options
                     v = opt.get("value")
                     if isinstance(v, bool):
-                        opt["value"] = v  # Keep boolean values as-is
-                    elif isinstance(v, str):
-                        opt["value"] = v  # Keep string values as-is to match reference
-                    if not opt.get("value") and opt.get("value") != False:
+                        opt["value"] = "Yes" if v else "No"
+                    if not opt.get("value"):
                         opt["value"] = cls.slugify(opt.get("name","option"))
 
+        # Apply post-processing passes from grade review
+        spec = cls.apply_consent_shaping(spec)
+        spec = cls.apply_medical_history_grouping(spec)
+        spec = cls.apply_stable_ordering(spec)
+
         return (len(errors) == 0), errors, spec
+    
+    @staticmethod
+    def apply_consent_shaping(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Detect consent paragraphs and shape them properly"""
+        consent_keywords = ["risk", "side effect", "benefit", "alternative", "consent", "i understand"]
+        
+        # Look for consent text blocks
+        for q in spec:
+            if q.get("type") == "text" and q.get("section") == "Signature":
+                # If we have a consent text block, ensure we have acknowledgment
+                text_content = q.get("control", {}).get("text", "").lower()
+                if any(keyword in text_content for keyword in consent_keywords):
+                    # Check if we already have an acknowledgment checkbox
+                    has_ack = any(
+                        item.get("key") == "acknowledge" 
+                        for item in spec
+                    )
+                    
+                    if not has_ack:
+                        # Insert acknowledgment checkbox
+                        ack_checkbox = {
+                            "type": "checkbox",
+                            "key": "acknowledge",
+                            "title": "I have read and understand the information above.",
+                            "section": "Consent",
+                            "optional": False,
+                            "control": {
+                                "options": [{"name": "I agree", "value": "I agree"}]
+                            }
+                        }
+                        spec.append(ack_checkbox)
+        
+        # Ensure we have signature_date if missing
+        has_sig_date = any(
+            q.get("key") == "signature_date" and q.get("type") == "date" 
+            for q in spec
+        )
+        if not has_sig_date:
+            sig_date = {
+                "type": "date",
+                "key": "signature_date", 
+                "title": "Date",
+                "section": "Signature",
+                "optional": False,
+                "control": {"input_type": "any"}
+            }
+            spec.append(sig_date)
+        
+        return spec
+    
+    @staticmethod
+    def apply_medical_history_grouping(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Group medical history items into a single checkbox field if needed"""
+        medical_section = "Medical History"
+        medical_items = []
+        other_items = []
+        
+        for i, q in enumerate(spec):
+            if (q.get("section") == medical_section and 
+                q.get("type") in ["checkbox", "radio"] and
+                len(q.get("control", {}).get("options", [])) == 1):
+                medical_items.append((i, q))
+            else:
+                other_items.append(q)
+        
+        # If we have 6 or more contiguous medical history items, group them
+        if len(medical_items) >= 6:
+            # Create grouped options from individual items
+            grouped_options = []
+            for _, item in medical_items:
+                title = item.get("title", "")
+                if title:
+                    grouped_options.append({"name": title, "value": title})
+            
+            # Create the grouped medical history field
+            grouped_field = {
+                "type": "checkbox",
+                "key": "medical_history",
+                "title": "Medical History", 
+                "section": medical_section,
+                "optional": True,
+                "control": {"options": grouped_options}
+            }
+            
+            # Replace medical items with grouped field
+            other_items.append(grouped_field)
+            return other_items
+        else:
+            # Keep individual items if less than 6
+            return spec
+    
+    @staticmethod
+    def apply_stable_ordering(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Apply stable ordering by line_idx"""
+        for idx, q in enumerate(spec):
+            q.setdefault("meta", {}).setdefault("line_idx", idx)
+        
+        spec.sort(key=lambda q: q.get("meta", {}).get("line_idx", 10**9))
+        return spec
 
 
 class PDFFormFieldExtractor:
@@ -465,6 +562,27 @@ class PDFFormFieldExtractor:
         # Default to name for most other fields
         else:
             return 'name'
+    
+    def create_field_info(self, key: str, title: str, field_type: str, section: str, 
+                         control: Dict[str, Any] = None, optional: bool = False, line_idx: int = 0) -> FieldInfo:
+        """Create FieldInfo with proper type handling based on grade review fixes"""
+        if control is None:
+            control = {}
+        
+        # Grade review fix: Convert input + input_type "initials" to type "initials" at creation time
+        if field_type == 'input' and control.get('input_type') == 'initials':
+            field_type = 'initials'
+            control = {}  # initials type has empty control
+        
+        return FieldInfo(
+            key=key,
+            title=title,
+            field_type=field_type,
+            section=section,
+            control=control,
+            optional=optional,
+            line_idx=line_idx
+        )
     
     def detect_section(self, text: str, context_lines: List[str], current_section: str = "Patient Information Form") -> str:
         """Detect form section based on content and context with improved section tracking"""
@@ -910,10 +1028,10 @@ class PDFFormFieldExtractor:
 
     def looks_like_first_history_item(self, line: str) -> bool:
         """Check if line looks like the first item in a medical history list"""
-        # Look for checkbox patterns or bullet patterns common in medical history
+        # Look for checkbox patterns or bullet patterns common in medical history with improved symbols
+        CHECK = r"[□■☐☑✅◉●○•\-\–\*\[\]\(\)]"
         patterns = [
-            r'^[\u25A1\u25A2\u2610\[\]\(\)]\s*[A-Za-z]',  # checkbox + text
-            r'^[•\-\*]\s*[A-Za-z]',  # bullet + text
+            rf'^{CHECK}\s*[A-Za-z]',  # checkbox + text with improved symbols
             r'^[A-Za-z][A-Za-z\s]{2,}$'  # plain text that could be medical condition
         ]
         return any(re.match(pattern, line) for pattern in patterns)
@@ -1157,10 +1275,11 @@ class PDFFormFieldExtractor:
             return f'<div>{formatted_text}</div>'
 
     def extract_checkbox_options(self, line: str) -> List[str]:
-        """Extract checkbox options from a line"""
-        # Pattern for checkbox options like "□ Option1 □ Option2"
-        pattern = r'□\s*([A-Za-z][A-Za-z\s\-/]{1,25}?)(?=\s*□|\s*$)'
-        matches = re.findall(pattern, line)
+        """Extract checkbox options from a line with improved symbol recognition"""
+        # Improved checkbox symbol pattern from grade review
+        CHECK = r"[□■☐☑✅◉●○•\-\–\*\[\]\(\)]"
+        OPTION_RE = re.compile(rf"{CHECK}\s*([A-Za-z0-9][A-Za-z0-9\s\-/&\(\)']+?)(?=\s*{CHECK}|\s*$)")
+        matches = OPTION_RE.findall(line)
         return [match.strip() for match in matches if match.strip()]
     
     def post_process_fields(self, fields: List[FieldInfo]) -> List[FieldInfo]:
@@ -1202,7 +1321,7 @@ class PDFFormFieldExtractor:
                     processed_fields.append(radio_field)
                     
                     # Create initials field
-                    initials_field = FieldInfo(
+                    initials_field = self.create_field_info(
                         key="initials_3",
                         title="Initial",
                         field_type='input',
