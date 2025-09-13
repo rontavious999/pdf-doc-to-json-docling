@@ -431,6 +431,7 @@ class PDFFormFieldExtractor:
     
     # Centralized regex patterns for maintainability - expanded checkbox symbol coverage
     CHECKBOX_SYMBOLS = r"[□■☐☑✅◉●○•\-\–\*\[\]\(\)]"
+    CHECKBOX_CHAR_CLASS = r"□■☐☑✅◉●○•\-\–\*\[\]\(\)"
     
     def has_checkbox_symbol(self, text: str) -> bool:
         """Check if text contains any checkbox symbol"""
@@ -650,6 +651,10 @@ class PDFFormFieldExtractor:
         # Initials detection - be more specific
         elif ('initial' in text_lower or text_lower.strip() in ['mi', 'm.i.', 'middle initial', 'middle init']) and len(text) < 25:
             return 'initials'
+        
+        # Address detection for better field typing
+        elif any(word in text_lower for word in ['street', 'address', 'apt', 'unit', 'suite']):
+            return 'name'  # Keep as 'name' since Modento doesn't have 'address' input_type
         
         # Number detection - for IDs, license numbers, etc.
         elif (any(word in text_lower for word in ['number', 'id', '#']) 
@@ -1426,7 +1431,7 @@ class PDFFormFieldExtractor:
         return fields
     
     def create_comprehensive_consent_html(self, text_lines: List[str]) -> str:
-        """Create comprehensive consent HTML similar to reference format"""
+        """Create comprehensive consent HTML similar to reference format with improved length management"""
         # Filter out very short lines and combine content
         content_lines = []
         for line in text_lines:
@@ -1437,6 +1442,17 @@ class PDFFormFieldExtractor:
         
         # Join content and create structured HTML
         full_content = ' '.join(content_lines)
+        
+        # UNIVERSAL IMPROVEMENT: Limit text length to prevent excessively long HTML blocks
+        # This helps with form rendering and database storage
+        MAX_CONSENT_LENGTH = 5000  # characters
+        if len(full_content) > MAX_CONSENT_LENGTH:
+            # Truncate at word boundary near the limit
+            truncate_pos = full_content.rfind(' ', 0, MAX_CONSENT_LENGTH)
+            if truncate_pos > MAX_CONSENT_LENGTH // 2:  # Ensure reasonable truncation
+                full_content = full_content[:truncate_pos] + '...'
+            else:
+                full_content = full_content[:MAX_CONSENT_LENGTH] + '...'
         
         # Clean up the content
         full_content = full_content.replace('##', '').strip()
@@ -2805,7 +2821,7 @@ class PDFFormFieldExtractor:
             checkbox_options = self.extract_checkbox_options(line)
             if checkbox_options and len(checkbox_options) >= 2:
                 # Extract the question part before the checkboxes
-                question_part = re.split(rf'[{self.CHECKBOX_SYMBOLS}]', line)[0].strip()
+                question_part = re.split(f'[{self.CHECKBOX_CHAR_CLASS}]', line)[0].strip()
                 if question_part and len(question_part) > 3:
                     key = ModentoSchemaValidator.slugify(question_part)
                     
