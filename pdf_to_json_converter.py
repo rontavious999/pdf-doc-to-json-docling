@@ -1443,16 +1443,10 @@ class PDFFormFieldExtractor:
         # Join content and create structured HTML
         full_content = ' '.join(content_lines)
         
-        # UNIVERSAL IMPROVEMENT: Limit text length to prevent excessively long HTML blocks
-        # This helps with form rendering and database storage
-        MAX_CONSENT_LENGTH = 5000  # characters
-        if len(full_content) > MAX_CONSENT_LENGTH:
-            # Truncate at word boundary near the limit
-            truncate_pos = full_content.rfind(' ', 0, MAX_CONSENT_LENGTH)
-            if truncate_pos > MAX_CONSENT_LENGTH // 2:  # Ensure reasonable truncation
-                full_content = full_content[:truncate_pos] + '...'
-            else:
-                full_content = full_content[:MAX_CONSENT_LENGTH] + '...'
+        # IMPORTANT: Do not truncate consent text as it contains legally required information
+        # that patients must see in full to provide proper informed consent.
+        # Any truncation could result in patients not seeing critical risk information,
+        # legal disclaimers, or other essential consent details.
         
         # Clean up the content
         full_content = full_content.replace('##', '').strip()
