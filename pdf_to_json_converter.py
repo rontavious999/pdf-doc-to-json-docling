@@ -1585,22 +1585,15 @@ class PDFFormFieldExtractor:
             if field.key == 'mi':
                 field.control['input_type'] = 'name'
                 
-            # Fix initials fields to be type 'initials' instead of input with input_type 'initials'
-            if field.key in ['initials', 'initials_2', 'initials_3'] and field.field_type == 'input':
-                field.field_type = 'initials'
-                field.control = {'hint': field.control.get('hint')}
+            # NOTE: Keep initials fields as input + input_type 'initials' per reference
+            # Do not convert to type 'initials' - reference shows they should remain as input
                 
             # Fix specific field with special input_type
             if field.key == 'if_different_from_patient_street':
                 existing_hint = field.control.get('hint')
                 field.control = {'hint': existing_hint, 'input_type': 'address'}
             
-            # Fix boolean values in radio options to use strings instead
-            if field.field_type == 'radio' and 'options' in field.control:
-                options = field.control['options']
-                for option in options:
-                    if isinstance(option.get('value'), bool):
-                        option['value'] = "Yes" if option['value'] else "No"
+            # Boolean values in radio options should remain as booleans (per reference)
         
         return processed_fields
     
