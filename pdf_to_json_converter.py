@@ -432,6 +432,14 @@ class PDFFormFieldExtractor:
     # Centralized regex patterns for maintainability - expanded checkbox symbol coverage
     CHECKBOX_SYMBOLS = r"[□■☐☑✅◉●○•\-\–\*\[\]\(\)]"
     
+    def has_checkbox_symbol(self, text: str) -> bool:
+        """Check if text contains any checkbox symbol"""
+        return bool(re.search(self.CHECKBOX_SYMBOLS, text))
+    
+    def get_checkbox_options_pattern(self):
+        """Get regex pattern for extracting checkbox options"""
+        return re.compile(rf"{self.CHECKBOX_SYMBOLS}\s*([A-Za-z0-9][A-Za-z0-9\s\-/&\(\)']{{1,80}})(?=\s*{self.CHECKBOX_SYMBOLS}|\s*$)")
+    
     def __init__(self):
         self.field_patterns = {
             # Common field patterns in dental forms
@@ -1577,14 +1585,22 @@ class PDFFormFieldExtractor:
             if field.key == 'mi':
                 field.control['input_type'] = 'name'
                 
-            # Fix initials fields to have input_type 'initials' to match reference
+            # Fix initials fields to be type 'initials' instead of input with input_type 'initials'
             if field.key in ['initials', 'initials_2', 'initials_3'] and field.field_type == 'input':
-                field.control['input_type'] = 'initials'
+                field.field_type = 'initials'
+                field.control = {'hint': field.control.get('hint')}
                 
             # Fix specific field with special input_type
             if field.key == 'if_different_from_patient_street':
                 existing_hint = field.control.get('hint')
                 field.control = {'hint': existing_hint, 'input_type': 'address'}
+            
+            # Fix boolean values in radio options to use strings instead
+            if field.field_type == 'radio' and 'options' in field.control:
+                options = field.control['options']
+                for option in options:
+                    if isinstance(option.get('value'), bool):
+                        option['value'] = "Yes" if option['value'] else "No"
         
         return processed_fields
     
@@ -2021,7 +2037,7 @@ class PDFFormFieldExtractor:
             if len(question) >= 5:  # Must be substantial question
                 # Extract options from the line
                 options = []
-                option_parts = re.split(r'[□☐!]', line)[1:]  # Skip the question part
+                option_parts = re.split(rf'[{self.CHECKBOX_SYMBOLS}]', line)[1:]  # Skip the question part
                 for part in option_parts:
                     option_text = part.strip()
                     if option_text and len(option_text) > 0:
@@ -2069,9 +2085,9 @@ class PDFFormFieldExtractor:
                     break
                 
                 # Check for checkbox options
-                if any(symbol in next_line for symbol in ['□', '☐', '!']):
+                if self.has_checkbox_symbol(next_line):
                     # Extract option text
-                    option_match = re.search(r'[□☐!]\s*([^□☐!]+)', next_line)
+                    option_match = re.search(rf'{self.CHECKBOX_SYMBOLS}\s*([^{self.CHECKBOX_SYMBOLS}]+)', next_line)
                     if option_match:
                         option_text = option_match.group(1).strip()
                         if option_text:
@@ -2122,16 +2138,16 @@ class PDFFormFieldExtractor:
 
         # Enhanced Pattern 3: Special case for "Full-time Student" where checkbox is mixed with text
         # This handles "□ No Full-time Student" patterns
-        if 'full-time student' in line.lower() and any(symbol in line for symbol in ['□', '☐', '!']):
+        if 'full-time student' in line.lower() and self.has_checkbox_symbol(line):
             # Extract the question (Full-time Student)
             question = "Full-time Student"
             options = []
             
             # Parse this line for one option
-            if '□ no' in line.lower() or '☐ no' in line.lower():
-                options.append({"name": "No", "value": False})
-            elif '□ yes' in line.lower() or '☐ yes' in line.lower():
-                options.append({"name": "Yes", "value": True})
+            if re.search(rf'{self.CHECKBOX_SYMBOLS}\s*no\b', line, re.IGNORECASE):
+                options.append({"name": "No", "value": "No"})
+            elif re.search(rf'{self.CHECKBOX_SYMBOLS}\s*yes\b', line, re.IGNORECASE):
+                options.append({"name": "Yes", "value": "Yes"})
             
             # Look for the other option in PREVIOUS lines (Yes often comes before No)
             prev_idx = start_idx - 1
@@ -2141,13 +2157,13 @@ class PDFFormFieldExtractor:
                     prev_idx -= 1
                     continue
                     
-                if any(symbol in prev_line for symbol in ['□', '☐', '!']):
-                    if ('□ yes' in prev_line.lower() or '☐ yes' in prev_line.lower()) and \
+                if self.has_checkbox_symbol(prev_line):
+                    if re.search(rf'{self.CHECKBOX_SYMBOLS}\s*yes\b', prev_line, re.IGNORECASE) and \
                        not any(opt['name'].lower() == 'yes' for opt in options):
-                        options.append({"name": "Yes", "value": True})
-                    elif ('□ no' in prev_line.lower() or '☐ no' in prev_line.lower()) and \
+                        options.append({"name": "Yes", "value": "Yes"})
+                    elif re.search(rf'{self.CHECKBOX_SYMBOLS}\s*no\b', prev_line, re.IGNORECASE) and \
                          not any(opt['name'].lower() == 'no' for opt in options):
-                        options.append({"name": "No", "value": False})
+                        options.append({"name": "No", "value": "No"})
                 prev_idx -= 1
             
             # Also look for the other option in next lines (as in original logic)
@@ -2158,13 +2174,13 @@ class PDFFormFieldExtractor:
                     next_idx += 1
                     continue
                     
-                if any(symbol in next_line for symbol in ['□', '☐', '!']):
-                    if ('□ yes' in next_line.lower() or '☐ yes' in next_line.lower()) and \
+                if self.has_checkbox_symbol(next_line):
+                    if re.search(rf'{self.CHECKBOX_SYMBOLS}\s*yes\b', next_line, re.IGNORECASE) and \
                        not any(opt['name'].lower() == 'yes' for opt in options):
-                        options.append({"name": "Yes", "value": True})
-                    elif ('□ no' in next_line.lower() or '☐ no' in next_line.lower()) and \
+                        options.append({"name": "Yes", "value": "Yes"})
+                    elif re.search(rf'{self.CHECKBOX_SYMBOLS}\s*no\b', next_line, re.IGNORECASE) and \
                          not any(opt['name'].lower() == 'no' for opt in options):
-                        options.append({"name": "No", "value": False})
+                        options.append({"name": "No", "value": "No"})
                     next_idx += 1
                 else:
                     break
@@ -2796,7 +2812,7 @@ class PDFFormFieldExtractor:
             checkbox_options = self.extract_checkbox_options(line)
             if checkbox_options and len(checkbox_options) >= 2:
                 # Extract the question part before the checkboxes
-                question_part = re.split(r'□', line)[0].strip()
+                question_part = re.split(rf'[{self.CHECKBOX_SYMBOLS}]', line)[0].strip()
                 if question_part and len(question_part) > 3:
                     key = ModentoSchemaValidator.slugify(question_part)
                     
@@ -3519,6 +3535,10 @@ class PDFToJSONConverter:
             if field_dict["key"] == "initials_3":
                 field_dict["control"].pop("hint", None)
         
+        # Add meta field with line_idx for stable ordering (as suggested in review)
+        for idx, field_dict in enumerate(json_spec):
+            field_dict.setdefault("meta", {}).setdefault("line_idx", idx)
+        
         # Validate and normalize
         is_valid, errors, normalized_spec = self.validator.validate_and_normalize(json_spec)
         
@@ -3587,6 +3607,10 @@ class PDFToJSONConverter:
         # Count sections
         sections = set(field.get("section", "Unknown") for field in normalized_spec)
         section_count = len(sections)
+        
+        # Remove meta fields from final output (they were only for internal sorting)
+        for field in normalized_spec:
+            field.pop("meta", None)
         
         # Save to file if output path provided
         if output_path:
