@@ -412,7 +412,10 @@
     "title": "First Name",
     "control": {
       "input_type": "name",
-      "hint": "Name of Responsible Party"
+      "extra": {
+        "hint": "Name of Responsible Party"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -422,7 +425,10 @@
     "title": "Last Name",
     "control": {
       "input_type": "name",
-      "hint": "Name of Responsible Party"
+      "extra": {
+        "hint": "Name of Responsible Party"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -432,7 +438,10 @@
     "title": "Date of Birth",
     "control": {
       "input_type": "past",
-      "hint": "Responsible Party"
+      "extra": {
+        "hint": "Responsible Party"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -441,7 +450,6 @@
     "type": "radio",
     "title": "Relationship To Patient",
     "control": {
-      "hint": null,
       "options": [
         {
           "name": "Self",
@@ -459,7 +467,8 @@
           "name": "Other",
           "value": "Other"
         }
-      ]
+      ],
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -504,7 +513,10 @@
     "title": "Street",
     "control": {
       "input_type": "name",
-      "hint": "If different from patient"
+      "extra": {
+        "hint": "If different from patient"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -514,7 +526,10 @@
     "title": "City",
     "control": {
       "input_type": "name",
-      "hint": "If different from patient"
+      "extra": {
+        "hint": "If different from patient"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -533,7 +548,10 @@
     "title": "Zip",
     "control": {
       "input_type": "zip",
-      "hint": "If different from patient"
+      "extra": {
+        "hint": "If different from patient"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -544,7 +562,10 @@
     "control": {
       "input_type": "phone",
       "phone_prefix": "+1",
-      "hint": "(if different from above)"
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -555,7 +576,10 @@
     "control": {
       "input_type": "phone",
       "phone_prefix": "+1",
-      "hint": "(if different from above)"
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -566,7 +590,10 @@
     "control": {
       "input_type": "phone",
       "phone_prefix": "+1",
-      "hint": "(if different from above)"
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -576,7 +603,10 @@
     "title": "Employer (if different from above)",
     "control": {
       "input_type": "name",
-      "hint": "(if different from above)"
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -586,7 +616,10 @@
     "title": "Occupation",
     "control": {
       "input_type": "name",
-      "hint": "(if different from above)"
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -596,7 +629,10 @@
     "title": "Street",
     "control": {
       "input_type": "name",
-      "hint": "(if different from above)"
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -606,7 +642,10 @@
     "title": "City",
     "control": {
       "input_type": "name",
-      "hint": "(if different from above)"
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -625,7 +664,10 @@
     "title": "Zip",
     "control": {
       "input_type": "zip",
-      "hint": "(if different from above)"
+      "extra": {
+        "hint": "(if different from above)"
+      },
+      "hint": null
     },
     "section": "FOR CHILDREN/MINORS ONLY"
   },
@@ -676,7 +718,10 @@
     "control": {
       "input_type": "phone",
       "phone_prefix": "+1",
-      "hint": "Insurance Company"
+      "extra": {
+        "hint": "Insurance Company"
+      },
+      "hint": null
     },
     "section": "Primary Dental Plan"
   },
@@ -686,7 +731,10 @@
     "title": "Street",
     "control": {
       "input_type": "name",
-      "hint": "Insurance Company"
+      "extra": {
+        "hint": "Insurance Company"
+      },
+      "hint": null
     },
     "section": "Primary Dental Plan"
   },
@@ -696,7 +744,10 @@
     "title": "City",
     "control": {
       "input_type": "name",
-      "hint": "Insurance Company"
+      "extra": {
+        "hint": "Insurance Company"
+      },
+      "hint": null
     },
     "section": "Primary Dental Plan"
   },
@@ -715,7 +766,10 @@
     "title": "Zip",
     "control": {
       "input_type": "zip",
-      "hint": "Insurance Company"
+      "extra": {
+        "hint": "Insurance Company"
+      },
+      "hint": null
     },
     "section": "Primary Dental Plan"
   },
@@ -806,7 +860,10 @@
     "control": {
       "input_type": "phone",
       "phone_prefix": "+1",
-      "hint": "Insurance Company"
+      "extra": {
+        "hint": "Insurance Company"
+      },
+      "hint": null
     },
     "section": "Secondary Dental Plan"
   },
@@ -948,10 +1005,10 @@
           "value": false
         }
       ],
-      "hint": null,
       "text": "",
       "html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. </p>",
-      "temporary_html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. </p>"
+      "temporary_html_text": "<p>I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me. </p>",
+      "hint": null
     },
     "section": "Signature"
   },
