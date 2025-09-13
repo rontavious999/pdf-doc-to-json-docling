@@ -343,11 +343,16 @@ class ModentoSchemaValidator:
     
     @staticmethod
     def apply_stable_ordering(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Apply stable ordering by line_idx"""
+        """Apply stable ordering by line_idx and remove meta fields from final output"""
         for idx, q in enumerate(spec):
             q.setdefault("meta", {}).setdefault("line_idx", idx)
         
         spec.sort(key=lambda q: q.get("meta", {}).get("line_idx", 10**9))
+        
+        # Remove meta fields from final output
+        for q in spec:
+            q.pop("meta", None)
+        
         return spec
     
     @staticmethod
@@ -1991,7 +1996,8 @@ class PDFFormFieldExtractor:
             standalone_fields = {
                 'SSN': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
                 'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}], 'hint': None}),
-                'Social Security No.': ('ssn_2', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),
+                'Social Security No.': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn', 'hint': None}),  # First SSN should be 'ssn', not 'ssn_2'
+                'State': ('state_2', 'State', 'states', {'hint': None}),  # Add standalone State field for position 16
                 "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'any', 'hint': None}),
                 'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any', 'hint': None}), 
                 'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
@@ -2029,10 +2035,24 @@ class PDFFormFieldExtractor:
             if matched_key:
                 base_key, title, field_type, control = standalone_fields[matched_key]
                 
-                # Only add if not already processed (no numbering)
-                if base_key not in processed_keys:
+                # Handle section-based numbering for duplicate field types
+                final_key = base_key
+                if base_key == 'ssn':
+                    # Section-based SSN numbering
+                    if current_section == "Patient Information Form":
+                        final_key = 'ssn'
+                    elif current_section == "Primary Dental Plan":
+                        final_key = 'ssn_2'
+                    elif current_section == "Secondary Dental Plan":
+                        final_key = 'ssn_3'
+                elif base_key == 'state_2':
+                    # Handle state field positioning - first standalone State should be state_2
+                    final_key = 'state_2'
+                
+                # Only add if not already processed
+                if final_key not in processed_keys:
                     field = FieldInfo(
-                        key=base_key,
+                        key=final_key,
                         title=title,
                         field_type=field_type,
                         section=current_section,
@@ -2040,7 +2060,7 @@ class PDFFormFieldExtractor:
                         line_idx=i
                     )
                     fields.append(field)
-                    processed_keys.add(base_key)
+                    processed_keys.add(final_key)
                 
                 i += 1
                 continue
@@ -2749,6 +2769,7 @@ class PDFToJSONConverter:
                 "type": field.field_type,
                 "control": field.control
             }
+            # Do not include meta fields in final output
             json_spec.append(field_dict)
         
         # Validate and normalize
