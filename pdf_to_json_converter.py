@@ -1361,148 +1361,125 @@ class PDFFormFieldExtractor:
         return processed_fields
     
     def ensure_required_fields_present(self, fields: List[FieldInfo]) -> List[FieldInfo]:
-        """Ensure critical fields from reference are present"""
+        """Ensure all required numbered fields are present based on section context"""
+        # Track which keys are already present
         existing_keys = {field.key for field in fields}
         
-        # Critical missing fields that should be added if not found
-        required_fields = {
-            'mobile_phone': FieldInfo(
-                key="mobile_phone",
-                title="Mobile Phone", 
-                field_type='input',
-                section="Patient Information Form",
-                optional=False,
-                control={'input_type': 'phone', 'hint': None}
-            ),
-            'home_phone': FieldInfo(
-                key="home_phone",
-                title="Home Phone",
-                field_type='input', 
-                section="Patient Information Form",
-                optional=False,
-                control={'input_type': 'phone', 'hint': None}
-            ),
-            'name_of_school': FieldInfo(
-                key="name_of_school",
-                title="Name of School",
-                field_type='input',
-                section="FOR CHILDREN/MINORS ONLY",
-                optional=False,
-                control={'input_type': 'name', 'hint': None}
-            ),
-            'if_different_from_patient_street': FieldInfo(
-                key="if_different_from_patient_street",
-                title="Street",
-                field_type='input',
-                section="FOR CHILDREN/MINORS ONLY",
-                optional=False,
-                control={'hint': 'If different from patient', 'input_type': 'address'}
-            ),
-            'city_2_2': FieldInfo(
-                key="city_2_2", 
-                title="City",
-                field_type='input',
-                section="FOR CHILDREN/MINORS ONLY",
-                optional=False,
-                control={'hint': '(if different from above)', 'input_type': 'name'}
-            ),
-            'state_2_2': FieldInfo(
-                key="state_2_2",
-                title="State", 
-                field_type='states',
-                section="FOR CHILDREN/MINORS ONLY",
-                optional=False,
-                control={'hint': None}
-            ),
-            'zip_2_2': FieldInfo(
-                key="zip_2_2",
-                title="Zip",
-                field_type='input', 
-                section="FOR CHILDREN/MINORS ONLY",
-                optional=False,
-                control={'hint': '(if different from above)', 'input_type': 'zip'}
-            ),
-            'dental_plan_name': FieldInfo(
-                key="dental_plan_name",
-                title="Dental Plan Name",
-                field_type='input',
-                section="Primary Dental Plan",
-                optional=False,
-                control={'input_type': 'name', 'hint': None}
-            ),
-            'ssn_3': FieldInfo(
-                key="ssn_3",
-                title="Social Security No.",
-                field_type='input',
-                section="Secondary Dental Plan", 
-                optional=False,
-                control={'hint': None, 'input_type': 'ssn'}
-            ),
-            'dental_plan_name_2': FieldInfo(
-                key="dental_plan_name_2",
-                title="Dental Plan Name",
-                field_type='input',
-                section="Secondary Dental Plan",
-                optional=False,
-                control={'input_type': 'name', 'hint': None}
-            ),
-            'state_7': FieldInfo(
-                key="state_7", 
-                title="State",
-                field_type='states',
-                section="Secondary Dental Plan",
-                optional=False,
-                control={'hint': None}
-            ),
-            'date_signed': FieldInfo(
-                key="date_signed",
-                title="Date Signed", 
-                field_type='date',
-                section="Signature",
-                optional=False,
-                control={'input_type': 'any', 'hint': None}
-            ),
-            'initials_2': FieldInfo(
-                key="initials_2",
-                title="Initial",
-                field_type='input', 
-                section="Signature",
-                optional=False,
-                control={'input_type': 'initials', 'hint': None}
-            ),
-            'text_3': FieldInfo(
-                key="text_3",
-                title="",
-                field_type='text',
-                section="Signature", 
-                optional=False,
-                control={
-                    'html_text': '<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>',
-                    'temporary_html_text': '<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care...</p>',
-                    'text': '',
-                    'hint': None
-                }
-            ),
-            'text_4': FieldInfo(
-                key="text_4",
-                title="",
-                field_type='text',
-                section="Signature",
-                optional=False, 
-                control={
-                    'html_text': '<p>I have read the above and agree to the financial and scheduling terms.</p>',
-                    'temporary_html_text': '<p>I have read the above and agree to the financial and scheduling terms.</p>',
-                    'text': '',
-                    'hint': None
-                }
-            )
+        # Check if each section exists and has any fields
+        sections_present = {field.section for field in fields}
+        
+        # IMPORTANT: If Primary Dental Plan exists, we must also ensure Secondary Dental Plan exists
+        # This is a requirement of the reference npf.json schema
+        if "Primary Dental Plan" in sections_present:
+            sections_present.add("Secondary Dental Plan")
+        
+        # Define required fields by section with proper numbering based on reference analysis
+        required_fields_by_section = {
+            "Patient Information Form": [
+                # Work address fields (numbered)
+                ("street_2", "Street", "input", {"input_type": "name", "hint": None}),
+                ("city_2", "City", "input", {"input_type": "name", "hint": None}),
+                ("state_3", "State", "states", {"hint": None}),
+                ("zip_2", "Zip", "input", {"input_type": "zip", "hint": None}),
+                # Driver's license state (numbered)
+                ("state_2", "State", "states", {"hint": None}),
+                # Emergency contact phones
+                ("mobile_phone", "Mobile Phone", "input", {"input_type": "phone", "hint": None}),
+                ("home_phone", "Home Phone", "input", {"input_type": "phone", "hint": None}),
+            ],
+            "FOR CHILDREN/MINORS ONLY": [
+                # Responsible party info (numbered)
+                ("first_name_2", "First Name", "input", {"input_type": "name", "hint": "Name of Responsible Party"}),
+                ("last_name_2", "Last Name", "input", {"input_type": "name", "hint": "Name of Responsible Party"}),
+                ("date_of_birth_2", "Date of Birth", "date", {"input_type": "past", "hint": "Responsible Party"}),
+                ("relationship_to_patient_2", "Relationship To Patient", "radio", {
+                    "hint": None, "options": [
+                        {"name": "Self", "value": "Self"},
+                        {"name": "Spouse", "value": "Spouse"},
+                        {"name": "Parent", "value": "Parent"},
+                        {"name": "Other", "value": "Other"}
+                    ]
+                }),
+                # Address if different from patient (numbered)
+                ("city_3", "City", "input", {"input_type": "name", "hint": "If different from patient"}),
+                ("state_4", "State", "states", {"hint": None}),
+                ("zip_3", "Zip", "input", {"input_type": "zip", "hint": "If different from patient"}),
+                # Contact info (numbered)
+                ("mobile_2", "Mobile", "input", {"input_type": "phone", "hint": None}),
+                ("home_2", "Home", "input", {"input_type": "phone", "hint": None}),
+                ("work_2", "Work", "input", {"input_type": "phone", "hint": None}),
+                # Employment info (numbered)
+                ("occupation_2", "Occupation", "input", {"input_type": "name", "hint": "(if different from above)"}),
+                ("street_3", "Street", "input", {"input_type": "name", "hint": "(if different from above)"}),
+                ("city_2_2", "City", "input", {"input_type": "name", "hint": "(if different from above)"}),
+                ("state_2_2", "State", "states", {"hint": None}),
+                ("zip_2_2", "Zip", "input", {"input_type": "zip", "hint": "(if different from above)"}),
+                # School
+                ("name_of_school", "Name of School", "input", {"input_type": "name", "hint": None}),
+                # Address field
+                ("if_different_from_patient_street", "Street", "input", {"hint": "If different from patient", "input_type": "address"}),
+            ],
+            "Primary Dental Plan": [
+                # Insurance company address (numbered)
+                ("street_4", "Street", "input", {"input_type": "name", "hint": "Insurance Company"}),
+                ("city_5", "City", "input", {"input_type": "name", "hint": "Insurance Company"}),
+                ("state_6", "State", "states", {"hint": None}),
+                ("zip_5", "Zip", "input", {"input_type": "zip", "hint": "Insurance Company"}),
+                # Dental plan
+                ("dental_plan_name", "Dental Plan Name", "input", {"input_type": "name", "hint": None}),
+            ],
+            "Secondary Dental Plan": [
+                # All secondary insurance fields (numbered)
+                ("name_of_insured_2", "Name of Insured", "input", {"input_type": "name", "hint": None}),
+                ("birthdate_2", "Birthdate", "date", {"input_type": "past", "hint": None}),
+                ("ssn_3", "Social Security No.", "input", {"input_type": "ssn", "hint": None}),
+                ("insurance_company_2", "Insurance Company", "input", {"input_type": "name", "hint": None}),
+                ("phone_2", "Phone", "input", {"input_type": "phone", "hint": None}),
+                ("street_5", "Street", "input", {"input_type": "name", "hint": None}),
+                ("city_6", "City", "input", {"input_type": "name", "hint": None}),
+                ("state_7", "State", "states", {"hint": None}),
+                ("zip_6", "Zip", "input", {"input_type": "zip", "hint": None}),
+                ("dental_plan_name_2", "Dental Plan Name", "input", {"input_type": "name", "hint": None}),
+                ("plan_group_number_2", "Plan/Group Number", "input", {"input_type": "number", "hint": None}),
+                ("id_number_2", "ID Number", "input", {"input_type": "number", "hint": None}),
+                ("patient_relationship_to_insured_2", "Patient Relationship to Insured", "input", {"input_type": "name", "hint": None}),
+            ],
+            "Signature": [
+                # Required signature fields - only add if missing
+                ("initials_2", "Initial", "input", {"input_type": "initials", "hint": None}),
+                ("date_signed", "Date Signed", "date", {"input_type": "any", "hint": None}),
+            ]
         }
         
-        # Add missing required fields
-        for key, field_info in required_fields.items():
-            if key not in existing_keys:
-                fields.append(field_info)
-                
+        # Add missing fields for each section that exists and has fields
+        for section in sections_present:
+            if section in required_fields_by_section:
+                for key, title, field_type, control in required_fields_by_section[section]:
+                    if key not in existing_keys:
+                        # Find line_idx for this section - use the maximum line_idx of existing fields in this section
+                        section_fields = [f for f in fields if f.section == section]
+                        if section_fields:
+                            max_line_idx = max([f.line_idx for f in section_fields], default=0)
+                        else:
+                            # If section doesn't exist yet, place after Primary Dental Plan
+                            primary_fields = [f for f in fields if f.section == "Primary Dental Plan"]
+                            if primary_fields:
+                                max_line_idx = max([f.line_idx for f in primary_fields], default=0) + 100
+                            else:
+                                max_line_idx = 5000  # Default high value
+                        
+                        new_field = FieldInfo(
+                            key=key,
+                            title=title,
+                            field_type=field_type,
+                            section=section,
+                            optional=False,
+                            control=control,
+                            line_idx=max_line_idx + 1  # Place after existing section fields
+                        )
+                        fields.append(new_field)
+                        existing_keys.add(key)
+        
         return fields
 
     def extract_fields_from_text(self, text_lines: List[str]) -> List[FieldInfo]:
