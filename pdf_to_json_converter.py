@@ -1833,55 +1833,73 @@ class DocumentFormFieldExtractor:
         
         Based on placeholders_info.txt guidelines, replaces commonly recognized patterns
         with appropriate Modento placeholders for forms and consents.
+        
+        Current patterns implemented:
+        1. Provider authorization: "Dr. ___" → "Dr. {{provider}}"
+        2. Tooth/site specification: "Tooth No(s). ___" → "Tooth No(s). {{tooth_or_site}}"
+        
+        Handles multiple underscore formats:
+        - Raw underscores: ________
+        - Escaped underscores: \\_\\_\\_\\_\\_\\_\\_\\_
+        - OCR-removed patterns: "Dr. and/or his/her associates"
+        
+        Args:
+            html_text: The HTML content to process
+            
+        Returns:
+            HTML text with appropriate placeholders applied
         """
         # According to placeholders_info.txt, placeholders should be used in static text
         # that patients read but don't type into, such as consent narratives
         
-        # Pattern 1: Doctor/Provider authorization patterns
-        # Handle cases where underscores are preserved and where they're removed by OCR
-        provider_patterns = [
-            # Original patterns with underscores (from no_ocr_parsing)
-            (r'Dr\.\s*_{10,}', 'Dr. {{provider}}'),
-            (r'authorize\s+Dr\.\s*_{10,}', 'authorize Dr. {{provider}}'),
-            (r'Dr\.\s*_{5,}', 'Dr. {{provider}}'),
-            (r'authorize\s+Dr\.\s*_{5,}', 'authorize Dr. {{provider}}'),
+        # Pattern definitions - easily extensible for future placeholder types
+        placeholder_patterns = {
+            'provider': [
+                # Provider authorization patterns for doctor signatures
+                # Original patterns with underscores (from no_ocr_parsing)
+                (r'Dr\.\s*_{10,}', 'Dr. {{provider}}'),
+                (r'authorize\s+Dr\.\s*_{10,}', 'authorize Dr. {{provider}}'),
+                (r'Dr\.\s*_{5,}', 'Dr. {{provider}}'),
+                (r'authorize\s+Dr\.\s*_{5,}', 'authorize Dr. {{provider}}'),
+                
+                # Handle escaped underscores from HTML/markdown processing
+                (r'Dr\.\s*\\_+', 'Dr. {{provider}}'),
+                (r'authorize\s+Dr\.\s*\\_+', 'authorize Dr. {{provider}}'),
+                
+                # OCR-processed patterns where underscores are removed
+                (r'Dr\.\s+and/or\s+his/her\s+associates', 'Dr. {{provider}} and/or his/her associates'),
+                (r'authorize\s+Dr\.\s+and/or\s+his/her\s+associates', 'authorize Dr. {{provider}} and/or his/her associates'),
+                (r'consent\s+to\s+allow\s+and\s+authorize\s+Dr\.\s+and/or', 'consent to allow and authorize Dr. {{provider}} and/or'),
+            ],
             
-            # Handle escaped underscores from HTML/markdown processing
-            (r'Dr\.\s*\\_+', 'Dr. {{provider}}'),
-            (r'authorize\s+Dr\.\s*\\_+', 'authorize Dr. {{provider}}'),
+            'tooth_or_site': [
+                # Tooth number/site patterns for dental procedures
+                # Original patterns with underscores
+                (r'Tooth No\(s\)\.\s*_{10,}', 'Tooth No(s). {{tooth_or_site}}'),
+                (r'Tooth No\.\s*_{10,}', 'Tooth No. {{tooth_or_site}}'),
+                (r'Tooth Number\(s\)\.\s*_{10,}', 'Tooth Number(s). {{tooth_or_site}}'),
+                (r'Tooth\s+No\(s\)\.\s*_{5,}', 'Tooth No(s). {{tooth_or_site}}'),
+                (r'Tooth\s*#\.\s*_{5,}', 'Tooth #. {{tooth_or_site}}'),
+                
+                # Handle escaped underscores from HTML/markdown processing
+                (r'Tooth No\(s\)\.\s*\\_+', 'Tooth No(s). {{tooth_or_site}}'),
+                (r'Tooth No\.\s*\\_+', 'Tooth No. {{tooth_or_site}}'),
+                (r'Tooth Number\(s\)\.\s*\\_+', 'Tooth Number(s). {{tooth_or_site}}'),
+                (r'Tooth\s+No\(s\)\.\s*\\_+', 'Tooth No(s). {{tooth_or_site}}'),
+                (r'Tooth\s*#\.\s*\\_+', 'Tooth #. {{tooth_or_site}}'),
+                
+                # OCR-processed patterns where underscores are removed
+                (r'Tooth No\(s\)\.\s*(?=<br>|$|\s*$)', 'Tooth No(s). {{tooth_or_site}}'),
+                (r'Tooth No\.\s*(?=<br>|$|\s*$)', 'Tooth No. {{tooth_or_site}}'),
+                (r'Tooth Number\(s\)\.\s*(?=<br>|$|\s*$)', 'Tooth Number(s). {{tooth_or_site}}'),
+            ],
             
-            # OCR-processed patterns where underscores are removed
-            # Look for "Dr. " followed by " and/or his/her associates" or similar
-            (r'Dr\.\s+and/or\s+his/her\s+associates', 'Dr. {{provider}} and/or his/her associates'),
-            (r'authorize\s+Dr\.\s+and/or\s+his/her\s+associates', 'authorize Dr. {{provider}} and/or his/her associates'),
-            
-            # More specific patterns for authorization context
-            (r'consent\s+to\s+allow\s+and\s+authorize\s+Dr\.\s+and/or', 'consent to allow and authorize Dr. {{provider}} and/or'),
-        ]
-        
-        # Pattern 2: Tooth number/site patterns  
-        # Handle both underscore and no-underscore versions
-        tooth_patterns = [
-            # Original patterns with underscores
-            (r'Tooth No\(s\)\.\s*_{10,}', 'Tooth No(s). {{tooth_or_site}}'),
-            (r'Tooth No\.\s*_{10,}', 'Tooth No. {{tooth_or_site}}'),
-            (r'Tooth Number\(s\)\.\s*_{10,}', 'Tooth Number(s). {{tooth_or_site}}'),
-            (r'Tooth\s+No\(s\)\.\s*_{5,}', 'Tooth No(s). {{tooth_or_site}}'),
-            (r'Tooth\s*#\.\s*_{5,}', 'Tooth #. {{tooth_or_site}}'),
-            
-            # Handle escaped underscores from HTML/markdown processing
-            (r'Tooth No\(s\)\.\s*\\_+', 'Tooth No(s). {{tooth_or_site}}'),
-            (r'Tooth No\.\s*\\_+', 'Tooth No. {{tooth_or_site}}'),
-            (r'Tooth Number\(s\)\.\s*\\_+', 'Tooth Number(s). {{tooth_or_site}}'),
-            (r'Tooth\s+No\(s\)\.\s*\\_+', 'Tooth No(s). {{tooth_or_site}}'),
-            (r'Tooth\s*#\.\s*\\_+', 'Tooth #. {{tooth_or_site}}'),
-            
-            # OCR-processed patterns where underscores are removed
-            # Look for "Tooth No(s). " at end of line or followed by whitespace/line break
-            (r'Tooth No\(s\)\.\s*(?=<br>|$|\s*$)', 'Tooth No(s). {{tooth_or_site}}'),
-            (r'Tooth No\.\s*(?=<br>|$|\s*$)', 'Tooth No. {{tooth_or_site}}'),
-            (r'Tooth Number\(s\)\.\s*(?=<br>|$|\s*$)', 'Tooth Number(s). {{tooth_or_site}}'),
-        ]
+            # Future placeholder patterns can be added here:
+            # 'patient_name': [...],
+            # 'patient_dob': [...],
+            # 'practice_name': [...],
+            # 'today_date': [...],
+        }
         
         # Pattern 3: Patient identity placeholders (for static text, not input fields)
         # Only apply these in narrative/descriptive text, not in form field contexts
@@ -1890,17 +1908,13 @@ class DocumentFormFieldExtractor:
             # Be conservative and only apply in clear consent narrative contexts
         ]
         
-        # Apply provider patterns
-        for pattern, replacement in provider_patterns:
-            html_text = re.sub(pattern, replacement, html_text, flags=re.IGNORECASE)
+        # Apply all placeholder patterns
+        for placeholder_type, patterns in placeholder_patterns.items():
+            for pattern, replacement in patterns:
+                html_text = re.sub(pattern, replacement, html_text, flags=re.IGNORECASE)
         
-        # Apply tooth/site patterns  
-        for pattern, replacement in tooth_patterns:
-            html_text = re.sub(pattern, replacement, html_text, flags=re.IGNORECASE)
-        
-        # Apply patient patterns only in narrative contexts (not near form fields)
-        # Skip patient patterns for now to avoid over-replacement
-        # These would be added later based on specific form requirements
+        # Patient identity patterns would be added here in the future if needed
+        # These require more context-aware processing to avoid replacing input field labels
         
         return html_text
     
