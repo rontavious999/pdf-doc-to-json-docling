@@ -2052,7 +2052,7 @@ class DocumentFormFieldExtractor:
             if len(question) >= 5:  # Must be substantial question
                 # Extract options from the line
                 options = []
-                option_parts = re.split(rf'[{self.CHECKBOX_SYMBOLS}]', line)[1:]  # Skip the question part
+                option_parts = re.split(rf'[{self.CHECKBOX_CHAR_CLASS}]', line)[1:]  # Skip the question part
                 for part in option_parts:
                     option_text = part.strip()
                     if option_text and len(option_text) > 0:
@@ -3517,11 +3517,25 @@ class DocumentToJSONConverter:
         # Convert to Modento format
         json_spec = []
         for field in fields:
+            # Normalize control structure to match reference order (hint first, then input_type)
+            normalized_control = {}
+            if field.control:
+                # Add hint first if it exists
+                if 'hint' in field.control:
+                    normalized_control['hint'] = field.control['hint']
+                # Add input_type second if it exists  
+                if 'input_type' in field.control:
+                    normalized_control['input_type'] = field.control['input_type']
+                # Add any other fields in original order
+                for key, value in field.control.items():
+                    if key not in ['hint', 'input_type']:
+                        normalized_control[key] = value
+            
             field_dict = {
                 "key": field.key,
                 "type": field.field_type,  # Put type after key to match reference order
                 "title": field.title,
-                "control": field.control,
+                "control": normalized_control,
                 "section": field.section
             }
             # Only add optional field for specific types that have it in reference
