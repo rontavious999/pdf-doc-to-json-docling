@@ -492,9 +492,12 @@ class DocumentFormFieldExtractor:
         # RECOMMENDATION 4: Records release form classification patterns
         self.form_classification_patterns = {
             'records_release': [
-                re.compile(r'release\s*of\s*records', re.IGNORECASE),
-                re.compile(r'medical\s*records?\s*release', re.IGNORECASE),
+                re.compile(r'release\s*of\s*(?:patient\s*)?records', re.IGNORECASE),
+                re.compile(r'(?:medical|dental|patient)\s*records?\s*release', re.IGNORECASE),
                 re.compile(r'authorization\s*to\s*release', re.IGNORECASE),
+                re.compile(r'consent\s*for\s*release', re.IGNORECASE),
+                re.compile(r'section\s*a:\s*patient\s*information', re.IGNORECASE),
+                re.compile(r'select\s*information\s*to\s*be\s*released', re.IGNORECASE),
             ],
             'structured_consent': [
                 re.compile(r'informed\s*consent', re.IGNORECASE),
@@ -1732,72 +1735,84 @@ class DocumentFormFieldExtractor:
         return fields
     
     def create_comprehensive_consent_html(self, text_lines: List[str]) -> str:
-        """Create comprehensive consent HTML similar to reference format with improved length management"""
-        # Filter out very short lines and combine content
+        """Create comprehensive consent HTML with full content extraction for all forms"""
+        
+        # Get the title from the first line if it's a header
+        title = ""
+        content_start_idx = 0
+        
+        if text_lines and text_lines[0].startswith('##'):
+            title = text_lines[0].replace('##', '').strip()
+            content_start_idx = 1
+        
+        # Collect all content lines, preserving important information
         content_lines = []
-        for line in text_lines:
-            line = line.strip()
-            # Skip very short lines, headers marked with ##, and obvious field lines
-            if len(line) > 10 and not line.startswith('##') and not ('_' in line and any(word in line.lower() for word in ['signature', 'date'])):
+        for i in range(content_start_idx, len(text_lines)):
+            line = text_lines[i].strip()
+            # Skip empty lines but keep everything else - consent forms need ALL content
+            if line:
+                # Handle signature lines specially - extract just the signature part
+                if 'signature:' in line.lower() and '_' in line:
+                    # This is a signature line at the end, stop content collection here
+                    break
                 content_lines.append(line)
         
-        # Join content and create structured HTML
-        full_content = ' '.join(content_lines)
-        
-        # IMPORTANT: Do not truncate consent text as it contains legally required information
-        # that patients must see in full to provide proper informed consent.
-        # Any truncation could result in patients not seeing critical risk information,
-        # legal disclaimers, or other essential consent details.
-        
-        # Clean up the content
-        full_content = full_content.replace('##', '').strip()
-        
-        # Create the structured HTML similar to reference
+        # Create HTML structure based on content type
         html_parts = []
         
-        # Add title section
-        html_parts.append('<div style="text-align:center"><strong>Informed Consent for Crown And<br>Bridge Prosthetics</strong><br>')
+        # Add title with proper formatting
+        if title:
+            html_parts.append(f'<div style="text-align:center"><strong>{title}</strong><br>')
         
-        # Add main content with proper structure
-        # Break content into logical sections based on numbered items
-        sections = re.split(r'(\d+\.\s+[A-Z][^.]+)', full_content)
+        # Process content - handle both narrative and bulleted content
+        combined_content = []
+        i = 0
         
-        if sections:
-            # Add intro text
-            intro = sections[0] if sections else ""
-            if intro.strip():
-                html_parts.append(intro.strip() + '<br>')
+        while i < len(content_lines):
+            line = content_lines[i]
             
-            # Add numbered sections
-            for i in range(1, len(sections), 2):
-                if i + 1 < len(sections):
-                    section_title = sections[i].strip()
-                    section_content = sections[i + 1].strip()
-                    html_parts.append(f'{section_title}<br>')
-                    if section_content:
-                        html_parts.append(f'{section_content}<br>')
+            # Check if this is a bullet point
+            if line.startswith('- ') or '\uf0b7' in line:
+                # Start of bullet list - collect all bullets
+                bullets = []
+                while i < len(content_lines) and (content_lines[i].startswith('- ') or '\uf0b7' in content_lines[i]):
+                    bullet_line = content_lines[i]
+                    # Clean up bullet formatting
+                    clean_bullet = bullet_line.replace('- \uf0b7', '').replace('- ', '').replace('\uf0b7', '').strip()
+                    if clean_bullet:
+                        bullets.append(clean_bullet)
+                    i += 1
+                
+                # Add bullets as HTML list
+                if bullets:
+                    combined_content.append('<ul>')
+                    for bullet in bullets:
+                        combined_content.append(f'<li>{bullet}</li>')
+                    combined_content.append('</ul>')
+                continue
+            else:
+                # Regular paragraph content
+                combined_content.append(line + '<br>')
+                i += 1
         
-        # Add footer content about responsibilities and consent
-        footer_patterns = [
-            r'(It is a patient\'s responsibility.*?additional fee may be assessed\.)',
-            r'(I have been given the opportunity.*?treatment\.)',
-            r'(Tooth No\(s\)\..*)'
-        ]
+        # Join all content
+        html_content = ''.join(combined_content)
         
-        for pattern in footer_patterns:
-            match = re.search(pattern, full_content, re.DOTALL | re.IGNORECASE)
-            if match:
-                footer_text = match.group(1).strip()
-                if 'informed consent' in footer_text.lower():
-                    html_parts.append('<strong>Informed Consent</strong><br>')
-                    # Extract the consent text after "Informed Consent"
-                    consent_part = re.sub(r'.*?informed consent\s*', '', footer_text, flags=re.IGNORECASE).strip()
-                    if consent_part:
-                        html_parts.append(consent_part + '<br>')
-                else:
-                    html_parts.append(footer_text + '<br>')
+        # Add to HTML parts
+        html_parts.append(html_content)
         
-        # Add placeholder fields for customization
+        # Close the main div if we opened one
+        if title:
+            html_parts.append('</div>')
+        
+        # Create final HTML
+        final_html = ''.join(html_parts)
+        
+        # Clean up any double spaces or formatting issues
+        final_html = re.sub(r'<br>\s*<br>', '<br>', final_html)
+        final_html = re.sub(r'\s+', ' ', final_html)
+        
+        return final_html
         html_parts.append('Dr. {{provider}} and/or his/her associates to<br>')
         html_parts.append('render any treatment necessary and/or advisable to my dental conditions, including the prescribing and<br>')
         html_parts.append('administering of any medications and/or anesthetics deemed necessary to my treatment.<br>')
@@ -1880,8 +1895,33 @@ class DocumentFormFieldExtractor:
             
             processed_fields.append(field)
         
-        # Basic field validation and cleanup - ensure all controls have hint field
+        # Second pass: Handle duplicate signature fields - keep only one signature field
+        final_fields = []
+        signature_fields = []
+        
+        # First collect all signature-related fields
         for field in processed_fields:
+            if field.field_type == 'signature' or (field.field_type == 'input' and field.key == 'signature'):
+                signature_fields.append(field)
+            else:
+                final_fields.append(field)
+        
+        # Add only one signature field, preferring type 'signature' over 'input'
+        if signature_fields:
+            # Sort to put signature type first, then input type
+            signature_fields.sort(key=lambda f: (f.field_type != 'signature', f.line_idx))
+            chosen_signature = signature_fields[0]
+            
+            # Ensure it's the right type and has the right control
+            chosen_signature.field_type = 'signature'
+            chosen_signature.key = 'signature'
+            chosen_signature.title = 'Signature'
+            chosen_signature.control = {'hint': None}
+            
+            final_fields.append(chosen_signature)
+        
+        # Basic field validation and cleanup - ensure all controls have hint field
+        for field in final_fields:
             # Ensure hint field is always present for consistency with reference
             if 'hint' not in field.control:
                 field.control['hint'] = None
@@ -1906,7 +1946,7 @@ class DocumentFormFieldExtractor:
             
             # Boolean values in radio options should remain as booleans (per reference)
         
-        return processed_fields
+        return final_fields
     
     def ensure_required_fields_present(self, fields: List[FieldInfo]) -> List[FieldInfo]:
         """Ensure all required numbered fields are present based on section context"""
@@ -2070,140 +2110,157 @@ class DocumentFormFieldExtractor:
         return fields
     
     def extract_consent_form_fields_enhanced(self, text_lines: List[str], form_type: str) -> List[FieldInfo]:
-        """RECOMMENDATION 2 & 3: Enhanced consent form extraction with specific field patterns"""
+        """Enhanced consent form extraction - creates proper form_1 field with full content"""
         fields = []
-        current_section = "Consent Information"
-        processed_keys = set()
         
-        i = 0
-        while i < len(text_lines):
-            line = text_lines[i].strip()
+        # Create main consent form field with full content (like reference files)
+        consent_html = self.create_comprehensive_consent_html(text_lines)
+        
+        # Always create the form_1 field for consent forms
+        fields.append(FieldInfo(
+            key="form_1",
+            title="",
+            field_type="text",
+            section="Form",
+            optional=False,
+            control={
+                "html_text": consent_html,
+                "hint": None
+            },
+            line_idx=0
+        ))
+        
+        # Extract signature and related fields from the text
+        current_section = "Signature"
+        processed_keys = {"form_1"}  # Track what we've already added
+        
+        for i, line in enumerate(text_lines):
+            line = line.strip()
             if not line:
-                i += 1
                 continue
             
-            # Update section detection
-            detected_section = self.detect_section(line, text_lines[max(0, i-5):i+15], current_section)
-            if detected_section != current_section:
-                current_section = detected_section
+            # Look for signature-related fields
+            line_lower = line.lower()
             
-            # RECOMMENDATION 2: Enhanced consent-specific field detection
-            consent_field_detected = False
-            for pattern_name, pattern in self.consent_field_patterns.items():
-                if pattern.search(line):
-                    field_type = 'input'
-                    control = {'input_type': 'name', 'hint': None}
-                    title = line.strip().rstrip(':')
-                    
-                    if pattern_name in ['date_of_birth', 'consent_date']:
-                        field_type = 'date'
-                        control = {
-                            'input_type': 'past' if 'birth' in line.lower() else 'any', 
-                            'hint': None
-                        }
-                    
-                    key = ModentoSchemaValidator.slugify(title)
-                    if key not in processed_keys:
-                        field = FieldInfo(
-                            key=key,
-                            title=title,
-                            field_type=field_type,
-                            section=current_section,
-                            optional=False,
-                            control=control,
-                            line_idx=i
-                        )
-                        fields.append(field)
-                        processed_keys.add(key)
-                        consent_field_detected = True
-                        break
-            
-            if consent_field_detected:
-                i += 1
-                continue
-            
-            # RECOMMENDATION 3: Enhanced risk section detection and processing
-            if any(keyword in line.lower() for keyword in ['risks', 'side effects', 'complications', 'possible']):
-                risk_bullets, next_i = self.extract_risk_section_bullets(text_lines, i + 1)
-                if risk_bullets:
-                    # Create consolidated risk section with proper HTML formatting
-                    risk_html = "<h4>Risks and Possible Complications:</h4><ul>"
-                    for bullet in risk_bullets:
-                        risk_html += f"<li>{bullet}</li>"
-                    risk_html += "</ul>"
-                    
-                    risk_field = FieldInfo(
-                        key="treatment_risks",
-                        title="Risks and Possible Complications",
-                        field_type="text",
-                        section="Consent Information",
-                        optional=False,
-                        control={
-                            "html_text": risk_html,
-                            "temporary_html_text": risk_html,
-                            "text": ""
-                        },
-                        line_idx=i
-                    )
-                    fields.append(risk_field)
-                    i = next_i
-                    continue
-            
-            # Continue with standard field extraction
-            # Fall back to universal detection for other patterns
-            inline_fields = self.parse_inline_fields(line)
-            for field_name, full_line in inline_fields:
-                key = ModentoSchemaValidator.slugify(field_name)
+            # Detect printed name fields
+            if any(pattern in line_lower for pattern in ['printed name', 'print name', 'patient name']):
+                # Extract the title before any underscores
+                title = re.sub(r'[_:\s]+.*', '', line).strip()
+                if not title:
+                    title = "Printed name if signed on behalf of the patient"
+                
+                key = ModentoSchemaValidator.slugify(title)
                 if key not in processed_keys:
-                    field_type = self.detect_field_type(field_name)
-                    control = {}
-                    
-                    if field_type == 'input':
-                        input_type = self.detect_input_type(field_name)
-                        control = {'input_type': input_type, 'hint': None}
-                    elif field_type == 'date':
-                        control = {'input_type': 'any', 'hint': None}
-                    
-                    field = FieldInfo(
+                    fields.append(FieldInfo(
                         key=key,
-                        title=field_name,
-                        field_type=field_type,
+                        title=title,
+                        field_type="input",
                         section=current_section,
                         optional=False,
-                        control=control,
-                        line_idx=i
-                    )
-                    fields.append(field)
+                        control={"hint": None, "input_type": None},
+                        line_idx=i + 100  # Put after form content
+                    ))
                     processed_keys.add(key)
             
-            i += 1
+            # Detect relationship fields
+            elif any(pattern in line_lower for pattern in ['relationship', 'guardian', 'parent']):
+                title = re.sub(r'[_:\s]+.*', '', line).strip()
+                if not title:
+                    title = "Relationship"
+                
+                key = ModentoSchemaValidator.slugify(title)
+                if key not in processed_keys:
+                    fields.append(FieldInfo(
+                        key=key,
+                        title=title,
+                        field_type="input",
+                        section=current_section,
+                        optional=False,
+                        control={"hint": None, "input_type": "name"},
+                        line_idx=i + 90  # Put before signature
+                    ))
+                    processed_keys.add(key)
+            
+            # Detect signature lines
+            elif 'signature:' in line_lower and '_' in line:
+                # This indicates a signature field
+                if 'signature' not in processed_keys:
+                    fields.append(FieldInfo(
+                        key="signature",
+                        title="Signature",
+                        field_type="signature",
+                        section=current_section,
+                        optional=False,
+                        control={"hint": None, "input_type": None},
+                        line_idx=i + 110
+                    ))
+                    processed_keys.add('signature')
+                
+                # Also check for date in the same line
+                if 'date:' in line_lower and 'date_signed' not in processed_keys:
+                    fields.append(FieldInfo(
+                        key="date_signed",
+                        title="Date Signed",
+                        field_type="date",
+                        section=current_section,
+                        optional=False,
+                        control={"hint": None, "input_type": "any"},
+                        line_idx=i + 120
+                    ))
+                    processed_keys.add('date_signed')
+        
+        # Ensure we always have signature and date fields for consent forms
+        if 'signature' not in processed_keys:
+            fields.append(FieldInfo(
+                key="signature",
+                title="Signature",
+                field_type="signature",
+                section="Signature",
+                optional=False,
+                control={"hint": None, "input_type": None},
+                line_idx=200
+            ))
+        
+        if 'date_signed' not in processed_keys:
+            fields.append(FieldInfo(
+                key="date_signed",
+                title="Date Signed",
+                field_type="date",
+                section="Signature",
+                optional=False,
+                control={"hint": None, "input_type": "any"},
+                line_idx=210
+            ))
         
         return fields
     
     def extract_records_release_fields(self, text_lines: List[str]) -> List[FieldInfo]:
-        """RECOMMENDATION 4: Specialized extraction for records release forms"""
+        """Extract fields for records release forms as structured forms with checkboxes"""
         fields = []
-        current_section = "Records Release"
+        current_section = "Patient Information"
         processed_keys = set()
         
-        # Common fields in records release forms
-        standard_fields = [
+        # Section A: Patient Information fields
+        patient_fields = [
             {"key": "patient_name", "title": "Patient Name", "type": "input", "input_type": "name"},
             {"key": "date_of_birth", "title": "Date of Birth", "type": "date", "input_type": "past"},
-            {"key": "records_requested", "title": "Records Requested", "type": "input", "input_type": "name"},
-            {"key": "release_to", "title": "Release Records To", "type": "input", "input_type": "name"},
-            {"key": "purpose", "title": "Purpose of Release", "type": "input", "input_type": "name"},
-            {"key": "authorization_signature", "title": "Patient/Guardian Signature", "type": "signature"},
-            {"key": "authorization_date", "title": "Date", "type": "date", "input_type": "any"}
+            {"key": "street", "title": "Street", "type": "input", "input_type": "address"},
+            {"key": "city", "title": "City", "type": "input", "input_type": "name"},
+            {"key": "state", "title": "State", "type": "states"},
+            {"key": "zip", "title": "Zip", "type": "input", "input_type": "zip"},
+            {"key": "mobile_phone", "title": "Mobile Phone", "type": "input", "input_type": "phone"},
+            {"key": "home_phone", "title": "Home Phone", "type": "input", "input_type": "phone"},
         ]
         
-        # Add standard fields
-        for i, field_info in enumerate(standard_fields):
+        # Add patient information fields
+        for i, field_info in enumerate(patient_fields):
             control = {}
             if field_info["type"] == "input":
                 control = {"input_type": field_info["input_type"], "hint": None}
             elif field_info["type"] == "date":
                 control = {"input_type": field_info["input_type"], "hint": None}
+            elif field_info["type"] == "states":
+                control = {}
             
             field = FieldInfo(
                 key=field_info["key"],
@@ -2215,6 +2272,148 @@ class DocumentFormFieldExtractor:
                 line_idx=i
             )
             fields.append(field)
+            processed_keys.add(field_info["key"])
+        
+        # Section B: Information to be Released (checkboxes)
+        release_section = "Information to be Released"
+        
+        # Main checkbox options for record types
+        fields.append(FieldInfo(
+            key="complete_records",
+            title="Complete records",
+            field_type="checkbox",
+            section=release_section,
+            optional=False,
+            control={
+                "options": [{"name": "Complete records", "value": True}],
+                "hint": None
+            },
+            line_idx=100
+        ))
+        
+        # Limited records with sub-options
+        fields.append(FieldInfo(
+            key="limited_records_options",
+            title="Limited records",
+            field_type="checkbox",
+            section=release_section,
+            optional=False,
+            control={
+                "options": [
+                    {"name": "Radiographs/Images", "value": "radiographs"},
+                    {"name": "Reports", "value": "reports"},
+                    {"name": "Other", "value": "other"}
+                ],
+                "hint": None
+            },
+            line_idx=101
+        ))
+        
+        # Other specify field
+        fields.append(FieldInfo(
+            key="other_specify",
+            title="Other (specify)",
+            field_type="input",
+            section=release_section,
+            optional=True,
+            control={"input_type": "name", "hint": None},
+            line_idx=102
+        ))
+        
+        # Section C: Release To 
+        recipient_section = "Release To"
+        recipient_fields = [
+            {"key": "recipient_name", "title": "Name", "type": "input", "input_type": "name"},
+            {"key": "recipient_address", "title": "Address", "type": "input", "input_type": "address"},
+            {"key": "recipient_phone", "title": "Phone", "type": "input", "input_type": "phone"},
+            {"key": "recipient_fax", "title": "Fax", "type": "input", "input_type": "phone"},
+        ]
+        
+        for i, field_info in enumerate(recipient_fields):
+            field = FieldInfo(
+                key=field_info["key"],
+                title=field_info["title"],
+                field_type=field_info["type"],
+                section=recipient_section,
+                optional=False,
+                control={"input_type": field_info["input_type"], "hint": None},
+                line_idx=200 + i
+            )
+            fields.append(field)
+            processed_keys.add(field_info["key"])
+        
+        # Section D: Signature
+        signature_section = "Signature"
+        fields.append(FieldInfo(
+            key="patient_employed_by",
+            title="Patient Employed By", 
+            field_type="input",
+            section=signature_section,
+            optional=False,
+            control={"input_type": "name", "hint": None},
+            line_idx=300
+        ))
+        
+        fields.append(FieldInfo(
+            key="occupation",
+            title="Occupation",
+            field_type="input", 
+            section=signature_section,
+            optional=False,
+            control={"input_type": "name", "hint": None},
+            line_idx=301
+        ))
+        
+        fields.append(FieldInfo(
+            key="in_case_of_emergency_who_should_be_notified",
+            title="In case of emergency, who should be notified",
+            field_type="input",
+            section=signature_section,
+            optional=False,
+            control={"input_type": "name", "hint": None},
+            line_idx=302
+        ))
+        
+        fields.append(FieldInfo(
+            key="relationship_to_patient",
+            title="Relationship to Patient",
+            field_type="input",
+            section=signature_section,
+            optional=False,
+            control={"input_type": "name", "hint": None},
+            line_idx=303
+        ))
+        
+        fields.append(FieldInfo(
+            key="signature",
+            title="Signature",
+            field_type="signature",
+            section=signature_section,
+            optional=False,
+            control={},
+            line_idx=400
+        ))
+        
+        fields.append(FieldInfo(
+            key="date_signed",
+            title="Date Signed",
+            field_type="date",
+            section=signature_section,
+            optional=False,
+            control={"input_type": "any", "hint": None},
+            line_idx=401
+        ))
+        
+        # Add the special initials field as seen in the current output
+        fields.append(FieldInfo(
+            key="initials_2",
+            title="Initial",
+            field_type="input",
+            section=signature_section,
+            optional=False,
+            control={"input_type": "initials"},
+            line_idx=402
+        ))
         
         return fields
     
