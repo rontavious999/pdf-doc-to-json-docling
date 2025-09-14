@@ -1,39 +1,56 @@
 #!/usr/bin/env python3
 """
-Demo script showing the PDF to JSON conversion capabilities
+Demo script showing the PDF and DOCX to JSON conversion capabilities
 """
 
-from pdf_to_json_converter import PDFToJSONConverter
+from pdf_to_json_converter import DocumentToJSONConverter
 from pathlib import Path
 import json
 
 
 def demo():
-    """Demonstrate the PDF to JSON conversion with Docling"""
-    print("PDF to Modento Forms JSON Converter Demo (Enhanced with Docling)")
-    print("=" * 65)
+    """Demonstrate the PDF and DOCX to JSON conversion with Docling"""
+    print("PDF and DOCX to Modento Forms JSON Converter Demo (Enhanced with Docling)")
+    print("=" * 75)
     
-    converter = PDFToJSONConverter()
+    converter = DocumentToJSONConverter()
     
-    # List available PDFs
+    # List available PDFs and DOCX files
     pdf_dir = Path("pdfs")
-    pdf_files = list(pdf_dir.glob("*.pdf"))
+    test_docs_dir = Path("test_docs")
     
-    if not pdf_files:
-        print("No PDF files found in pdfs/ directory")
+    pdf_files = list(pdf_dir.glob("*.pdf")) if pdf_dir.exists() else []
+    docx_files = list(test_docs_dir.glob("*.docx")) if test_docs_dir.exists() else []
+    
+    all_files = pdf_files + docx_files
+    
+    if not all_files:
+        print("No PDF or DOCX files found in pdfs/ or test_docs/ directories")
         return
     
-    print(f"Found {len(pdf_files)} PDF files:")
-    for i, pdf in enumerate(pdf_files, 1):
-        print(f"  {i}. {pdf.name}")
+    # Display file counts by type
+    print(f"Found {len(all_files)} files:")
+    if pdf_files:
+        print(f"  PDF files ({len(pdf_files)}):")
+        for pdf in pdf_files:
+            print(f"    - {pdf.name}")
+    if docx_files:
+        print(f"  DOCX files ({len(docx_files)}):")
+        for docx in docx_files:
+            print(f"    - {docx.name}")
     
-    print("\nProcessing first PDF as example...")
-    sample_pdf = pdf_files[0]
+    print("\nProcessing first file as example...")
+    sample_file = all_files[0]
+    file_type = "DOCX" if sample_file.suffix.lower() in ['.docx', '.doc'] else "PDF"
     
     try:
-        result = converter.convert_pdf_to_json(sample_pdf)
+        import time
+        start_time = time.time()
+        result = converter.convert_document_to_json(sample_file)
+        processing_time = time.time() - start_time
         
-        print(f"\nResults for {sample_pdf.name}:")
+        print(f"\nResults for {sample_file.name} ({file_type}):")
+        print(f"  - Processing time: {processing_time:.3f} seconds")
         print(f"  - Fields detected: {result['field_count']}")
         print(f"  - Sections detected: {result['section_count']}")
         print(f"  - Schema valid: {result['is_valid']}")
@@ -42,7 +59,12 @@ def demo():
         pipeline = result['pipeline_info']
         print(f"  - Pipeline: {pipeline['pipeline']}")
         print(f"  - Backend: {pipeline['backend']}")
-        print(f"  - OCR Engine: {pipeline['ocr_engine']} ({'enabled' if pipeline['ocr_enabled'] else 'disabled'})")
+        print(f"  - Document format: {pipeline.get('document_format', 'PDF')}")
+        
+        if pipeline.get('ocr_used'):
+            print(f"  - OCR Engine: {pipeline['ocr_engine']} (used)")
+        else:
+            print(f"  - OCR: not required (native text extraction)")
         
         if result['errors']:
             print(f"  - Warnings: {len(result['errors'])}")

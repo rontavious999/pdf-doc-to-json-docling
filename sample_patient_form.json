@@ -1,0 +1,203 @@
+[
+  {
+    "key": "first_name",
+    "type": "input",
+    "title": "First Name",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "last_name",
+    "type": "input",
+    "title": "Last Name",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "city",
+    "type": "input",
+    "title": "City",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "state",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "zip",
+    "type": "input",
+    "title": "Zip",
+    "control": {
+      "input_type": "zip",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "e_mail",
+    "type": "input",
+    "title": "E-Mail",
+    "control": {
+      "input_type": "email",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "state2",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "patient_employed_by",
+    "type": "input",
+    "title": "Patient Employed By",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "occupation",
+    "type": "input",
+    "title": "Occupation",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "street_2",
+    "type": "input",
+    "title": "Street",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "city_2",
+    "type": "input",
+    "title": "City",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "state3",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "zip_2",
+    "type": "input",
+    "title": "Zip",
+    "control": {
+      "input_type": "zip",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "in_case_of_emergency_who_should_be_notified",
+    "type": "input",
+    "title": "In case of emergency, who should be notified",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "relationship_to_patient",
+    "type": "input",
+    "title": "Relationship to Patient",
+    "control": {
+      "input_type": "name",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "mobile_phone",
+    "type": "input",
+    "title": "Mobile Phone",
+    "control": {
+      "input_type": "phone",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "home_phone",
+    "type": "input",
+    "title": "Home Phone",
+    "control": {
+      "input_type": "phone",
+      "hint": null
+    },
+    "section": "Patient Information Form"
+  },
+  {
+    "key": "employer_if_different_from_above",
+    "type": "input",
+    "title": "Employer (if different from above)",
+    "control": {
+      "input_type": "name",
+      "hint": "(if different from above)"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY"
+  },
+  {
+    "key": "initials_2",
+    "type": "input",
+    "title": "Initial",
+    "control": {
+      "input_type": "initials"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "input_type": "any",
+      "hint": null
+    },
+    "section": "Signature"
+  }
+]

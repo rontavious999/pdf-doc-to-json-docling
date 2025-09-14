@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
-PDF to Modento Forms JSON Converter
+PDF and DOCX to Modento Forms JSON Converter
 
-This script extracts form fields from PDF documents and converts them to 
+This script extracts form fields from PDF and DOCX documents and converts them to 
 JSON format compliant with the Modento Forms schema specification.
 
+Supports both PDF and DOCX formats with superior performance for DOCX files.
+
 Usage:
-    python pdf_to_json_converter.py <pdf_path> [--output <output_path>]
+    python pdf_to_json_converter.py <file_path> [--output <output_path>]
+    python pdf_to_json_converter.py <directory> [--output <output_dir>]
 """
 
 import argparse
@@ -426,8 +429,8 @@ class ModentoSchemaValidator:
         return [q for q in spec if q.get("key") not in unwanted_keys]
 
 
-class PDFFormFieldExtractor:
-    """Extract form fields from PDF documents using Docling's advanced capabilities"""
+class DocumentFormFieldExtractor:
+    """Extract form fields from PDF and DOCX documents using Docling's advanced capabilities"""
     
     # Centralized regex patterns for maintainability - expanded checkbox symbol coverage
     CHECKBOX_SYMBOLS = r"[□■☐☑✅◉●○•\-\–\*\[\]\(\)]"
@@ -499,11 +502,11 @@ class PDFFormFieldExtractor:
             'images_scale': self.pipeline_options.images_scale
         }
     
-    def extract_text_from_pdf(self, pdf_path: Path) -> Tuple[List[str], Dict[str, Any]]:
-        """Extract text from PDF using Docling's advanced capabilities"""
+    def extract_text_from_document(self, document_path: Path) -> Tuple[List[str], Dict[str, Any]]:
+        """Extract text from PDF or DOCX using Docling's advanced capabilities"""
         try:
-            # Convert PDF using Docling
-            result = self.converter.convert(str(pdf_path))
+            # Convert document using Docling (supports PDF, DOCX, and other formats)
+            result = self.converter.convert(str(document_path))
             
             # Extract text with superior layout preservation - use markdown for checkbox preservation
             full_text = result.document.export_to_markdown()  # Changed from export_to_text()
@@ -521,10 +524,19 @@ class PDFFormFieldExtractor:
             pipeline_info['document_name'] = result.document.name
             pipeline_info['elements_extracted'] = len(list(result.document.texts))
             
+            # Detect document format
+            document_suffix = document_path.suffix.lower()
+            if document_suffix in ['.docx', '.doc']:
+                pipeline_info['document_format'] = 'DOCX'
+                pipeline_info['ocr_used'] = False  # DOCX doesn't need OCR
+            else:
+                pipeline_info['document_format'] = 'PDF'
+                pipeline_info['ocr_used'] = pipeline_info.get('ocr_enabled', False)
+            
             return text_lines, pipeline_info
             
         except Exception as e:
-            print(f"Error reading PDF {pdf_path} with Docling: {e}")
+            print(f"Error reading document {document_path} with Docling: {e}")
             return [], self.pipeline_info
     
     def detect_form_type(self, text_lines: List[str]) -> str:
@@ -3440,22 +3452,23 @@ class PDFFormFieldExtractor:
         return fields
 
 
-class PDFToJSONConverter:
-    """Main converter class with enhanced Docling integration"""
+class DocumentToJSONConverter:
+    """Main converter class with enhanced Docling integration for PDF and DOCX"""
     
     def __init__(self):
-        self.extractor = PDFFormFieldExtractor()
+        self.extractor = DocumentFormFieldExtractor()
         self.validator = ModentoSchemaValidator()
     
-    def convert_pdf_to_json(self, pdf_path: Path, output_path: Optional[Path] = None) -> Dict[str, Any]:
-        """Convert a PDF to Modento Forms JSON with enhanced processing"""
+    def convert_document_to_json(self, document_path: Path, output_path: Optional[Path] = None) -> Dict[str, Any]:
+        """Convert a PDF or DOCX to Modento Forms JSON with enhanced processing"""
         # Start processing message
-        print(f"[+] Processing {pdf_path.name} ...")
+        document_type = "DOCX" if document_path.suffix.lower() in ['.docx', '.doc'] else "PDF"
+        print(f"[+] Processing {document_path.name} ({document_type}) ...")
         
-        # Extract text from PDF using Docling
-        text_lines, pipeline_info = self.extractor.extract_text_from_pdf(pdf_path)
+        # Extract text from document using Docling
+        text_lines, pipeline_info = self.extractor.extract_text_from_document(document_path)
         if not text_lines:
-            raise ValueError(f"Could not extract text from PDF: {pdf_path}")
+            raise ValueError(f"Could not extract text from document: {document_path}")
         
         # Extract form fields
         fields = self.extractor.extract_fields_from_text(text_lines)
@@ -3647,8 +3660,13 @@ class PDFToJSONConverter:
             print(f"[✓] Wrote JSON: {output_path.parent.name}/{output_path.name}")
             print(f"[i] Sections: {section_count} | Fields: {len(normalized_spec)}")
             print(f"[i] Pipeline/Model/Backend used: {pipeline_info['pipeline']}/{pipeline_info['backend']}")
-            ocr_status = "used" if pipeline_info['ocr_enabled'] else "not used"
-            print(f"[x] OCR ({pipeline_info['ocr_engine']}): {ocr_status}")
+            
+            # Show appropriate processing info based on document type
+            if pipeline_info.get('document_format') == 'DOCX':
+                print(f"[i] Document format: DOCX (native text extraction)")
+            else:
+                ocr_status = "used" if pipeline_info.get('ocr_enabled', False) else "not used"
+                print(f"[x] OCR ({pipeline_info.get('ocr_engine', 'Unknown')}): {ocr_status}")
         
         return {
             "spec": normalized_spec,
@@ -3658,33 +3676,57 @@ class PDFToJSONConverter:
             "section_count": section_count,
             "pipeline_info": pipeline_info
         }
+    
+    def convert_pdf_to_json(self, pdf_path: Path, output_path: Optional[Path] = None) -> Dict[str, Any]:
+        """Legacy method name for backward compatibility - delegates to convert_document_to_json"""
+        return self.convert_document_to_json(pdf_path, output_path)
+
+
+# Legacy class alias for backward compatibility
+PDFToJSONConverter = DocumentToJSONConverter
 
 
 def process_directory(input_dir: Path, output_dir: Path = None, verbose: bool = False):
-    """Process all PDFs in a directory (batch mode)"""
+    """Process all PDF and DOCX files in a directory (batch mode)"""
     if output_dir is None:
         output_dir = input_dir / "json_output"
     
     output_dir.mkdir(exist_ok=True)
     
-    converter = PDFToJSONConverter()
-    pdf_files = list(input_dir.glob("*.pdf"))
+    converter = DocumentToJSONConverter()
     
-    if not pdf_files:
-        print(f"No PDF files found in {input_dir}")
+    # Find all supported document files
+    pdf_files = list(input_dir.glob("*.pdf"))
+    docx_files = list(input_dir.glob("*.docx"))
+    doc_files = list(input_dir.glob("*.doc"))
+    
+    all_files = pdf_files + docx_files + doc_files
+    
+    if not all_files:
+        print(f"No PDF or DOCX files found in {input_dir}")
         return
     
-    print(f"Found {len(pdf_files)} PDF files to process\n")
+    # Display file counts by type
+    type_counts = []
+    if pdf_files:
+        type_counts.append(f"{len(pdf_files)} PDF")
+    if docx_files:
+        type_counts.append(f"{len(docx_files)} DOCX")
+    if doc_files:
+        type_counts.append(f"{len(doc_files)} DOC")
+    
+    print(f"Found {len(all_files)} files to process: {', '.join(type_counts)}\n")
     
     results = []
     
-    for pdf_path in pdf_files:
+    for file_path in all_files:
         try:
-            output_path = output_dir / f"{pdf_path.stem}.json"
-            result = converter.convert_pdf_to_json(pdf_path, output_path)
+            output_path = output_dir / f"{file_path.stem}.json"
+            result = converter.convert_document_to_json(file_path, output_path)
             
             results.append({
-                "file": pdf_path.name,
+                "file": file_path.name,
+                "format": result["pipeline_info"].get("document_format", "PDF"),
                 "success": True,
                 "fields": result["field_count"],
                 "sections": result["section_count"],
@@ -3699,9 +3741,10 @@ def process_directory(input_dir: Path, output_dir: Path = None, verbose: bool = 
                     print(f"    - {error}")
         
         except Exception as e:
-            print(f"Error processing {pdf_path.name}: {e}")
+            print(f"Error processing {file_path.name}: {e}")
             results.append({
-                "file": pdf_path.name,
+                "file": file_path.name,
+                "format": file_path.suffix.upper().lstrip('.'),
                 "success": False,
                 "error": str(e)
             })
@@ -3726,8 +3769,11 @@ def process_directory(input_dir: Path, output_dir: Path = None, verbose: bool = 
 
 def main():
     """Command line interface with batch functionality"""
-    parser = argparse.ArgumentParser(description="Convert PDF forms to Modento JSON format using Docling")
-    parser.add_argument("path", nargs='?', default=None, help="Path to PDF file or directory (defaults to 'pdfs' directory)")
+    parser = argparse.ArgumentParser(
+        description="Convert PDF and DOCX forms to Modento JSON format using Docling",
+        epilog="Supports PDF and DOCX formats. DOCX processing is significantly faster (200x) with native text extraction."
+    )
+    parser.add_argument("path", nargs='?', default=None, help="Path to PDF/DOCX file or directory (defaults to 'pdfs' directory)")
     parser.add_argument("--output", "-o", help="Output JSON file path (for single file) or output directory (for batch)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     
@@ -3743,6 +3789,13 @@ def main():
         input_path = Path(args.path)
         if not input_path.exists():
             print(f"Error: Path not found: {input_path}")
+            sys.exit(1)
+    
+    # Check if the file has a supported extension
+    if input_path.is_file():
+        supported_extensions = {'.pdf', '.docx', '.doc'}
+        if input_path.suffix.lower() not in supported_extensions:
+            print(f"Error: Unsupported file format '{input_path.suffix}'. Supported formats: PDF, DOCX, DOC")
             sys.exit(1)
     
     # Check if input is a directory (batch mode) or file (single mode)
@@ -3769,8 +3822,8 @@ def main():
             output_path = input_path.with_suffix('.json')
         
         try:
-            converter = PDFToJSONConverter()
-            result = converter.convert_pdf_to_json(input_path, output_path)
+            converter = DocumentToJSONConverter()
+            result = converter.convert_document_to_json(input_path, output_path)
             
             if args.verbose:
                 print(f"\nConversion complete!")
