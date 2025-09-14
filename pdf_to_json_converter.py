@@ -1702,13 +1702,15 @@ class DocumentFormFieldExtractor:
                 ("date_signed", "Date Signed", "date", "any")
             ]
         else:
-            # Crown bridge pattern: includes relationship and printed name fields
+            # For other consent forms, use minimal signature fields to avoid witness/doctor signatures
+            # Based on problem statement: "we should be ignoring fields for witness names and signatures and doctor signatures"
             signature_fields = [
-                ("relationship", "Relationship", "input", "name"),
                 ("signature", "Signature", "signature", None),
-                ("date_signed", "Date Signed", "date", "any"),
-                ("printed_name_if_signed_on_behalf", "Printed name if signed on behalf of the patient", "input", "name")
+                ("date_signed", "Date Signed", "date", "any")
             ]
+            
+            # NOTE: Removed relationship and printed_name_if_signed_on_behalf fields as they are typically
+            # witness or legally authorized representative fields that should be excluded per requirements
         
         # Add signature fields with high line_idx to ensure they come AFTER form content
         for idx, (key, title, field_type, input_type) in enumerate(signature_fields):
@@ -1745,12 +1747,20 @@ class DocumentFormFieldExtractor:
             title = text_lines[0].replace('##', '').strip()
             content_start_idx = 1
         
-        # Collect all content lines, preserving important information
+        # Collect all content lines, preserving important information but filtering headers/footers
         content_lines = []
         for i in range(content_start_idx, len(text_lines)):
             line = text_lines[i].strip()
             # Skip empty lines but keep everything else - consent forms need ALL content
             if line:
+                # FILTER OUT HEADERS/FOOTERS: Practice names, contact info, etc.
+                if self._is_header_footer_content(line):
+                    continue
+                
+                # FILTER OUT WITNESS/DOCTOR SIGNATURE LINES at the end of forms
+                if self._is_witness_or_doctor_signature_field(line.lower()):
+                    continue
+                    
                 # Handle signature lines specially - extract just the signature part
                 if 'signature:' in line.lower() and '_' in line:
                     # This is a signature line at the end, stop content collection here
@@ -1813,12 +1823,103 @@ class DocumentFormFieldExtractor:
         final_html = re.sub(r'\s+', ' ', final_html)
         
         return final_html
-        html_parts.append('Dr. {{provider}} and/or his/her associates to<br>')
-        html_parts.append('render any treatment necessary and/or advisable to my dental conditions, including the prescribing and<br>')
-        html_parts.append('administering of any medications and/or anesthetics deemed necessary to my treatment.<br>')
-        html_parts.append('Tooth No(s). {{tooth_or_site}}</div>')
+    
+    def _is_header_footer_content(self, line: str) -> bool:
+        """Check if a line contains header/footer content that should be filtered from consent forms"""
+        line_lower = line.lower()
         
-        return ''.join(html_parts)
+        # Filter practice names and business information
+        practice_indicators = [
+            'dental practice', 'dental office', 'dental clinic', 'dental center',
+            'dental group', 'dentistry', 'orthodontics', 'oral surgery',
+            'periodontics', 'endodontics'
+        ]
+        
+        # Filter contact information patterns
+        contact_patterns = [
+            r'\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b',  # Phone numbers
+            r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',  # Email addresses
+            r'\b\d+\s+[A-Za-z\s]+(street|st|avenue|ave|road|rd|drive|dr|lane|ln|way|blvd|boulevard)\b',  # Addresses
+        ]
+        
+        # Filter technical artifacts
+        technical_artifacts = [
+            '<!-- image -->', '<image>', '</image>',
+            'cf gingivectomy', 'form code:', 'doc id:', 'page',
+            'header:', 'footer:'
+        ]
+        
+        # Check for practice names in title-like formatting
+        if any(indicator in line_lower for indicator in practice_indicators):
+            # Allow if it's part of a longer medical description
+            medical_context = ['treatment', 'procedure', 'surgery', 'therapy', 'care', 'condition']
+            if not any(context in line_lower for context in medical_context):
+                return True
+        
+        # Check for contact patterns
+        import re
+        for pattern in contact_patterns:
+            if re.search(pattern, line, re.IGNORECASE):
+                return True
+                
+        # Check for technical artifacts  
+        if any(artifact in line_lower for artifact in technical_artifacts):
+            return True
+            
+        # Filter form codes in parentheses at start or end of line
+        if re.match(r'^\([A-Z\s]+\w+\)$', line.strip()):
+            return True
+            
+        return False
+    
+    def _is_witness_or_doctor_signature_field(self, line_lower: str) -> bool:
+        """Check if a line represents a witness or doctor signature field that should be excluded"""
+        
+        # More specific witness-related indicators - require full context to filter
+        witness_signatures = [
+            'witness signature', 'witness name', 'witness:', 'witnessed by',
+            'guardian signature', 'parent signature'
+        ]
+        
+        # Doctor/dentist signature indicators - be specific about signatures
+        doctor_signatures = [
+            'doctor signature', 'dentist signature', 'physician signature',
+            'dr. signature', 'practitioner signature', 'provider signature', 
+            'clinician signature', 'doctor:', 'dentist:', 'provider:'
+        ]
+        
+        # Check for specific signature patterns first
+        for indicator in witness_signatures + doctor_signatures:
+            if indicator in line_lower:
+                return True
+        
+        # Special handling: "legally authorized representative" is OK if it's for patient signature
+        # but filter it if it's clearly a separate witness field
+        if 'legally authorized representative' in line_lower:
+            # Allow if it's part of patient signature context
+            if 'patient signature' in line_lower or 'signature' in line_lower:
+                return False
+            # Filter if it's a standalone witness field
+            else:
+                return True
+        
+        # "relationship" field is legitimate in consent forms when standalone
+        # Only filter if it's clearly witness-specific contexts
+        if line_lower.strip() == 'relationship':
+            return False  # Allow standalone relationship field
+        if 'witness relationship' in line_lower or 'guardian relationship' in line_lower:
+            return True
+        
+        # Check for printed name in context of witness/representative - but be more specific
+        if 'printed name' in line_lower:
+            # Allow "printed name if signed on behalf of the patient" - this is a legitimate field
+            if 'on behalf of the patient' in line_lower or 'behalf of patient' in line_lower:
+                return False
+            # Filter if it's clearly witness context
+            elif any(context in line_lower for context in ['witness', 'guardian signature', 'parent signature']):
+                return True
+            
+        return False
     
     def format_consent_text_as_html(self, content_lines: List[str]) -> str:
         """Format consent text content as HTML similar to reference format"""
@@ -2130,107 +2231,100 @@ class DocumentFormFieldExtractor:
             line_idx=0
         ))
         
-        # Extract signature and related fields from the text
+        # Extract signature and related fields from the END of the text
+        # Look for individual field lines that typically appear after the main consent content
         current_section = "Signature"
         processed_keys = {"form_1"}  # Track what we've already added
+        
+        # Scan from the end of the document to find signature fields
+        # These typically appear as standalone lines after the main consent text
+        signature_fields_found = []
         
         for i, line in enumerate(text_lines):
             line = line.strip()
             if not line:
                 continue
             
-            # Look for signature-related fields
             line_lower = line.lower()
             
-            # Detect printed name fields
-            if any(pattern in line_lower for pattern in ['printed name', 'print name', 'patient name']):
-                # Extract the title before any underscores
-                title = re.sub(r'[_:\s]+.*', '', line).strip()
-                if not title:
-                    title = "Printed name if signed on behalf of the patient"
-                
-                key = ModentoSchemaValidator.slugify(title)
-                if key not in processed_keys:
-                    fields.append(FieldInfo(
-                        key=key,
-                        title=title,
-                        field_type="input",
-                        section=current_section,
-                        optional=False,
-                        control={"hint": None, "input_type": None},
-                        line_idx=i + 100  # Put after form content
-                    ))
-                    processed_keys.add(key)
+            # SKIP witness and doctor signature fields per requirements
+            if self._is_witness_or_doctor_signature_field(line_lower):
+                continue
             
-            # Detect relationship fields
-            elif any(pattern in line_lower for pattern in ['relationship', 'guardian', 'parent']):
-                title = re.sub(r'[_:\s]+.*', '', line).strip()
-                if not title:
-                    title = "Relationship"
-                
-                key = ModentoSchemaValidator.slugify(title)
-                if key not in processed_keys:
+            # Look for individual field patterns that should be extracted as separate fields
+            
+            # 1. Relationship field - handle lines with underscores and formatting
+            if (re.match(r'^\s*relationship[\s_]+', line_lower) or 
+                line_lower.strip() == 'relationship' or 
+                line_lower.strip() == 'relationship:'):
+                if 'relationship' not in processed_keys:
                     fields.append(FieldInfo(
-                        key=key,
-                        title=title,
+                        key="relationship",
+                        title="Relationship",
                         field_type="input",
                         section=current_section,
                         optional=False,
                         control={"hint": None, "input_type": "name"},
-                        line_idx=i + 90  # Put before signature
+                        line_idx=i + 100
                     ))
-                    processed_keys.add(key)
+                    processed_keys.add('relationship')
             
-            # Detect signature lines
-            elif 'signature:' in line_lower and '_' in line:
-                # This indicates a signature field
-                if 'signature' not in processed_keys:
+            # 2. Printed name field (various forms) - handle formatting
+            elif (any(pattern in line_lower for pattern in ['printed name', 'print name']) and 
+                  not self._is_witness_or_doctor_signature_field(line_lower)):
+                # Use the full title from the line, clean up the formatting
+                if 'printed name if signed on behalf' in line_lower:
+                    title = "Printed name if signed on behalf of the patient"
+                    key = "printed_name_if_signed_on_behalf"
+                else:
+                    # Extract the title before any underscores or colons
+                    title = re.sub(r'[_:\s]+.*', '', line).strip()
+                    if not title or len(title) < 3:
+                        title = "Printed name if signed on behalf of the patient"
+                    key = ModentoSchemaValidator.slugify(title)
+                
+                if key not in processed_keys:
                     fields.append(FieldInfo(
-                        key="signature",
-                        title="Signature",
-                        field_type="signature",
+                        key=key,
+                        title=title,
+                        field_type="input",
                         section=current_section,
                         optional=False,
                         control={"hint": None, "input_type": None},
                         line_idx=i + 110
                     ))
-                    processed_keys.add('signature')
-                
-                # Also check for date in the same line
-                if 'date:' in line_lower and 'date_signed' not in processed_keys:
-                    fields.append(FieldInfo(
-                        key="date_signed",
-                        title="Date Signed",
-                        field_type="date",
-                        section=current_section,
-                        optional=False,
-                        control={"hint": None, "input_type": "any"},
-                        line_idx=i + 120
-                    ))
-                    processed_keys.add('date_signed')
+                    processed_keys.add(key)
+            
+            # 3. Look for signature field indicators (but not witness/doctor)
+            elif ('signature' in line_lower and 'patient' in line_lower and 
+                  not self._is_witness_or_doctor_signature_field(line_lower)):
+                # This is likely a patient signature field, but we'll add it later as a standard signature
+                pass
         
-        # Ensure we always have signature and date fields for consent forms
+        # Always ensure signature and date fields exist
         if 'signature' not in processed_keys:
             fields.append(FieldInfo(
                 key="signature",
                 title="Signature",
                 field_type="signature",
-                section="Signature",
+                section=current_section,
                 optional=False,
                 control={"hint": None, "input_type": None},
                 line_idx=200
             ))
+            processed_keys.add('signature')
         
         if 'date_signed' not in processed_keys:
             fields.append(FieldInfo(
                 key="date_signed",
                 title="Date Signed",
                 field_type="date",
-                section="Signature",
+                section=current_section,
                 optional=False,
                 control={"hint": None, "input_type": "any"},
                 line_idx=210
             ))
+            processed_keys.add('date_signed')
         
         return fields
     
