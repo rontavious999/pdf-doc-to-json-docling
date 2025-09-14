@@ -3749,15 +3749,8 @@ def process_directory(input_dir: Path, output_dir: Path = None, verbose: bool = 
                 "error": str(e)
             })
     
-    # Save summary
-    summary_path = output_dir / "conversion_summary.json"
-    with open(summary_path, 'w') as f:
-        json.dump(results, f, indent=2)
-    
-    print(f"\n[✓] Summary saved to: {summary_path}")
-    
     successful = sum(1 for r in results if r.get("success", False))
-    print(f"[i] Successfully processed: {successful}/{len(results)} files")
+    print(f"\n[i] Successfully processed: {successful}/{len(results)} files")
     
     if verbose:
         print(f"\n[i] Pipeline details:")
