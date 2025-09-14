@@ -2052,7 +2052,7 @@ class DocumentFormFieldExtractor:
             if len(question) >= 5:  # Must be substantial question
                 # Extract options from the line
                 options = []
-                option_parts = re.split(rf'[{self.CHECKBOX_SYMBOLS}]', line)[1:]  # Skip the question part
+                option_parts = re.split(rf'[{self.CHECKBOX_CHAR_CLASS}]', line)[1:]  # Skip the question part
                 for part in option_parts:
                     option_text = part.strip()
                     if option_text and len(option_text) > 0:
@@ -3517,11 +3517,38 @@ class DocumentToJSONConverter:
         # Convert to Modento format
         json_spec = []
         for field in fields:
+            # Normalize control structure to match reference order
+            normalized_control = {}
+            if field.control:
+                # Special handling for text fields (different order)
+                if field.field_type == 'text':
+                    # For text fields: temporary_html_text, html_text, text
+                    if 'temporary_html_text' in field.control:
+                        normalized_control['temporary_html_text'] = field.control['temporary_html_text']
+                    if 'html_text' in field.control:
+                        normalized_control['html_text'] = field.control['html_text']
+                    if 'text' in field.control:
+                        normalized_control['text'] = field.control['text']
+                    # Add any other fields
+                    for key, value in field.control.items():
+                        if key not in ['temporary_html_text', 'html_text', 'text']:
+                            normalized_control[key] = value
+                else:
+                    # For other fields: hint first, then input_type, then others
+                    if 'hint' in field.control:
+                        normalized_control['hint'] = field.control['hint']
+                    if 'input_type' in field.control:
+                        normalized_control['input_type'] = field.control['input_type']
+                    # Add any other fields in original order
+                    for key, value in field.control.items():
+                        if key not in ['hint', 'input_type']:
+                            normalized_control[key] = value
+            
             field_dict = {
                 "key": field.key,
                 "type": field.field_type,  # Put type after key to match reference order
                 "title": field.title,
-                "control": field.control,
+                "control": normalized_control,
                 "section": field.section
             }
             # Only add optional field for specific types that have it in reference
@@ -3749,15 +3776,8 @@ def process_directory(input_dir: Path, output_dir: Path = None, verbose: bool = 
                 "error": str(e)
             })
     
-    # Save summary
-    summary_path = output_dir / "conversion_summary.json"
-    with open(summary_path, 'w') as f:
-        json.dump(results, f, indent=2)
-    
-    print(f"\n[✓] Summary saved to: {summary_path}")
-    
     successful = sum(1 for r in results if r.get("success", False))
-    print(f"[i] Successfully processed: {successful}/{len(results)} files")
+    print(f"\n[i] Successfully processed: {successful}/{len(results)} files")
     
     if verbose:
         print(f"\n[i] Pipeline details:")
