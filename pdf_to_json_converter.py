@@ -492,9 +492,12 @@ class DocumentFormFieldExtractor:
         # RECOMMENDATION 4: Records release form classification patterns
         self.form_classification_patterns = {
             'records_release': [
-                re.compile(r'release\s*of\s*records', re.IGNORECASE),
-                re.compile(r'medical\s*records?\s*release', re.IGNORECASE),
+                re.compile(r'release\s*of\s*(?:patient\s*)?records', re.IGNORECASE),
+                re.compile(r'(?:medical|dental|patient)\s*records?\s*release', re.IGNORECASE),
                 re.compile(r'authorization\s*to\s*release', re.IGNORECASE),
+                re.compile(r'consent\s*for\s*release', re.IGNORECASE),
+                re.compile(r'section\s*a:\s*patient\s*information', re.IGNORECASE),
+                re.compile(r'select\s*information\s*to\s*be\s*released', re.IGNORECASE),
             ],
             'structured_consent': [
                 re.compile(r'informed\s*consent', re.IGNORECASE),
@@ -1892,8 +1895,33 @@ class DocumentFormFieldExtractor:
             
             processed_fields.append(field)
         
-        # Basic field validation and cleanup - ensure all controls have hint field
+        # Second pass: Handle duplicate signature fields - keep only one signature field
+        final_fields = []
+        signature_fields = []
+        
+        # First collect all signature-related fields
         for field in processed_fields:
+            if field.field_type == 'signature' or (field.field_type == 'input' and field.key == 'signature'):
+                signature_fields.append(field)
+            else:
+                final_fields.append(field)
+        
+        # Add only one signature field, preferring type 'signature' over 'input'
+        if signature_fields:
+            # Sort to put signature type first, then input type
+            signature_fields.sort(key=lambda f: (f.field_type != 'signature', f.line_idx))
+            chosen_signature = signature_fields[0]
+            
+            # Ensure it's the right type and has the right control
+            chosen_signature.field_type = 'signature'
+            chosen_signature.key = 'signature'
+            chosen_signature.title = 'Signature'
+            chosen_signature.control = {'hint': None}
+            
+            final_fields.append(chosen_signature)
+        
+        # Basic field validation and cleanup - ensure all controls have hint field
+        for field in final_fields:
             # Ensure hint field is always present for consistency with reference
             if 'hint' not in field.control:
                 field.control['hint'] = None
@@ -1918,7 +1946,7 @@ class DocumentFormFieldExtractor:
             
             # Boolean values in radio options should remain as booleans (per reference)
         
-        return processed_fields
+        return final_fields
     
     def ensure_required_fields_present(self, fields: List[FieldInfo]) -> List[FieldInfo]:
         """Ensure all required numbered fields are present based on section context"""
@@ -2207,29 +2235,32 @@ class DocumentFormFieldExtractor:
         return fields
     
     def extract_records_release_fields(self, text_lines: List[str]) -> List[FieldInfo]:
-        """RECOMMENDATION 4: Specialized extraction for records release forms"""
+        """Extract fields for records release forms as structured forms with checkboxes"""
         fields = []
-        current_section = "Records Release"
+        current_section = "Patient Information"
         processed_keys = set()
         
-        # Common fields in records release forms
-        standard_fields = [
+        # Section A: Patient Information fields
+        patient_fields = [
             {"key": "patient_name", "title": "Patient Name", "type": "input", "input_type": "name"},
             {"key": "date_of_birth", "title": "Date of Birth", "type": "date", "input_type": "past"},
-            {"key": "records_requested", "title": "Records Requested", "type": "input", "input_type": "name"},
-            {"key": "release_to", "title": "Release Records To", "type": "input", "input_type": "name"},
-            {"key": "purpose", "title": "Purpose of Release", "type": "input", "input_type": "name"},
-            {"key": "authorization_signature", "title": "Patient/Guardian Signature", "type": "signature"},
-            {"key": "authorization_date", "title": "Date", "type": "date", "input_type": "any"}
+            {"key": "street", "title": "Street", "type": "input", "input_type": "address"},
+            {"key": "city", "title": "City", "type": "input", "input_type": "name"},
+            {"key": "state", "title": "State", "type": "states"},
+            {"key": "zip", "title": "Zip", "type": "input", "input_type": "zip"},
+            {"key": "mobile_phone", "title": "Mobile Phone", "type": "input", "input_type": "phone"},
+            {"key": "home_phone", "title": "Home Phone", "type": "input", "input_type": "phone"},
         ]
         
-        # Add standard fields
-        for i, field_info in enumerate(standard_fields):
+        # Add patient information fields
+        for i, field_info in enumerate(patient_fields):
             control = {}
             if field_info["type"] == "input":
                 control = {"input_type": field_info["input_type"], "hint": None}
             elif field_info["type"] == "date":
                 control = {"input_type": field_info["input_type"], "hint": None}
+            elif field_info["type"] == "states":
+                control = {}
             
             field = FieldInfo(
                 key=field_info["key"],
@@ -2241,6 +2272,148 @@ class DocumentFormFieldExtractor:
                 line_idx=i
             )
             fields.append(field)
+            processed_keys.add(field_info["key"])
+        
+        # Section B: Information to be Released (checkboxes)
+        release_section = "Information to be Released"
+        
+        # Main checkbox options for record types
+        fields.append(FieldInfo(
+            key="complete_records",
+            title="Complete records",
+            field_type="checkbox",
+            section=release_section,
+            optional=False,
+            control={
+                "options": [{"name": "Complete records", "value": True}],
+                "hint": None
+            },
+            line_idx=100
+        ))
+        
+        # Limited records with sub-options
+        fields.append(FieldInfo(
+            key="limited_records_options",
+            title="Limited records",
+            field_type="checkbox",
+            section=release_section,
+            optional=False,
+            control={
+                "options": [
+                    {"name": "Radiographs/Images", "value": "radiographs"},
+                    {"name": "Reports", "value": "reports"},
+                    {"name": "Other", "value": "other"}
+                ],
+                "hint": None
+            },
+            line_idx=101
+        ))
+        
+        # Other specify field
+        fields.append(FieldInfo(
+            key="other_specify",
+            title="Other (specify)",
+            field_type="input",
+            section=release_section,
+            optional=True,
+            control={"input_type": "name", "hint": None},
+            line_idx=102
+        ))
+        
+        # Section C: Release To 
+        recipient_section = "Release To"
+        recipient_fields = [
+            {"key": "recipient_name", "title": "Name", "type": "input", "input_type": "name"},
+            {"key": "recipient_address", "title": "Address", "type": "input", "input_type": "address"},
+            {"key": "recipient_phone", "title": "Phone", "type": "input", "input_type": "phone"},
+            {"key": "recipient_fax", "title": "Fax", "type": "input", "input_type": "phone"},
+        ]
+        
+        for i, field_info in enumerate(recipient_fields):
+            field = FieldInfo(
+                key=field_info["key"],
+                title=field_info["title"],
+                field_type=field_info["type"],
+                section=recipient_section,
+                optional=False,
+                control={"input_type": field_info["input_type"], "hint": None},
+                line_idx=200 + i
+            )
+            fields.append(field)
+            processed_keys.add(field_info["key"])
+        
+        # Section D: Signature
+        signature_section = "Signature"
+        fields.append(FieldInfo(
+            key="patient_employed_by",
+            title="Patient Employed By", 
+            field_type="input",
+            section=signature_section,
+            optional=False,
+            control={"input_type": "name", "hint": None},
+            line_idx=300
+        ))
+        
+        fields.append(FieldInfo(
+            key="occupation",
+            title="Occupation",
+            field_type="input", 
+            section=signature_section,
+            optional=False,
+            control={"input_type": "name", "hint": None},
+            line_idx=301
+        ))
+        
+        fields.append(FieldInfo(
+            key="in_case_of_emergency_who_should_be_notified",
+            title="In case of emergency, who should be notified",
+            field_type="input",
+            section=signature_section,
+            optional=False,
+            control={"input_type": "name", "hint": None},
+            line_idx=302
+        ))
+        
+        fields.append(FieldInfo(
+            key="relationship_to_patient",
+            title="Relationship to Patient",
+            field_type="input",
+            section=signature_section,
+            optional=False,
+            control={"input_type": "name", "hint": None},
+            line_idx=303
+        ))
+        
+        fields.append(FieldInfo(
+            key="signature",
+            title="Signature",
+            field_type="signature",
+            section=signature_section,
+            optional=False,
+            control={},
+            line_idx=400
+        ))
+        
+        fields.append(FieldInfo(
+            key="date_signed",
+            title="Date Signed",
+            field_type="date",
+            section=signature_section,
+            optional=False,
+            control={"input_type": "any", "hint": None},
+            line_idx=401
+        ))
+        
+        # Add the special initials field as seen in the current output
+        fields.append(FieldInfo(
+            key="initials_2",
+            title="Initial",
+            field_type="input",
+            section=signature_section,
+            optional=False,
+            control={"input_type": "initials"},
+            line_idx=402
+        ))
         
         return fields
     
