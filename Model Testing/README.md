@@ -1,6 +1,8 @@
 # Model Testing Framework
 
-This folder contains the model testing framework for comparing different Docling configurations and their text extraction performance on PDF documents.
+This folder contains the model testing framework for comparing different Docling configurations and their text extraction performance on PDF documents. 
+
+**Note**: The main converter now supports both PDF and DOCX formats. For DOCX files, native text extraction provides superior performance (200x faster) without requiring OCR model testing.
 
 ## Purpose
 

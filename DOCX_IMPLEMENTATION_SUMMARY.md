@@ -1,6 +1,34 @@
 
 # DOCX Support Implementation - Performance Demonstration
 
+## Quick Start Guide
+
+### Single DOCX Processing
+```bash
+# Process a single DOCX file (lightning fast!)
+python pdf_to_json_converter.py forms/patient_intake.docx --output intake.json
+
+# Expected output:
+# [+] Processing patient_intake.docx (DOCX) ...
+# [✓] Wrote JSON: intake.json
+# [i] Sections: 2 | Fields: 17
+# [i] Pipeline/Model/Backend used: SimplePipeline/DoclingParseDocumentBackend
+# [i] OCR: not required (native text extraction)
+```
+
+### Batch Processing Mixed Formats
+```bash
+# Process directory with both PDF and DOCX files
+python pdf_to_json_converter.py documents/ --output json_output/
+
+# Example output:
+# Found 4 files to process: 2 PDF, 2 DOCX
+# [+] Processing form1.pdf (PDF) ...
+# [+] Processing form2.docx (DOCX) ...
+# [+] Processing form3.pdf (PDF) ...
+# [+] Processing form4.docx (DOCX) ...
+```
+
 ## PDF vs DOCX Performance Comparison
 
 ### NPF Form (PDF): 12.39 seconds
@@ -47,4 +75,20 @@
 ### Performance comparison:
 - DOCX: 200x faster processing
 - PDF: Full OCR accuracy maintained
+
+## When to Use Each Format
+
+### Choose DOCX When:
+✅ **Speed is Critical**: Need rapid processing of multiple forms  
+✅ **High Volume**: Processing hundreds of forms daily  
+✅ **Text Quality Matters**: Want perfect text extraction without OCR artifacts  
+✅ **Source Available**: You have the original Word documents  
+
+### Choose PDF When:
+✅ **Legacy Documents**: Working with existing PDF archives  
+✅ **Scanned Forms**: Processing filled-out paper forms  
+✅ **Mixed Sources**: Documents from various origins in PDF format  
+✅ **Security Requirements**: PDFs with embedded signatures or security features  
+
+**Recommendation**: Convert Word-based forms to DOCX format before processing for optimal performance and accuracy.
 
