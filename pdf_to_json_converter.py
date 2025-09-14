@@ -1822,7 +1822,87 @@ class DocumentFormFieldExtractor:
         final_html = re.sub(r'<br>\s*<br>', '<br>', final_html)
         final_html = re.sub(r'\s+', ' ', final_html)
         
+        # Apply Modento placeholder processing before returning
+        final_html = self._apply_modento_placeholders(final_html)
+        
         return final_html
+    
+    def _apply_modento_placeholders(self, html_text: str) -> str:
+        """
+        Apply Modento placeholder replacement patterns to form text.
+        
+        Based on placeholders_info.txt guidelines, replaces commonly recognized patterns
+        with appropriate Modento placeholders for forms and consents.
+        """
+        # According to placeholders_info.txt, placeholders should be used in static text
+        # that patients read but don't type into, such as consent narratives
+        
+        # Pattern 1: Doctor/Provider authorization patterns
+        # Handle cases where underscores are preserved and where they're removed by OCR
+        provider_patterns = [
+            # Original patterns with underscores (from no_ocr_parsing)
+            (r'Dr\.\s*_{10,}', 'Dr. {{provider}}'),
+            (r'authorize\s+Dr\.\s*_{10,}', 'authorize Dr. {{provider}}'),
+            (r'Dr\.\s*_{5,}', 'Dr. {{provider}}'),
+            (r'authorize\s+Dr\.\s*_{5,}', 'authorize Dr. {{provider}}'),
+            
+            # Handle escaped underscores from HTML/markdown processing
+            (r'Dr\.\s*\\_+', 'Dr. {{provider}}'),
+            (r'authorize\s+Dr\.\s*\\_+', 'authorize Dr. {{provider}}'),
+            
+            # OCR-processed patterns where underscores are removed
+            # Look for "Dr. " followed by " and/or his/her associates" or similar
+            (r'Dr\.\s+and/or\s+his/her\s+associates', 'Dr. {{provider}} and/or his/her associates'),
+            (r'authorize\s+Dr\.\s+and/or\s+his/her\s+associates', 'authorize Dr. {{provider}} and/or his/her associates'),
+            
+            # More specific patterns for authorization context
+            (r'consent\s+to\s+allow\s+and\s+authorize\s+Dr\.\s+and/or', 'consent to allow and authorize Dr. {{provider}} and/or'),
+        ]
+        
+        # Pattern 2: Tooth number/site patterns  
+        # Handle both underscore and no-underscore versions
+        tooth_patterns = [
+            # Original patterns with underscores
+            (r'Tooth No\(s\)\.\s*_{10,}', 'Tooth No(s). {{tooth_or_site}}'),
+            (r'Tooth No\.\s*_{10,}', 'Tooth No. {{tooth_or_site}}'),
+            (r'Tooth Number\(s\)\.\s*_{10,}', 'Tooth Number(s). {{tooth_or_site}}'),
+            (r'Tooth\s+No\(s\)\.\s*_{5,}', 'Tooth No(s). {{tooth_or_site}}'),
+            (r'Tooth\s*#\.\s*_{5,}', 'Tooth #. {{tooth_or_site}}'),
+            
+            # Handle escaped underscores from HTML/markdown processing
+            (r'Tooth No\(s\)\.\s*\\_+', 'Tooth No(s). {{tooth_or_site}}'),
+            (r'Tooth No\.\s*\\_+', 'Tooth No. {{tooth_or_site}}'),
+            (r'Tooth Number\(s\)\.\s*\\_+', 'Tooth Number(s). {{tooth_or_site}}'),
+            (r'Tooth\s+No\(s\)\.\s*\\_+', 'Tooth No(s). {{tooth_or_site}}'),
+            (r'Tooth\s*#\.\s*\\_+', 'Tooth #. {{tooth_or_site}}'),
+            
+            # OCR-processed patterns where underscores are removed
+            # Look for "Tooth No(s). " at end of line or followed by whitespace/line break
+            (r'Tooth No\(s\)\.\s*(?=<br>|$|\s*$)', 'Tooth No(s). {{tooth_or_site}}'),
+            (r'Tooth No\.\s*(?=<br>|$|\s*$)', 'Tooth No. {{tooth_or_site}}'),
+            (r'Tooth Number\(s\)\.\s*(?=<br>|$|\s*$)', 'Tooth Number(s). {{tooth_or_site}}'),
+        ]
+        
+        # Pattern 3: Patient identity placeholders (for static text, not input fields)
+        # Only apply these in narrative/descriptive text, not in form field contexts
+        patient_patterns = [
+            # These should only be applied in narrative consent text, not field labels
+            # Be conservative and only apply in clear consent narrative contexts
+        ]
+        
+        # Apply provider patterns
+        for pattern, replacement in provider_patterns:
+            html_text = re.sub(pattern, replacement, html_text, flags=re.IGNORECASE)
+        
+        # Apply tooth/site patterns  
+        for pattern, replacement in tooth_patterns:
+            html_text = re.sub(pattern, replacement, html_text, flags=re.IGNORECASE)
+        
+        # Apply patient patterns only in narrative contexts (not near form fields)
+        # Skip patient patterns for now to avoid over-replacement
+        # These would be added later based on specific form requirements
+        
+        return html_text
     
     def _is_header_footer_content(self, line: str) -> bool:
         """Check if a line contains header/footer content that should be filtered from consent forms"""
