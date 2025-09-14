@@ -1,23 +1,5 @@
 [
   {
-    "key": "signature",
-    "type": "signature",
-    "title": "Signature",
-    "control": {},
-    "section": "Signature",
-    "optional": false
-  },
-  {
-    "key": "date_signed",
-    "type": "date",
-    "title": "Date Signed",
-    "control": {
-      "hint": null,
-      "input_type": "any"
-    },
-    "section": "Signature"
-  },
-  {
     "key": "form_1",
     "type": "text",
     "title": "",
@@ -37,39 +19,17 @@
     "section": "Signature"
   },
   {
-    "key": "printed_name_if_signed_on_behalf",
-    "type": "input",
-    "title": "Printed name if signed on behalf of the patient",
-    "control": {
-      "hint": null,
-      "input_type": "name"
-    },
-    "section": "Signature"
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
   },
   {
-    "key": "i_am_freely_giving_my_consent_to_allow_and_authorize_dr",
-    "type": "input",
-    "title": "I am freely giving my consent to allow and authorize Dr.",
-    "control": {
-      "hint": null,
-      "input_type": "name"
-    },
-    "section": "Signature"
-  },
-  {
-    "key": "tooth_no_s",
-    "type": "input",
-    "title": "Tooth No(s).",
-    "control": {
-      "hint": null,
-      "input_type": "name"
-    },
-    "section": "Signature"
-  },
-  {
-    "key": "date",
+    "key": "date_signed",
     "type": "date",
-    "title": "Date",
+    "title": "Date Signed",
     "control": {
       "hint": null,
       "input_type": "any"
@@ -77,19 +37,9 @@
     "section": "Signature"
   },
   {
-    "key": "legally_authorized",
+    "key": "printed_name_if_signed_on_behalf",
     "type": "input",
-    "title": "legally authorized",
-    "control": {
-      "hint": null,
-      "input_type": "name"
-    },
-    "section": "Signature"
-  },
-  {
-    "key": "printed_name_if_signed_on_behalf_of_the",
-    "type": "input",
-    "title": "Printed name if signed on behalf of the",
+    "title": "Printed name if signed on behalf of the patient",
     "control": {
       "hint": null,
       "input_type": "name"
