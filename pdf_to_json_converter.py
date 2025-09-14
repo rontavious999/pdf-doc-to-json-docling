@@ -3517,19 +3517,32 @@ class DocumentToJSONConverter:
         # Convert to Modento format
         json_spec = []
         for field in fields:
-            # Normalize control structure to match reference order (hint first, then input_type)
+            # Normalize control structure to match reference order
             normalized_control = {}
             if field.control:
-                # Add hint first if it exists
-                if 'hint' in field.control:
-                    normalized_control['hint'] = field.control['hint']
-                # Add input_type second if it exists  
-                if 'input_type' in field.control:
-                    normalized_control['input_type'] = field.control['input_type']
-                # Add any other fields in original order
-                for key, value in field.control.items():
-                    if key not in ['hint', 'input_type']:
-                        normalized_control[key] = value
+                # Special handling for text fields (different order)
+                if field.field_type == 'text':
+                    # For text fields: temporary_html_text, html_text, text
+                    if 'temporary_html_text' in field.control:
+                        normalized_control['temporary_html_text'] = field.control['temporary_html_text']
+                    if 'html_text' in field.control:
+                        normalized_control['html_text'] = field.control['html_text']
+                    if 'text' in field.control:
+                        normalized_control['text'] = field.control['text']
+                    # Add any other fields
+                    for key, value in field.control.items():
+                        if key not in ['temporary_html_text', 'html_text', 'text']:
+                            normalized_control[key] = value
+                else:
+                    # For other fields: hint first, then input_type, then others
+                    if 'hint' in field.control:
+                        normalized_control['hint'] = field.control['hint']
+                    if 'input_type' in field.control:
+                        normalized_control['input_type'] = field.control['input_type']
+                    # Add any other fields in original order
+                    for key, value in field.control.items():
+                        if key not in ['hint', 'input_type']:
+                            normalized_control[key] = value
             
             field_dict = {
                 "key": field.key,
