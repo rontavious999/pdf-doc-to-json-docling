@@ -1,0 +1,67 @@
+Here’s a plain-English explainer you can hand to anyone on the team about when to use Modento placeholders in forms and consents.
+
+What placeholders are (and why they exist)
+Placeholders are little variables (like {{patient_name}} or {{practice_name}}) that Modento replaces automatically with real data it already knows—from your Practice Management System (PMS) or the Practice Info in Engagement. They save patients from re-typing basics and make documents feel personalized and accurate.
+
+Where they belong
+Use placeholders only in static text—things the patient reads but doesn’t type into—such as:
+	•	intro paragraphs
+	•	Consent narratives and hints/help text beneath questions
+	•	Static lines that reference the practice or appointment details
+Do not use placeholders in controls that the patient must actively complete:
+	•	Not in signature or initials controls
+	•	Not as a replacement for required inputs (e.g., don’t skip a DOB input you actually need the patient to confirm today)
+
+When you should use them
+1) Patient identity that’s already known
+Use: {{patient_name}}, {{patient_first_name}}, {{patient_preferred_name}}, {{patient_dob}}, {{patient_email}}, {{patient_phone}}, {{patient_address}}
+	•	Why: Reduces friction—patients shouldn’t re-enter obvious info if it’s already in your PMS.
+	•	Where: Read-only confirmations in consent text, and hints (e.g., “If anything below is incorrect, please update it in the fields provided.”).
+	•	Tip: If you must collect updates, still keep the input fields; the placeholder is just for the read-only narrative.
+Example
+“I, {{patient_name}}, born {{patient_dob}}, consent to the procedure described below.”
+
+2) Appointment context
+Use: {{patient_appointment_date}}, {{patient_appointment_time}}, {{patient_appointment_date_time}}, {{patient_next_provider}}
+	•	Why: Keeps consents and pre-visit forms aligned to the actual visit.
+	•	Where: Consent intros (“… for my appointment on {{patient_appointment_date_time}} with {{patient_next_provider}}.”)
+
+4) Practice identity
+Use: {{practice_name}}, {{practice_address}}, {{practice_phone}}, {{practice_email}}, {{practice_doctor}}, {{practice_all_doctors}}
+	•	Why: Legal clarity and professionalism; keeps your forms/consents accurate if practice details change.
+	•	Where: “Questions? Contact…” sections, and the body of consents referencing the provider or location.
+
+5) Today’s date
+Use: {{today_date}}
+	•	Why: Handy for stamped text (e.g., “This consent was presented on {{today_date}}.”).
+	•	Note: This is separate from the signature date field the patient completes; keep the signature date as an actual date control to capture their action time.
+
+When you should not use them
+	•	Do not replace patient actions. Placeholders can pre-fill text, but they don’t prove consent. Keep acknowledgment checkbox, signature, and date as live fields.
+	•	Avoid placeholders in questions/options where the value needs to be stored exactly as answered (it can get messy in exports).
+	•	Don’t rely on placeholders for data you must verify today. If a field must be confirmed/updated (e.g., current medications, new phone number), use a real input.
+
+Handling missing data (real-world behavior)
+Sometimes the PMS doesn’t have a value. Design your wording so a blank won’t read awkwardly. For example:
+	•	Good: “I, {{patient_name}}, authorize…” → If name is missing, your intake still continues; the name input below captures it.
+
+Practical dos & don’ts
+Do
+	•	Use placeholders to personalize static text and reduce re-typing.
+	•	Pair placeholders with real inputs where confirmation is legally or operationally required.
+	•	Use practice/appointment placeholders to keep documents context-accurate.
+	•	Keep signature and acknowledgment as actual controls (never placeholders).
+
+Don’t
+	•	Don’t put placeholders inside the signature/initials fields.
+	•	Don’t remove an input you truly need just because you can echo a placeholder in the narrative.
+	•	Don’t assume every record has every field—write copy that’s robust to blanks.
+	•	Do not add placeholders unless the text prompts for that information.
+
+Quick examples
+
+Consent opening
+“I, {{patient_name}} (DOB {{patient_dob}}), understand the nature, risks, and alternatives described below for my appointment on {{patient_appointment_date_time}} with {{patient_next_provider}}.”
+
+Contact block
+“Questions? Contact {{practice_name}} at {{practice_phone}} or {{practice_email}}.”
