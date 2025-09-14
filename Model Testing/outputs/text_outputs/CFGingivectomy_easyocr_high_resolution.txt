@@ -1,7 +1,7 @@
 # Text Extraction Result
 PDF File: CFGingivectomy.pdf
 Model/Configuration: easyocr_high_resolution
-Extraction Time: 5.21 seconds
+Extraction Time: 5.23 seconds
 Character Count: 4574
 Word Count: 729
 Line Count: 31
