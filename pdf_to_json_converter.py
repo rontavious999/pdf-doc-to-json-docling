@@ -432,9 +432,24 @@ class ModentoSchemaValidator:
 class DocumentFormFieldExtractor:
     """Extract form fields from PDF and DOCX documents using Docling's advanced capabilities"""
     
-    # Centralized regex patterns for maintainability - expanded checkbox symbol coverage
+    # Centralized regex patterns for maintainability - RECOMMENDATION 3: Unified bullet detection
     CHECKBOX_SYMBOLS = r"[□■☐☑✅◉●○•\-\–\*\[\]\(\)]"
     CHECKBOX_CHAR_CLASS = r"□■☐☑✅◉●○•\-\–\*\[\]\(\)"
+    
+    # Enhanced bullet patterns for risk sections and consent forms
+    BULLET_PATTERNS = {
+        'standard_bullets': r'[•\-\–\*]',
+        'checkbox_bullets': r'[□■☐☑✅]',
+        'circle_bullets': r'[◉●○]',
+        'numbered_bullets': r'\d+[\.\)]\s*',
+        'lettered_bullets': r'[a-zA-Z][\.\)]\s*',
+        'unicode_bullets': r'[\u2022\u2023\u2043\u204C\u204D\u2219\u25A0\u25A1\u25CF\u25CB]'
+    }
+    
+    def get_unified_bullet_pattern(self) -> re.Pattern:
+        """RECOMMENDATION 3: Get unified pattern for all bullet types"""
+        all_patterns = '|'.join(self.BULLET_PATTERNS.values())
+        return re.compile(f'^\\s*(?:{all_patterns})\\s*(.+)', re.MULTILINE)
     
     def has_checkbox_symbol(self, text: str) -> bool:
         """Check if text contains any checkbox symbol"""
@@ -456,6 +471,15 @@ class DocumentFormFieldExtractor:
             'signature': re.compile(r'signature(?:\s*[:_]|\s*$)', re.IGNORECASE),
         }
         
+        # RECOMMENDATION 2: Consent-specific field patterns for better extraction 
+        self.consent_field_patterns = {
+            'printed_name': re.compile(r'(?:printed?\s*name|print\s*name|name\s*\(print\)|patient\s*print)', re.IGNORECASE),
+            'date_of_birth': re.compile(r'(?:date\s*of\s*birth|birth\s*date|dob|born)', re.IGNORECASE),
+            'relationship': re.compile(r'(?:relationship|relation\s*to|guardian|parent|spouse)', re.IGNORECASE),
+            'witness': re.compile(r'(?:witness|witnessed\s*by)', re.IGNORECASE),
+            'consent_date': re.compile(r'(?:consent\s*date|date\s*of\s*consent|today)', re.IGNORECASE),
+        }
+        
         self.section_patterns = {
             'patient_info': re.compile(r'patient\s*information', re.IGNORECASE),
             'contact': re.compile(r'contact\s*information', re.IGNORECASE),
@@ -465,8 +489,43 @@ class DocumentFormFieldExtractor:
             'signature': re.compile(r'signature', re.IGNORECASE),
         }
         
+        # RECOMMENDATION 4: Records release form classification patterns
+        self.form_classification_patterns = {
+            'records_release': [
+                re.compile(r'release\s*of\s*records', re.IGNORECASE),
+                re.compile(r'medical\s*records?\s*release', re.IGNORECASE),
+                re.compile(r'authorization\s*to\s*release', re.IGNORECASE),
+            ],
+            'structured_consent': [
+                re.compile(r'informed\s*consent', re.IGNORECASE),
+                re.compile(r'treatment\s*consent', re.IGNORECASE),
+                re.compile(r'procedure\s*consent', re.IGNORECASE),
+            ],
+            'narrative_consent': [
+                re.compile(r'risks?\s*and\s*benefits?', re.IGNORECASE),
+                re.compile(r'complications', re.IGNORECASE),
+                re.compile(r'side\s*effects?', re.IGNORECASE),
+            ]
+        }
+        
         # Initialize Docling converter with maximum accuracy settings
         self._setup_docling_converter()
+        
+        # RECOMMENDATION 1: Enhanced DOCX structure recognition
+        self.docx_processor = None
+        self._setup_docx_processor()
+    
+    def _setup_docx_processor(self):
+        """RECOMMENDATION 1: Setup enhanced DOCX processing with python-docx"""
+        try:
+            # Try to import python-docx for enhanced DOCX processing
+            import docx
+            from docx.shared import Inches
+            self.docx_processor = docx
+            print("[i] Enhanced DOCX processing available via python-docx")
+        except ImportError:
+            print("[i] Enhanced DOCX processing unavailable - using Docling fallback")
+            self.docx_processor = None
     
     def is_field_required(self, field_name: str, section: str, context: str = "") -> bool:
         """Determine if a field should be required based on dental form conventions and reference"""
@@ -502,8 +561,98 @@ class DocumentFormFieldExtractor:
             'images_scale': self.pipeline_options.images_scale
         }
     
+    def extract_enhanced_docx_structure(self, document_path: Path) -> Tuple[List[str], Dict[str, Any]]:
+        """RECOMMENDATION 1: Enhanced DOCX structure recognition using python-docx"""
+        if not self.docx_processor:
+            # Fallback to Docling if python-docx not available
+            return self.extract_text_from_document(document_path)
+        
+        try:
+            doc = self.docx_processor.Document(str(document_path))
+            enhanced_lines = []
+            structure_info = {
+                'headings': [],
+                'styled_paragraphs': [],
+                'tables': 0,
+                'bullet_lists': [],
+                'forms': []
+            }
+            
+            for para in doc.paragraphs:
+                # Preserve paragraph styles and formatting
+                style_name = para.style.name if para.style else 'Normal'
+                text = para.text.strip()
+                
+                if not text:
+                    continue
+                
+                # Track headings for better section detection
+                if 'Heading' in style_name:
+                    structure_info['headings'].append({
+                        'text': text,
+                        'level': style_name,
+                        'line_number': len(enhanced_lines)
+                    })
+                    enhanced_lines.append(f"## {text}")  # Mark as heading for processing
+                
+                # Track styled paragraphs
+                elif style_name != 'Normal':
+                    structure_info['styled_paragraphs'].append({
+                        'text': text,
+                        'style': style_name,
+                        'line_number': len(enhanced_lines)
+                    })
+                    enhanced_lines.append(text)
+                
+                # Detect bullet points and lists - RECOMMENDATION 3 integration
+                elif self.get_unified_bullet_pattern().match(text):
+                    structure_info['bullet_lists'].append({
+                        'text': text,
+                        'line_number': len(enhanced_lines)
+                    })
+                    enhanced_lines.append(text)
+                
+                else:
+                    enhanced_lines.append(text)
+            
+            # Process tables for structured data
+            for table in doc.tables:
+                structure_info['tables'] += 1
+                for row in table.rows:
+                    row_text = ' | '.join(cell.text.strip() for cell in row.cells if cell.text.strip())
+                    if row_text:
+                        enhanced_lines.append(row_text)
+            
+            # Detect form structure patterns
+            full_text = ' '.join(enhanced_lines).lower()
+            for form_type, patterns in self.form_classification_patterns.items():
+                if any(pattern.search(full_text) for pattern in patterns):
+                    structure_info['forms'].append(form_type)
+            
+            pipeline_info = {
+                'pipeline': 'EnhancedDocxPipeline',
+                'backend': 'python-docx + Docling',
+                'document_format': 'DOCX',
+                'ocr_used': False,
+                'structure_preserved': True,
+                'headings_found': len(structure_info['headings']),
+                'tables_found': structure_info['tables'],
+                'bullet_lists_found': len(structure_info['bullet_lists']),
+                'form_types': structure_info['forms']
+            }
+            
+            return enhanced_lines, pipeline_info
+            
+        except Exception as e:
+            print(f"[!] Enhanced DOCX processing failed: {e}, falling back to Docling")
+            return self.extract_text_from_document(document_path)
     def extract_text_from_document(self, document_path: Path) -> Tuple[List[str], Dict[str, Any]]:
-        """Extract text from PDF or DOCX using Docling's advanced capabilities"""
+        """Extract text from PDF or DOCX using enhanced capabilities"""
+        
+        # RECOMMENDATION 1: Use enhanced DOCX processing for DOCX files
+        if document_path.suffix.lower() in ['.docx', '.doc'] and self.docx_processor:
+            return self.extract_enhanced_docx_structure(document_path)
+        
         try:
             # Convert document using Docling (supports PDF, DOCX, and other formats)
             result = self.converter.convert(str(document_path))
@@ -540,12 +689,23 @@ class DocumentFormFieldExtractor:
             return [], self.pipeline_info
     
     def detect_form_type(self, text_lines: List[str]) -> str:
-        """Detect the primary type of form based on content analysis"""
+        """RECOMMENDATION 4: Enhanced form type detection with classification"""
         # Join first 50 lines for analysis
         analysis_text = ' '.join(text_lines[:50]).lower()
         full_text = ' '.join(text_lines).lower()
         
-        # Count form-type indicators
+        # RECOMMENDATION 4: Check for specific form types first
+        for form_type, patterns in self.form_classification_patterns.items():
+            matches = sum(1 for pattern in patterns if pattern.search(analysis_text))
+            if matches >= 1:  # Found form-specific indicators
+                if form_type == 'records_release':
+                    return "records_release"
+                elif form_type == 'structured_consent':
+                    return "structured_consent"
+                elif form_type == 'narrative_consent':
+                    return "narrative_consent"
+        
+        # Count form-type indicators for fallback classification
         consent_indicators = 0
         patient_info_indicators = 0
         
@@ -602,9 +762,28 @@ class DocumentFormFieldExtractor:
             return "patient_info"
     
     def detect_field_type(self, text: str) -> str:
-        """Detect field type based on text content"""
+        """Detect field type based on text content with enhanced consent form support"""
         text_lower = text.lower()
         
+        # RECOMMENDATION 2: Check consent-specific patterns first
+        if any(pattern.search(text) for pattern in [
+            self.consent_field_patterns['printed_name']
+        ]):
+            return 'input'
+        
+        if any(pattern.search(text) for pattern in [
+            self.consent_field_patterns['date_of_birth'],
+            self.consent_field_patterns['consent_date']
+        ]):
+            return 'date'
+        
+        if any(pattern.search(text) for pattern in [
+            self.consent_field_patterns['relationship'],
+            self.consent_field_patterns['witness']
+        ]):
+            return 'input'
+        
+        # Original field type detection
         if any(pattern.search(text) for pattern in [
             self.field_patterns['signature']
         ]):
@@ -1113,20 +1292,65 @@ class DocumentFormFieldExtractor:
         return fields
     
     def collect_checkbox_run(self, lines: List[str], i: int) -> Tuple[List[Dict[str, Any]], int]:
-        """Collect contiguous checkbox/bullet list items using centralized pattern"""
+        """RECOMMENDATION 3: Enhanced checkbox/bullet list collection with unified patterns"""
         opts = []
         j = i
-        # Use centralized checkbox pattern with broader symbol coverage
-        check_pat = re.compile(rf'^(?:{self.CHECKBOX_SYMBOLS}\s*)?([A-Za-z][A-Za-z0-9\-\s\/&]{{2,}})$')
+        
+        # Use unified bullet pattern for comprehensive detection
+        bullet_pattern = self.get_unified_bullet_pattern()
+        
         while j < len(lines):
-            m = check_pat.match(lines[j])
+            line = lines[j].strip()
+            if not line:
+                j += 1
+                continue
+                
+            # Try unified bullet pattern first
+            bullet_match = bullet_pattern.match(line)
+            if bullet_match:
+                label = bullet_match.group(1).strip().rstrip(':')
+                if len(label) > 2:
+                    opts.append({"name": label, "value": label})
+                j += 1
+                continue
+            
+            # Fallback to original checkbox detection for backward compatibility
+            check_pat = re.compile(rf'^(?:{self.CHECKBOX_SYMBOLS}\s*)?([A-Za-z][A-Za-z0-9\-\s\/&]{{2,}})$')
+            m = check_pat.match(line)
             if not m: 
                 break
             label = m.group(1).strip().rstrip(':')
             if len(label) > 2:
                 opts.append({"name": label, "value": label})
             j += 1
+        
         return opts, j
+    
+    def extract_risk_section_bullets(self, text_lines: List[str], start_idx: int) -> Tuple[List[str], int]:
+        """RECOMMENDATION 3: Extract risk section bullets with enhanced detection"""
+        risk_bullets = []
+        i = start_idx
+        bullet_pattern = self.get_unified_bullet_pattern()
+        
+        # Look for bullet points in risk/side effects sections
+        while i < len(text_lines):
+            line = text_lines[i].strip()
+            
+            # Stop if we hit a clear section boundary
+            if (line.startswith('##') or 
+                any(keyword in line.lower() for keyword in ['signature', 'consent', 'i understand', 'patient name'])):
+                break
+            
+            # Extract bullet content using unified pattern
+            bullet_match = bullet_pattern.match(line)
+            if bullet_match:
+                bullet_text = bullet_match.group(1).strip()
+                if len(bullet_text) > 10:  # Substantive risk content
+                    risk_bullets.append(bullet_text)
+            
+            i += 1
+        
+        return risk_bullets, i
 
     def emit_consent_block(self, title: str, paragraph_lines: List[str], section: str, line_idx: int = 0) -> List[FieldInfo]:
         """Create consent text block with acknowledgment and signature"""
@@ -1173,6 +1397,84 @@ class DocumentFormFieldExtractor:
                 line_idx=line_idx + 3
             )
         ]
+    
+    def consolidate_consent_sections(self, fields: List[FieldInfo], form_type: str) -> List[FieldInfo]:
+        """Consolidate consent sections per Modento standards based on form type"""
+        if form_type not in ['consent', 'structured_consent', 'narrative_consent']:
+            return fields
+        
+        consolidated_fields = []
+        consent_text_blocks = []
+        risk_sections = []
+        other_fields = []
+        
+        # Separate consent content from other fields
+        for field in fields:
+            if (field.field_type == 'text' and 
+                any(keyword in field.title.lower() for keyword in ['risk', 'treatment', 'procedure', 'consent'])):
+                consent_text_blocks.append(field)
+            elif (field.section.lower() in ['consent', 'risks', 'treatment'] and 
+                  field.field_type in ['text', 'checkbox']):
+                risk_sections.append(field)
+            else:
+                other_fields.append(field)
+        
+        # Add non-consent fields first
+        consolidated_fields.extend(other_fields)
+        
+        # Consolidate consent sections into single block
+        if consent_text_blocks or risk_sections:
+            combined_content = []
+            
+            # Add treatment information
+            combined_content.append("<h3>Recommended Treatment</h3>")
+            for field in consent_text_blocks:
+                if 'treatment' in field.title.lower():
+                    combined_content.append(field.control.get('html_text', ''))
+            
+            # Add risks and side effects
+            combined_content.append("<h3>Risks and Side Effects</h3>")
+            for field in risk_sections:
+                if field.field_type == 'text':
+                    combined_content.append(field.control.get('html_text', ''))
+            
+            # Add treatment alternatives
+            combined_content.append("<h3>Treatment Alternatives</h3>")
+            for field in consent_text_blocks:
+                if 'alternative' in field.title.lower():
+                    combined_content.append(field.control.get('html_text', ''))
+            
+            # Create consolidated consent block
+            consolidated_html = "".join(combined_content)
+            
+            consent_field = FieldInfo(
+                key="consolidated_consent",
+                title="Treatment Consent Information",
+                field_type="text",
+                section="Consent",
+                optional=False,
+                control={
+                    "html_text": consolidated_html,
+                    "temporary_html_text": consolidated_html,
+                    "text": ""
+                },
+                line_idx=len(consolidated_fields)
+            )
+            
+            # Add acknowledgment checkbox per Modento standards
+            acknowledgment_field = FieldInfo(
+                key="consent_acknowledgment",
+                title="I have read and understand the treatment information, risks, and alternatives described above.",
+                field_type="checkbox",
+                section="Consent",
+                optional=False,
+                control={"options": [{"name": "I acknowledge", "value": True}]},
+                line_idx=len(consolidated_fields) + 1
+            )
+            
+            consolidated_fields.extend([consent_field, acknowledgment_field])
+        
+        return consolidated_fields
 
     def looks_like_first_history_item(self, line: str) -> bool:
         """Check if line looks like the first item in a medical history list"""
@@ -1739,20 +2041,182 @@ class DocumentFormFieldExtractor:
         return fields
 
     def extract_fields_from_text(self, text_lines: List[str]) -> List[FieldInfo]:
-        """Extract form fields from text lines using form-specific extraction logic"""
+        """Enhanced field extraction with consent form support and form classification"""
         
-        # Detect form type to choose appropriate extraction method
+        # RECOMMENDATION 4: Enhanced form type detection with classification
         form_type = self.detect_form_type(text_lines)
+        print(f"[i] Detected form type: {form_type}")
         
-        if form_type == "patient_info":
+        # Route to appropriate extraction method based on form type
+        if form_type in ["structured_consent", "narrative_consent"]:
+            # Use specialized consent form extraction with enhanced processing
+            fields = self.extract_consent_form_fields_enhanced(text_lines, form_type)
+        elif form_type == "records_release":
+            # Use specialized records release form extraction
+            fields = self.extract_records_release_fields(text_lines)
+        elif form_type == "patient_info":
             # Use specialized patient info form extraction
-            return self.extract_patient_info_form_fields(text_lines)
+            fields = self.extract_patient_info_form_fields(text_lines)
         elif form_type == "consent":
             # Use specialized consent form extraction  
-            return self.extract_consent_form_fields(text_lines)
+            fields = self.extract_consent_form_fields(text_lines)
         else:
             # Fall back to universal extraction for other form types
-            return self.extract_fields_universal(text_lines)
+            fields = self.extract_fields_universal(text_lines)
+        
+        # Apply consent section consolidation per Modento standards
+        fields = self.consolidate_consent_sections(fields, form_type)
+        
+        return fields
+    
+    def extract_consent_form_fields_enhanced(self, text_lines: List[str], form_type: str) -> List[FieldInfo]:
+        """RECOMMENDATION 2 & 3: Enhanced consent form extraction with specific field patterns"""
+        fields = []
+        current_section = "Consent Information"
+        processed_keys = set()
+        
+        i = 0
+        while i < len(text_lines):
+            line = text_lines[i].strip()
+            if not line:
+                i += 1
+                continue
+            
+            # Update section detection
+            detected_section = self.detect_section(line, text_lines[max(0, i-5):i+15], current_section)
+            if detected_section != current_section:
+                current_section = detected_section
+            
+            # RECOMMENDATION 2: Enhanced consent-specific field detection
+            consent_field_detected = False
+            for pattern_name, pattern in self.consent_field_patterns.items():
+                if pattern.search(line):
+                    field_type = 'input'
+                    control = {'input_type': 'name', 'hint': None}
+                    title = line.strip().rstrip(':')
+                    
+                    if pattern_name in ['date_of_birth', 'consent_date']:
+                        field_type = 'date'
+                        control = {
+                            'input_type': 'past' if 'birth' in line.lower() else 'any', 
+                            'hint': None
+                        }
+                    
+                    key = ModentoSchemaValidator.slugify(title)
+                    if key not in processed_keys:
+                        field = FieldInfo(
+                            key=key,
+                            title=title,
+                            field_type=field_type,
+                            section=current_section,
+                            optional=False,
+                            control=control,
+                            line_idx=i
+                        )
+                        fields.append(field)
+                        processed_keys.add(key)
+                        consent_field_detected = True
+                        break
+            
+            if consent_field_detected:
+                i += 1
+                continue
+            
+            # RECOMMENDATION 3: Enhanced risk section detection and processing
+            if any(keyword in line.lower() for keyword in ['risks', 'side effects', 'complications', 'possible']):
+                risk_bullets, next_i = self.extract_risk_section_bullets(text_lines, i + 1)
+                if risk_bullets:
+                    # Create consolidated risk section with proper HTML formatting
+                    risk_html = "<h4>Risks and Possible Complications:</h4><ul>"
+                    for bullet in risk_bullets:
+                        risk_html += f"<li>{bullet}</li>"
+                    risk_html += "</ul>"
+                    
+                    risk_field = FieldInfo(
+                        key="treatment_risks",
+                        title="Risks and Possible Complications",
+                        field_type="text",
+                        section="Consent Information",
+                        optional=False,
+                        control={
+                            "html_text": risk_html,
+                            "temporary_html_text": risk_html,
+                            "text": ""
+                        },
+                        line_idx=i
+                    )
+                    fields.append(risk_field)
+                    i = next_i
+                    continue
+            
+            # Continue with standard field extraction
+            # Fall back to universal detection for other patterns
+            inline_fields = self.parse_inline_fields(line)
+            for field_name, full_line in inline_fields:
+                key = ModentoSchemaValidator.slugify(field_name)
+                if key not in processed_keys:
+                    field_type = self.detect_field_type(field_name)
+                    control = {}
+                    
+                    if field_type == 'input':
+                        input_type = self.detect_input_type(field_name)
+                        control = {'input_type': input_type, 'hint': None}
+                    elif field_type == 'date':
+                        control = {'input_type': 'any', 'hint': None}
+                    
+                    field = FieldInfo(
+                        key=key,
+                        title=field_name,
+                        field_type=field_type,
+                        section=current_section,
+                        optional=False,
+                        control=control,
+                        line_idx=i
+                    )
+                    fields.append(field)
+                    processed_keys.add(key)
+            
+            i += 1
+        
+        return fields
+    
+    def extract_records_release_fields(self, text_lines: List[str]) -> List[FieldInfo]:
+        """RECOMMENDATION 4: Specialized extraction for records release forms"""
+        fields = []
+        current_section = "Records Release"
+        processed_keys = set()
+        
+        # Common fields in records release forms
+        standard_fields = [
+            {"key": "patient_name", "title": "Patient Name", "type": "input", "input_type": "name"},
+            {"key": "date_of_birth", "title": "Date of Birth", "type": "date", "input_type": "past"},
+            {"key": "records_requested", "title": "Records Requested", "type": "input", "input_type": "name"},
+            {"key": "release_to", "title": "Release Records To", "type": "input", "input_type": "name"},
+            {"key": "purpose", "title": "Purpose of Release", "type": "input", "input_type": "name"},
+            {"key": "authorization_signature", "title": "Patient/Guardian Signature", "type": "signature"},
+            {"key": "authorization_date", "title": "Date", "type": "date", "input_type": "any"}
+        ]
+        
+        # Add standard fields
+        for i, field_info in enumerate(standard_fields):
+            control = {}
+            if field_info["type"] == "input":
+                control = {"input_type": field_info["input_type"], "hint": None}
+            elif field_info["type"] == "date":
+                control = {"input_type": field_info["input_type"], "hint": None}
+            
+            field = FieldInfo(
+                key=field_info["key"],
+                title=field_info["title"],
+                field_type=field_info["type"],
+                section=current_section,
+                optional=False,
+                control=control,
+                line_idx=i
+            )
+            fields.append(field)
+        
+        return fields
     
     def extract_fields_universal(self, text_lines: List[str]) -> List[FieldInfo]:
         """Universal field extraction that works across different form types"""
