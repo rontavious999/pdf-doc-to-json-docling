@@ -1,7 +1,7 @@
 # Text Extraction Result
 PDF File: CFGingivectomy.pdf
 Model/Configuration: pypdfium2_backend
-Extraction Time: 2.47 seconds
+Extraction Time: 2.52 seconds
 Character Count: 4559
 Word Count: 731
 Line Count: 33

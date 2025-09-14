@@ -1,0 +1,49 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<p><div style=\"text-align:center\"><strong>Informed Consent for Crown And<br>Bridge Prosthetics</strong><br>I have been advised of and understand that treatment of dental conditions requiring crowns and/or fixed bridgework , involves certain risks and possible unsuccessful results, including the possibility of failure. Even when care and diligence is exercised in the treatment of conditions requiring crowns and bridgework and fabrication of the same, there are no promises or guarantees of anticipated results or the length of time the crown and/or fixed bridgework will last. I agree to assume the risks associated with crowns and/or fixed bridgework, which include but are not limited to the following: To replace decayed or otherwise traumatized teeth, it is necessary to modify the existing tooth or teeth so that crowns (caps) and/or bridges may be placed upon them. Tooth preparation will be done as conservatively as practical, but I understand that normally at least some of my existing tooth structure will be removed. In preparation of teeth for crowns or bridges, anesthetics are usually needed. As a result of the injection or use of anesthesia, at times there may be swelling, jaw muscle tenderness or even a resultant numbness of the tongue, lips, teeth, jaws and/or facial tissues that is usually temporary; in rare instances, such numbness may be permanent. Often, after the preparation of teeth for the reception of either crowns or bridges, the teeth may exhibit mild to severe sensitivity. This sensitivity may last only for a short period of time or for a much longer period. If it is persistent, notify us so that we can determine the cause of the sensitivity and seek to treat that condition. After being crowned, teeth may develop a condition known as pulpitis or pulpal degeneration. The tooth or teeth may have been traumatized from an accident, deep decay, extensive preparation for the crown or bridge, or from other causes. It may be necessary to do root canal treatments on the affected teeth. If teeth remain sensitive for long periods of time following crowning, root canal treatment may be necessary. Infrequently, the tooth or teeth may abscess or otherwise not heal, which may require root canal treatment, root surgery or possibly extraction. Crowns and bridges may chip or break. Many factors can contribute to this situation, including chewing excessively hard materials, change in biting forces, traumatic blows to the mouth, etc. Undetectable cracks may develop in crowns from these causes, but the crowns/bridges themselves may not actually break until sometime later. Breakage or chipping because of defective materials or construction is somewhat uncommon. If it does occur, it usually occurs soon after placement. Crowns and bridges are artificial and therefore feel different from natural teeth. Most patients become accustomed to this feeling over time. In limited situations, muscle soreness or tenderness of the temporomandibular joint (TMJ) - jaw joint - may persist for indeterminable periods of time, following placement of the prosthesis. Patients will be given the opportunity to observe the appearance of crowns or bridges in place, prior to final cementation. While satisfactory, this fact is usually acknowledged by an entry into the patient's chart, initialed by the patient. Many variables determine how long crowns and bridges can be expected to last. Among these are some of the factors mentioned in the preceding paragraphs, including the general health of the patient, oral hygiene, regular dental checkups and diet. As a result, no guarantees can be made or assumed to be made regarding the longevity of the crowns or bridges. It is a patient's responsibility to seek attention from the dentist should any undue or unexpected problems occur. The patient must diligently follow any and all instruction, including the scheduling of and attendance at all appointments. Failure to keep the cementation appointment can result in ultimate failure of the crown/bridge to fit properly, and an additional fee may be assessed. I have been given the opportunity to ask any questions regarding the nature and purpose of crowns and/ or bridge treatment, and have received answers to my satisfaction. I voluntarily accept any and all risks, including those listed above and including the risk of substantial harm, if any, which may be associated with any phase of this treatment, in hopes of obtaining the desired results, which may or may not be achieved. By signing this document, I am freely giving my consent to allow and authorize Dr. and/or his/her associates to render any treatment necessary and/or advisable to my dental conditions, including the prescribing and administering of any medications and/or anesthetics deemed necessary to my treatment. Tooth No(s). Patient signature/legally authorized representative Relationship Printed name if signed on behalf of the patient Witness signature<br>It is a patient's responsibility to seek attention from the dentist should any undue or unexpected problems occur. The patient must diligently follow any and all instruction, including the scheduling of and attendance at all appointments. Failure to keep the cementation appointment can result in ultimate failure of the crown/bridge to fit properly, and an additional fee may be assessed.<br>I have been given the opportunity to ask any questions regarding the nature and purpose of crowns and/ or bridge treatment, and have received answers to my satisfaction. I voluntarily accept any and all risks, including those listed above and including the risk of substantial harm, if any, which may be associated with any phase of this treatment, in hopes of obtaining the desired results, which may or may not be achieved. By signing this document, I am freely giving my consent to allow and authorize Dr. and/or his/her associates to render any treatment necessary and/or advisable to my dental conditions, including the prescribing and administering of any medications and/or anesthetics deemed necessary to my treatment.<br>Tooth No(s). Patient signature/legally authorized representative Relationship Printed name if signed on behalf of the patient Witness signature<br>Dr. {{provider}} and/or his/her associates to<br>render any treatment necessary and/or advisable to my dental conditions, including the prescribing and<br>administering of any medications and/or anesthetics deemed necessary to my treatment.<br>Tooth No(s). {{tooth_or_site}}</div></p>"
+    },
+    "section": "Form"
+  },
+  {
+    "key": "relationship",
+    "type": "input",
+    "title": "Relationship",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "hint": null,
+      "input_type": "any"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "printed_name_if_signed_on_behalf",
+    "type": "input",
+    "title": "Printed name if signed on behalf of the patient",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  }
+]

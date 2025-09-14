@@ -1,7 +1,7 @@
 # Text Extraction Result
 PDF File: consent_crown_bridge_prosthetics.pdf
 Model/Configuration: pypdfium2_backend
-Extraction Time: 4.55 seconds
+Extraction Time: 4.39 seconds
 Character Count: 5598
 Word Count: 844
 Line Count: 32

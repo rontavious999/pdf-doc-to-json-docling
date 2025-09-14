@@ -1,7 +1,7 @@
 # Text Extraction Result
 PDF File: consent_crown_bridge_prosthetics.pdf
 Model/Configuration: easyocr_standard
-Extraction Time: 8.38 seconds
+Extraction Time: 8.59 seconds
 Character Count: 5589
 Word Count: 837
 Line Count: 28

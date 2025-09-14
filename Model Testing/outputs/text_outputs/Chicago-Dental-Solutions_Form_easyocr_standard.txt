@@ -1,7 +1,7 @@
 # Text Extraction Result
 PDF File: Chicago-Dental-Solutions_Form.pdf
 Model/Configuration: easyocr_standard
-Extraction Time: 37.39 seconds
+Extraction Time: 37.42 seconds
 Character Count: 4720
 Word Count: 732
 Line Count: 214
