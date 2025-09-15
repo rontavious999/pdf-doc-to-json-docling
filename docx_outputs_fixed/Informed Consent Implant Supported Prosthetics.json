@@ -1,0 +1,59 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<p>## Recommended Treatment<br>I hereby give consent to Dr. to perform Single or Multi-stage<br>Implant Placement procedure(s) on me or my dependent for purposes of supporting a fixed and/or removable dental prosthetic device, and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of this treatment. The nature and purpose of this treatment have been explained to me and no guarantee has been made or implied as to the success or ultimate result of this treatment. I have been given satisfactory answers to all of my questions, I have been advised of the risks and benefits of, and alternatives to the planned procedures, and I wish to proceed with this treatment. I also consent to the administration of local anesthesia during the performance of this treatment.<br>## Treatment Alternatives<br>Alternative methods of treatment have been explained to me, such as:<br>Use of a conventional removable dental prosthetic device (denture);<br>Other alternative implant procedures.<br>Placement of a fixed dental bridge which will be supported by adjacent teeth and/or implants.<br>Bone and/or tissue grafting prior to implant placement.<br>Sinus lift and/or nerve repositioning procedures.<br>The option of no further treatment.<br>However, I wish to proceed with the treatment described above.<br>## Risks and Potential Complications<br>I understand that there are risks and potential complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These risks and potential complications, include, but are not limited to, the following:<br>Drug reactions and side effects.<br>Post-operative pain, bleeding, oozing, soft tissue infection and/or bone infection.<br>Bruising and/or swelling, restricted mouth opening for several days or weeks, or, rarely, longer.<br>Inability to surgically place a planned-for implant due to circumstances relating to bone quality and/or quantity, which were not able to be assessed with pre-treatment diagnostic tests.<br>Delayed healing, necessitating post-operative care and treatment.<br>Possible involvement of the sinus when placing an implant in the upper posterior regions, which may require additional treatment or surgical repair at a later date.<br>Possible injury of the nerves of the lower jaw when placing an implant in the lower jaw, resulting in temporary or permanent tingling/numbness/pain (possibly of an electric shock nature) of the lower lip, chin, tongue or other surrounding structures, with potential alteration or loss of taste.<br>Non-healing of one or more of the implants, necessitating its removal and/or other procedures, possibly including the need for bone grafting and/or soft tissue grafting.<br>If you are taking medications to make your bones stronger (such as bisphosphonates) or if you have received radiation therapy to the head or neck area for tumors/cancer, then you are at a higher risk for poor bone healing or bone loss that may never completely resolve and which may require surgery or other treatment.<br>As a result of the Lidocaine injection or use of other local anesthesia, there may be swelling, jaw muscle tenderness or even resultant tingling/numbness/pain (possibly of an electric shock nature) of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent; this may include alteration or loss of taste.<br>Pain and/or limited movement of the jaw joint, either of a temporary or permanent nature, which may require further treatment.<br>Because of the unique issues associated with the placement of the implants in this procedure, there is an increased risk of infection, loss of bone in the jaw, loss of the implants, and loss of the prosthetics placed on the implants.<br>Patient Name (Printed):<br></p>"
+    },
+    "section": "Form"
+  },
+  {
+    "key": "patient_name_printed",
+    "type": "input",
+    "title": "Patient Name (Printed)",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Form"
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "relationship_if_patient_is_a_minor",
+    "type": "input",
+    "title": "Relationship (if patient is a minor)",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Form"
+  },
+  {
+    "key": "witness_signature",
+    "type": "input",
+    "title": "Witness (Signature)",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "hint": null,
+      "input_type": "any"
+    },
+    "section": "Signature"
+  }
+]
