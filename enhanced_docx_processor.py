@@ -41,8 +41,20 @@ class EnhancedConsentProcessor:
         """Detect specific consent form type based on content"""
         full_text = ' '.join(text_lines).lower()
         
+        # Crown & Bridge - specific pattern for reference compliance
         if 'crown and bridge prosthetic' in full_text:
             return 'crown_bridge'
+        
+        # General informed consent pattern - can handle multiple consent types
+        if any(pattern in full_text for pattern in [
+            'informed consent',
+            'endodontic consent', 
+            'endodonti procedure',
+            'composite restoration',
+            'implant supported prosthetics',
+            'biopsy consent'
+        ]):
+            return 'general_informed_consent'
         
         return None
     
@@ -51,6 +63,8 @@ class EnhancedConsentProcessor:
         
         if form_type == 'crown_bridge':
             return self._extract_crown_bridge_consent(text_lines)
+        elif form_type == 'general_informed_consent':
+            return self._extract_general_informed_consent(text_lines)
         
         return {}
     
@@ -183,6 +197,215 @@ class EnhancedConsentProcessor:
         html_content += '</div>'
         
         return html_content
+    
+    def _extract_general_informed_consent(self, text_lines: List[str]) -> Dict[str, Any]:
+        """Extract general informed consent forms with universal patterns"""
+        
+        # Find the main consent text (everything before signature fields)
+        consent_text_lines = []
+        signature_section_start = None
+        
+        for i, line in enumerate(text_lines):
+            if 'signature:' in line.lower() and ('printed name:' in line.lower() or 'date:' in line.lower()):
+                signature_section_start = i
+                break
+            elif line.strip() and not line.startswith('##'):
+                consent_text_lines.append(line.strip())
+        
+        # Create the main form text content with universal formatting
+        consent_content = self._format_general_consent_text(consent_text_lines)
+        
+        # Detect signature pattern and create appropriate fields
+        signature_fields = self._extract_signature_fields(text_lines, signature_section_start)
+        
+        # Create the universal consent JSON structure
+        fields = [
+            {
+                "key": "form_1",
+                "type": "text", 
+                "title": "",
+                "control": {
+                    "html_text": consent_content,
+                    "hint": None
+                },
+                "section": "Form"
+            }
+        ]
+        
+        fields.extend(signature_fields)
+        
+        return {
+            "fields": fields,
+            "sections": ["Form", "Signature"],
+            "form_type": "general_informed_consent"
+        }
+    
+    def _format_general_consent_text(self, text_lines: List[str]) -> str:
+        """Format general consent text with universal styling"""
+        
+        # Join all text and create structured HTML content
+        full_text = ' '.join(text_lines)
+        
+        # Clean up the text
+        full_text = full_text.replace('\t', ' ')
+        full_text = ' '.join(full_text.split())  # Normalize whitespace
+        
+        # Extract title from first line or content
+        title = ""
+        content_start = 0
+        
+        # Look for consent form title patterns
+        title_patterns = [
+            r'informed consent.*?for.*?(endodontic|composite|implant|biopsy)',
+            r'informed consent.*?(endodontic|composite|implant|biopsy)',
+            r'(endodontic|composite|implant|biopsy).*?consent'
+        ]
+        
+        for pattern in title_patterns:
+            match = re.search(pattern, full_text, re.IGNORECASE)
+            if match:
+                title = match.group(0)
+                break
+        
+        if not title:
+            # Use first line as title if no pattern found
+            first_line = text_lines[0] if text_lines else ""
+            if len(first_line) < 100:  # Likely a title
+                title = first_line
+                content_start = 1
+        
+        # Create HTML structure
+        html_content = f'<div style="text-align:center"><strong>{title}</strong><br>'
+        
+        # Add the main consent text, skipping the title line if used
+        remaining_text = ' '.join(text_lines[content_start:]) if content_start > 0 else full_text
+        if title and content_start == 0:
+            # Remove title from beginning of text
+            remaining_text = remaining_text.replace(title, '', 1).strip()
+        
+        # Clean and format the content
+        remaining_text = remaining_text.replace('\t', ' ')
+        remaining_text = ' '.join(remaining_text.split())
+        
+        html_content += remaining_text + '</div>'
+        
+        return html_content
+    
+    def _extract_signature_fields(self, text_lines: List[str], signature_start: Optional[int]) -> List[Dict[str, Any]]:
+        """Extract signature fields based on detected patterns"""
+        
+        if signature_start is None:
+            # Default signature fields if no signature line found
+            return [
+                {
+                    "key": "signature",
+                    "type": "signature",
+                    "title": "Signature",
+                    "control": {
+                        "hint": None,
+                        "input_type": None
+                    },
+                    "section": "Signature"
+                },
+                {
+                    "key": "date_signed", 
+                    "type": "date",
+                    "title": "Date Signed",
+                    "control": {
+                        "hint": None,
+                        "input_type": "any"
+                    },
+                    "section": "Signature"
+                }
+            ]
+        
+        # Analyze signature section patterns
+        signature_lines = text_lines[signature_start:signature_start+5] if signature_start < len(text_lines) - 5 else text_lines[signature_start:]
+        
+        fields = []
+        has_relationship = False
+        has_printed_name = False
+        has_patient_dob = False
+        
+        for line in signature_lines:
+            line_lower = line.lower()
+            
+            # Check for relationship field
+            if 'relationship' in line_lower and 'minor' in line_lower:
+                has_relationship = True
+            
+            # Check for printed name
+            if 'printed name' in line_lower:
+                has_printed_name = True
+            
+            # Check for patient date of birth
+            if 'patient date of birth' in line_lower:
+                has_patient_dob = True
+        
+        # Build signature fields based on detected patterns
+        if has_relationship:
+            fields.append({
+                "key": "relationship",
+                "type": "input",
+                "title": "Relationship", 
+                "control": {
+                    "hint": None,
+                    "input_type": "name"
+                },
+                "section": "Signature"
+            })
+        
+        # Always include signature
+        fields.append({
+            "key": "signature",
+            "type": "signature",
+            "title": "Signature",
+            "control": {
+                "hint": None,
+                "input_type": None
+            },
+            "section": "Signature"
+        })
+        
+        # Always include date
+        fields.append({
+            "key": "date_signed", 
+            "type": "date",
+            "title": "Date Signed",
+            "control": {
+                "hint": None,
+                "input_type": "any"
+            },
+            "section": "Signature"
+        })
+        
+        # Add printed name if detected
+        if has_printed_name:
+            fields.append({
+                "key": "printed_name_if_signed_on_behalf",
+                "type": "input", 
+                "title": "Printed name if signed on behalf of the patient",
+                "control": {
+                    "hint": None,
+                    "input_type": None
+                },
+                "section": "Signature"
+            })
+        
+        # Add patient DOB if detected
+        if has_patient_dob:
+            fields.append({
+                "key": "patient_date_of_birth",
+                "type": "date",
+                "title": "Patient Date of Birth",
+                "control": {
+                    "hint": None,
+                    "input_type": "past"
+                },
+                "section": "Signature"
+            })
+        
+        return fields
     
     def process_docx_file(self, file_path: Path) -> Dict[str, Any]:
         """Process a DOCX file with enhanced consent form processing"""
