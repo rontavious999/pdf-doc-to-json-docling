@@ -1246,6 +1246,20 @@ class DocumentFormFieldExtractor:
             r'Employer \(if different from above\).*?Relationship To Patient': [
                 ('Employer (if different from above)', 'employer_if_different_from_above'),
                 ('Relationship To Patient', 'relationship_to_patient_2')  # This should be detected earlier
+            ],
+            # Signature line pattern in consent forms - critical for DOCX consent processing
+            r'Signature.*?Printed Name.*?Date': [
+                ('Signature', 'signature'),
+                ('Printed Name', 'printed_name'),
+                ('Date', 'date_signed')
+            ],
+            # Guardian relationship pattern in consent forms
+            r'\(Patient/Parent/Guardian\)\s*Relationship': [
+                ('Relationship', 'relationship')
+            ],
+            # Patient date of birth pattern in consent forms
+            r'Patient Date of Birth': [
+                ('Patient Date of Birth', 'patient_date_of_birth')
             ]
         }
         
@@ -1684,62 +1698,114 @@ class DocumentFormFieldExtractor:
             line_idx=10  # Put form content first with low index
         ))
         
-        # ENHANCEMENT: Also detect input fields in consent forms using universal detection
-        # This ensures we don't miss form fields just because it's classified as consent
-        detected_fields = []
-        processed_keys = set()
+        # ENHANCEMENT: Use universal field detection for consent forms
+        # This ensures we detect all fields including those in signature lines
+        additional_fields = []
+        processed_keys = set(['form_1'])  # Already added form_1
         
-        # Only extract the essential signature fields that match the references
-        # Based on analysis: consent forms should have minimal fields, not over-extract
-        
-        # For consent forms, only add the fields that appear in the reference
-        # Crown bridge reference: form_1, relationship, signature, date_signed, printed_name_if_signed_on_behalf
-        # Tooth removal reference: form_1, signature, date_signed
-        
-        # Add only the standard signature fields that match reference patterns
-        # Check which reference pattern this follows by examining the consent content
-        # Look for specific patterns to distinguish form types
-        is_tooth_removal = ('TOOTH REMOVAL CONSENT FORM' in consent_html or 
-                           'extraction of a tooth' in consent_html.lower() or
-                           'tooth (teeth) has been recommended' in consent_html.lower())
-        
-        if is_tooth_removal:
-            # Tooth removal pattern: just signature and date
-            signature_fields = [
-                ("signature", "Signature", "signature", None),
-                ("date_signed", "Date Signed", "date", "any")
-            ]
-        else:
-            # For other consent forms, use minimal signature fields to avoid witness/doctor signatures
-            # Based on problem statement: "we should be ignoring fields for witness names and signatures and doctor signatures"
-            signature_fields = [
-                ("signature", "Signature", "signature", None),
-                ("date_signed", "Date Signed", "date", "any")
-            ]
-            
-            # NOTE: Removed relationship and printed_name_if_signed_on_behalf fields as they are typically
-            # witness or legally authorized representative fields that should be excluded per requirements
-        
-        # Add signature fields with high line_idx to ensure they come AFTER form content
-        for idx, (key, title, field_type, input_type) in enumerate(signature_fields):
-            # Set up control structure based on field type and reference patterns
-            if field_type == "signature":
-                control = {"hint": None, "input_type": None}  # Signature fields have input_type: null in reference
-            elif field_type == "input":
-                control = {"hint": None, "input_type": input_type}
-            elif field_type == "date":
-                control = {"hint": None, "input_type": input_type}
-            else:
+        # Process all lines to detect individual fields
+        for i, line in enumerate(text_lines):
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Skip the content that was already processed into form_1
+            # The content filtering stops at signature lines, so process from there
+            if i < 14:  # Signature line starts around line 15, so process from line 14+
+                continue
+                
+            # Use parse_inline_fields to detect multiple fields in signature lines
+            inline_fields = self.parse_inline_fields(line)
+            for field_name, full_line in inline_fields:
+                key = ModentoSchemaValidator.slugify(field_name)
+                
+                if key in processed_keys:
+                    continue
+                    
+                # Determine field type and control
+                field_type = self.detect_field_type(field_name)
                 control = {}
                 
+                if field_type == 'input':
+                    input_type = self.detect_input_type(field_name)
+                    control = {'hint': None, 'input_type': input_type}
+                elif field_type == 'date':
+                    control = {'hint': None, 'input_type': 'any'}
+                elif field_type == 'signature':
+                    control = {}
+                
+                # Determine section
+                section = "Signature" if any(sig_word in field_name.lower() 
+                                           for sig_word in ['signature', 'date', 'printed name']) else "Form"
+                
+                additional_fields.append(FieldInfo(
+                    key=key,
+                    title=field_name,
+                    field_type=field_type,
+                    section=section,
+                    optional=False,
+                    control=control,
+                    line_idx=100 + i  # High line index to put after form content
+                ))
+                processed_keys.add(key)
+            
+            # Also check for standalone field patterns
+            if ':' in line and len(line.strip()) < 100:
+                # Check if it's a standalone field like "Patient Date of Birth:"
+                field_name = line.split(':')[0].strip()
+                if (len(field_name) > 3 and 
+                    field_name.lower() not in ['signature', 'witness signature'] and
+                    not self._is_witness_or_doctor_signature_field(line.lower())):
+                    
+                    key = ModentoSchemaValidator.slugify(field_name)
+                    if key not in processed_keys:
+                        field_type = self.detect_field_type(field_name)
+                        control = {}
+                        
+                        if field_type == 'input':
+                            input_type = self.detect_input_type(field_name)
+                            control = {'hint': None, 'input_type': input_type}
+                        elif field_type == 'date':
+                            control = {'hint': None, 'input_type': 'past'}
+                        
+                        section = "Signature" if any(sig_word in field_name.lower() 
+                                                   for sig_word in ['signature', 'date']) else "Form"
+                        
+                        additional_fields.append(FieldInfo(
+                            key=key,
+                            title=field_name,
+                            field_type=field_type,
+                            section=section,
+                            optional=False,
+                            control=control,
+                            line_idx=100 + i
+                        ))
+                        processed_keys.add(key)
+        
+        # Add the detected fields to the main fields list
+        fields.extend(additional_fields)
+        
+        # Ensure we have at least the basic signature and date fields if not detected
+        if 'signature' not in processed_keys:
             fields.append(FieldInfo(
-                key=key,
-                title=title,
-                field_type=field_type,
+                key="signature",
+                title="Signature",
+                field_type="signature",
                 section="Signature",
                 optional=False,
-                control=control,
-                line_idx=9000 + idx  # Very high values to ensure they come AFTER form content
+                control={},
+                line_idx=200
+            ))
+        
+        if 'date_signed' not in processed_keys:
+            fields.append(FieldInfo(
+                key="date_signed",
+                title="Date Signed", 
+                field_type="date",
+                section="Signature",
+                optional=False,
+                control={'hint': None, 'input_type': 'any'},
+                line_idx=201
             ))
         
         return fields
@@ -1770,7 +1836,9 @@ class DocumentFormFieldExtractor:
                     continue
                     
                 # Handle signature lines specially - extract just the signature part
-                if 'signature:' in line.lower() and '_' in line:
+                # Stop content collection when we hit signature fields (patient signature section)
+                if ('signature:' in line.lower() and 
+                    ('printed name' in line.lower() or 'date' in line.lower() or '_' in line)):
                     # This is a signature line at the end, stop content collection here
                     break
                 content_lines.append(line)
@@ -2342,9 +2410,15 @@ class DocumentFormFieldExtractor:
         # These typically appear as standalone lines after the main consent text
         signature_fields_found = []
         
+        # Enhanced field extraction using parse_inline_fields for comprehensive detection
         for i, line in enumerate(text_lines):
             line = line.strip()
             if not line:
+                continue
+            
+            # Skip the content that was already processed into form_1
+            # The content filtering stops at signature lines, so process from there
+            if i < 14:  # Signature line starts around line 15, so process from line 14+
                 continue
             
             line_lower = line.lower()
@@ -2353,84 +2427,96 @@ class DocumentFormFieldExtractor:
             if self._is_witness_or_doctor_signature_field(line_lower):
                 continue
             
-            # Look for individual field patterns that should be extracted as separate fields
-            
-            # 1. Relationship field - handle lines with underscores and formatting
-            if (re.match(r'^\s*relationship[\s_]+', line_lower) or 
-                line_lower.strip() == 'relationship' or 
-                line_lower.strip() == 'relationship:'):
-                if 'relationship' not in processed_keys:
-                    fields.append(FieldInfo(
-                        key="relationship",
-                        title="Relationship",
-                        field_type="input",
-                        section=current_section,
-                        optional=False,
-                        control={"hint": None, "input_type": "name"},
-                        line_idx=i + 100
-                    ))
-                    processed_keys.add('relationship')
-            
-            # 2. Printed name field (various forms) - handle formatting
-            elif (any(pattern in line_lower for pattern in ['printed name', 'print name']) and 
-                  not self._is_witness_or_doctor_signature_field(line_lower)):
-                # Use the full title from the line, clean up the formatting
-                if 'printed name if signed on behalf' in line_lower:
-                    title = "Printed name if signed on behalf of the patient"
-                    key = "printed_name_if_signed_on_behalf"
-                else:
-                    # Extract the title before any underscores or colons
-                    title = re.sub(r'[_:\s]+.*', '', line).strip()
-                    # Skip if the extracted title is "Signature" - this means the line contains both
-                    # signature and printed name fields and we should not create a signature input field
-                    if title.lower() == 'signature':
-                        continue
-                    if not title or len(title) < 3:
-                        title = "Printed name if signed on behalf of the patient"
-                    key = ModentoSchemaValidator.slugify(title)
+            # Use parse_inline_fields to detect multiple fields in signature lines
+            inline_fields = self.parse_inline_fields(line)
+            for field_name, full_line in inline_fields:
+                key = ModentoSchemaValidator.slugify(field_name)
                 
-                if key not in processed_keys:
-                    fields.append(FieldInfo(
-                        key=key,
-                        title=title,
-                        field_type="input",
-                        section=current_section,
-                        optional=False,
-                        control={"hint": None, "input_type": None},
-                        line_idx=i + 110
-                    ))
-                    processed_keys.add(key)
+                if key in processed_keys:
+                    continue
+                    
+                # Determine field type and control
+                field_type = self.detect_field_type(field_name)
+                control = {}
+                
+                if field_type == 'input':
+                    input_type = self.detect_input_type(field_name)
+                    control = {'hint': None, 'input_type': input_type}
+                elif field_type == 'date':
+                    control = {'hint': None, 'input_type': 'any'}
+                elif field_type == 'signature':
+                    control = {}
+                
+                # Determine section
+                section = "Signature" if any(sig_word in field_name.lower() 
+                                           for sig_word in ['signature', 'date', 'printed name']) else "Form"
+                
+                fields.append(FieldInfo(
+                    key=key,
+                    title=field_name,
+                    field_type=field_type,
+                    section=section,
+                    optional=False,
+                    control=control,
+                    line_idx=100 + i  # High line index to put after form content
+                ))
+                processed_keys.add(key)
             
-            # 3. Look for signature field indicators (but not witness/doctor)
-            elif ('signature' in line_lower and 'patient' in line_lower and 
-                  not self._is_witness_or_doctor_signature_field(line_lower)):
-                # This is likely a patient signature field, but we'll add it later as a standard signature
-                pass
+            # Also check for standalone field patterns
+            if ':' in line and len(line.strip()) < 100:
+                # Check if it's a standalone field like "Patient Date of Birth:"
+                field_name = line.split(':')[0].strip()
+                if (len(field_name) > 3 and 
+                    field_name.lower() not in ['signature', 'witness signature'] and
+                    not self._is_witness_or_doctor_signature_field(line.lower())):
+                    
+                    key = ModentoSchemaValidator.slugify(field_name)
+                    if key not in processed_keys:
+                        field_type = self.detect_field_type(field_name)
+                        control = {}
+                        
+                        if field_type == 'input':
+                            input_type = self.detect_input_type(field_name)
+                            control = {'hint': None, 'input_type': input_type}
+                        elif field_type == 'date':
+                            control = {'hint': None, 'input_type': 'past'}
+                        
+                        section = "Signature" if any(sig_word in field_name.lower() 
+                                                   for sig_word in ['signature', 'date']) else "Form"
+                        
+                        fields.append(FieldInfo(
+                            key=key,
+                            title=field_name,
+                            field_type=field_type,
+                            section=section,
+                            optional=False,
+                            control=control,
+                            line_idx=100 + i
+                        ))
+                        processed_keys.add(key)
         
-        # Always ensure signature and date fields exist
+        # Always ensure signature and date fields exist if not already detected
         if 'signature' not in processed_keys:
             fields.append(FieldInfo(
                 key="signature",
                 title="Signature",
                 field_type="signature",
-                section=current_section,
+                section="Signature",
                 optional=False,
-                control={"hint": None, "input_type": None},
+                control={},
                 line_idx=200
             ))
-            processed_keys.add('signature')
         
-        if 'date_signed' not in processed_keys:
+        if 'date_signed' not in processed_keys and 'date' not in processed_keys:
             fields.append(FieldInfo(
                 key="date_signed",
                 title="Date Signed",
                 field_type="date",
-                section=current_section,
+                section="Signature",
                 optional=False,
                 control={"hint": None, "input_type": "any"},
                 line_idx=210
             ))
-            processed_keys.add('date_signed')
         
         return fields
     
