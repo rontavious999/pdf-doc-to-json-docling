@@ -1253,9 +1253,14 @@ class DocumentFormFieldExtractor:
                 ('Printed Name', 'printed_name'),
                 ('Date', 'date_signed')
             ],
-            # Guardian relationship pattern in consent forms
-            r'\(Patient/Parent/Guardian\)\s*Relationship': [
-                ('Relationship', 'relationship')
+            # Guardian relationship pattern in consent forms - handle both single line and tab-separated
+            r'\(Patient/Parent/Guardian\)\s*Relationship\s*\(If patient is a minor\)': [
+                ('(Patient/Parent/Guardian) Relationship (If patient is a minor)', 'patient_parent_guardian_relationship_if_patient_is_a_minor')
+            ],
+            # Tab-separated guardian and relationship pattern (like Endodontic form)
+            r'\(Patient/Parent/Guardian\)\s*\t\s*Relationship\s*\(If patient is a minor\)': [
+                ('(Patient/Parent/Guardian)', 'patient_parent_guardian'),
+                ('Relationship (If patient is a minor)', 'relationship_if_patient_is_a_minor')
             ],
             # Patient date of birth pattern in consent forms
             r'Patient Date of Birth': [
