@@ -197,7 +197,15 @@ class ModentoSchemaValidator:
             return False, ["Spec must be a top-level JSON array"], spec
 
         # 1) Fix signature uniqueness by type (not by key) and force canonical key 'signature'
+        # Also remove any input fields with key="signature" when a signature type field exists
         sig_idxs = [i for i, q in enumerate(spec) if q.get("type") == "signature"]
+        input_sig_idxs = [i for i, q in enumerate(spec) if q.get("type") == "input" and q.get("key") == "signature"]
+        
+        # If we have both signature type and input type with key="signature", remove the input type
+        if sig_idxs and input_sig_idxs:
+            for j in input_sig_idxs:
+                spec[j]["__drop__"] = True
+        
         if sig_idxs:
             first = sig_idxs[0]
             spec[first]["key"] = "signature"
@@ -2373,6 +2381,10 @@ class DocumentFormFieldExtractor:
                 else:
                     # Extract the title before any underscores or colons
                     title = re.sub(r'[_:\s]+.*', '', line).strip()
+                    # Skip if the extracted title is "Signature" - this means the line contains both
+                    # signature and printed name fields and we should not create a signature input field
+                    if title.lower() == 'signature':
+                        continue
                     if not title or len(title) < 3:
                         title = "Printed name if signed on behalf of the patient"
                     key = ModentoSchemaValidator.slugify(title)
