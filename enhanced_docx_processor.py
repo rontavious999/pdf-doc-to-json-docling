@@ -99,49 +99,11 @@ class EnhancedConsentProcessor:
             }
         ]
         
-        # Add signature fields in reference order
-        signature_fields = [
-            {
-                "key": "relationship",
-                "type": "input",
-                "title": "Relationship", 
-                "control": {
-                    "hint": None,
-                    "input_type": "name"
-                },
-                "section": "Signature"
-            },
-            {
-                "key": "signature",
-                "type": "signature",
-                "title": "Signature",
-                "control": {
-                    "hint": None,
-                    "input_type": None
-                },
-                "section": "Signature"
-            },
-            {
-                "key": "date_signed", 
-                "type": "date",
-                "title": "Date Signed",
-                "control": {
-                    "hint": None,
-                    "input_type": "any"
-                },
-                "section": "Signature"
-            },
-            {
-                "key": "printed_name_if_signed_on_behalf",
-                "type": "input", 
-                "title": "Printed name if signed on behalf of the patient",
-                "control": {
-                    "hint": None,
-                    "input_type": None
-                },
-                "section": "Signature"
-            }
-        ]
+        # Add signature fields using universal extraction
+        text_lines_for_signature = [line for line in text_lines if 'signature:' in line.lower() or 'printed name' in line.lower() or 'relationship' in line.lower()]
+        signature_fields = self._extract_signature_fields(text_lines, 
+                                                         next((i for i, line in enumerate(text_lines) 
+                                                              if 'signature:' in line.lower()), None))
         
         fields.extend(signature_fields)
         
@@ -206,7 +168,12 @@ class EnhancedConsentProcessor:
         signature_section_start = None
         
         for i, line in enumerate(text_lines):
-            if 'signature:' in line.lower() and ('printed name:' in line.lower() or 'date:' in line.lower()):
+            line_lower = line.lower()
+            # Enhanced signature section detection - more universal patterns
+            if ('signature:' in line_lower or 
+                ('signature' in line_lower and ('printed name' in line_lower or 'date' in line_lower)) or
+                line_lower.startswith('signature:') or
+                ('signature:' in line_lower and i > len(text_lines) * 0.7)):  # Near end of document
                 signature_section_start = i
                 break
             elif line.strip() and not line.startswith('##'):
@@ -292,7 +259,7 @@ class EnhancedConsentProcessor:
         return html_content
     
     def _extract_signature_fields(self, text_lines: List[str], signature_start: Optional[int]) -> List[Dict[str, Any]]:
-        """Extract signature fields based on detected patterns"""
+        """Extract signature fields based on detected patterns - universally improved"""
         
         if signature_start is None:
             # Default signature fields if no signature line found
@@ -319,31 +286,43 @@ class EnhancedConsentProcessor:
                 }
             ]
         
-        # Analyze signature section patterns
+        # Analyze signature section patterns more comprehensively
         signature_lines = text_lines[signature_start:signature_start+5] if signature_start < len(text_lines) - 5 else text_lines[signature_start:]
         
         fields = []
-        has_relationship = False
-        has_printed_name = False
-        has_patient_dob = False
+        detected_fields = {
+            'relationship': False,
+            'printed_name': False,
+            'patient_dob': False,
+            'witness_signature': False,
+            'witness_printed_name': False
+        }
         
+        # Universal pattern detection for signature fields
         for line in signature_lines:
             line_lower = line.lower()
             
             # Check for relationship field
             if 'relationship' in line_lower and 'minor' in line_lower:
-                has_relationship = True
+                detected_fields['relationship'] = True
             
-            # Check for printed name
-            if 'printed name' in line_lower:
-                has_printed_name = True
+            # Check for printed name (be more specific to avoid false positives)
+            if 'printed name:' in line_lower or 'printed name' in line_lower:
+                detected_fields['printed_name'] = True
             
             # Check for patient date of birth
             if 'patient date of birth' in line_lower:
-                has_patient_dob = True
+                detected_fields['patient_dob'] = True
+                
+            # Check for witness fields
+            if 'witness signature' in line_lower:
+                detected_fields['witness_signature'] = True
+                
+            if 'witness printed name' in line_lower:
+                detected_fields['witness_printed_name'] = True
         
-        # Build signature fields based on detected patterns
-        if has_relationship:
+        # Build signature fields based on detected patterns in logical order
+        if detected_fields['relationship']:
             fields.append({
                 "key": "relationship",
                 "type": "input",
@@ -367,6 +346,19 @@ class EnhancedConsentProcessor:
             "section": "Signature"
         })
         
+        # Add printed name if detected - with proper title
+        if detected_fields['printed_name']:
+            fields.append({
+                "key": "printed_name",
+                "type": "input", 
+                "title": "Printed Name",
+                "control": {
+                    "hint": None,
+                    "input_type": "name"
+                },
+                "section": "Signature"
+            })
+        
         # Always include date
         fields.append({
             "key": "date_signed", 
@@ -379,21 +371,8 @@ class EnhancedConsentProcessor:
             "section": "Signature"
         })
         
-        # Add printed name if detected
-        if has_printed_name:
-            fields.append({
-                "key": "printed_name_if_signed_on_behalf",
-                "type": "input", 
-                "title": "Printed name if signed on behalf of the patient",
-                "control": {
-                    "hint": None,
-                    "input_type": None
-                },
-                "section": "Signature"
-            })
-        
         # Add patient DOB if detected
-        if has_patient_dob:
+        if detected_fields['patient_dob']:
             fields.append({
                 "key": "patient_date_of_birth",
                 "type": "date",
@@ -401,6 +380,31 @@ class EnhancedConsentProcessor:
                 "control": {
                     "hint": None,
                     "input_type": "past"
+                },
+                "section": "Signature"
+            })
+            
+        # Add witness fields if detected
+        if detected_fields['witness_signature']:
+            fields.append({
+                "key": "witness_signature",
+                "type": "signature",
+                "title": "Witness Signature",
+                "control": {
+                    "hint": None,
+                    "input_type": None
+                },
+                "section": "Signature"
+            })
+            
+        if detected_fields['witness_printed_name']:
+            fields.append({
+                "key": "witness_printed_name",
+                "type": "input",
+                "title": "Witness Printed Name",
+                "control": {
+                    "hint": None,
+                    "input_type": "name"
                 },
                 "section": "Signature"
             })
