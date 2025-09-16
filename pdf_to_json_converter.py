@@ -279,6 +279,9 @@ class ModentoSchemaValidator:
         
         # Final cleanup: Remove unwanted duplicate fields that shouldn't exist
         spec = cls.remove_unwanted_duplicates(spec)
+        
+        # UNIVERSAL WITNESS FIELD COMPLIANCE: Ensure no witness fields remain
+        spec = cls.ensure_no_witness_fields(spec)
 
         return (len(errors) == 0), errors, spec
     
@@ -435,6 +438,29 @@ class ModentoSchemaValidator:
         
         # Filter out unwanted duplicates
         return [q for q in spec if q.get("key") not in unwanted_keys]
+    
+    @staticmethod 
+    def ensure_no_witness_fields(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Universal witness field removal - final safety check to ensure compliance"""
+        witness_indicators = [
+            'witness_signature', 'witness_printed_name', 'witness_name', 
+            'witness_date', 'witness_relationship', 'witness'
+        ]
+        
+        # Filter out any remaining witness fields
+        filtered_spec = []
+        for item in spec:
+            key = item.get("key", "").lower()
+            title = item.get("title", "").lower()
+            
+            # Skip if key or title contains witness indicators
+            is_witness_field = any(indicator in key for indicator in witness_indicators)
+            is_witness_title = any(indicator in title for indicator in witness_indicators)
+            
+            if not (is_witness_field or is_witness_title):
+                filtered_spec.append(item)
+        
+        return filtered_spec
 
 
 class DocumentFormFieldExtractor:
@@ -484,7 +510,6 @@ class DocumentFormFieldExtractor:
             'printed_name': re.compile(r'(?:printed?\s*name|print\s*name|name\s*\(print\)|patient\s*print)', re.IGNORECASE),
             'date_of_birth': re.compile(r'(?:date\s*of\s*birth|birth\s*date|dob|born)', re.IGNORECASE),
             'relationship': re.compile(r'(?:relationship|relation\s*to|guardian|parent|spouse)', re.IGNORECASE),
-            'witness': re.compile(r'(?:witness|witnessed\s*by)', re.IGNORECASE),
             'consent_date': re.compile(r'(?:consent\s*date|date\s*of\s*consent|today)', re.IGNORECASE),
         }
         
@@ -853,8 +878,7 @@ class DocumentFormFieldExtractor:
             return 'date'
         
         if any(pattern.search(text) for pattern in [
-            self.consent_field_patterns['relationship'],
-            self.consent_field_patterns['witness']
+            self.consent_field_patterns['relationship']
         ]):
             return 'input'
         
@@ -1310,17 +1334,6 @@ class DocumentFormFieldExtractor:
             r'Employer \(if different from above\).*?Relationship To Patient': [
                 ('Employer (if different from above)', 'employer_if_different_from_above'),
                 ('Relationship To Patient', 'relationship_to_patient_2')  # This should be detected earlier
-            ],
-            # Witness signature line pattern - MUST come before generic signature pattern for precedence
-            r'Witness Signature.*?Witness Printed Name.*?Date': [
-                ('Witness Signature', 'witness_signature'),
-                ('Witness Printed Name', 'witness_printed_name'),
-                ('Date', 'witness_date')
-            ],
-            # Alternative witness pattern (tab-separated)
-            r'Witness Signature.*?\t.*?Witness Printed Name': [
-                ('Witness Signature', 'witness_signature'),
-                ('Witness Printed Name', 'witness_printed_name')
             ],
             # Signature line pattern in consent forms - critical for DOCX consent processing
             r'Signature.*?Printed Name.*?Date': [
@@ -1834,7 +1847,7 @@ class DocumentFormFieldExtractor:
                 # Check if it's a standalone field like "Patient Date of Birth:"
                 field_name = line.split(':')[0].strip()
                 if (len(field_name) > 3 and 
-                    field_name.lower() not in ['signature', 'witness signature'] and
+                    field_name.lower() not in ['signature'] and
                     not self._is_witness_or_doctor_signature_field(line.lower())):
                     
                     key = ModentoSchemaValidator.slugify(field_name)
@@ -2123,10 +2136,15 @@ class DocumentFormFieldExtractor:
         return False
     
     def _is_witness_or_doctor_signature_field(self, line_lower: str) -> bool:
-        """Check if a line represents a field that should be excluded - MINIMAL filtering for universal processing"""
+        """Check if a line represents a field that should be excluded - Updated to exclude ALL witness fields per requirements"""
         
-        # UNIVERSAL PROCESSING: Only filter out truly problematic fields, not legitimate form fields
-        # According to requirements, we want to extract fields "completely and correctly"
+        # UNIVERSAL WITNESS FIELD EXCLUSION: Per requirements, we do not allow witnesses on forms or consents
+        
+        # Witness field indicators - these should be filtered out universally
+        witness_indicators = [
+            'witness signature', 'witness printed name', 'witness name', 'witness date',
+            'witnessed by', 'witness:', 'witness relationship'
+        ]
         
         # Doctor/dentist signature indicators - these are typically not patient-facing fields
         doctor_signatures = [
@@ -2135,38 +2153,24 @@ class DocumentFormFieldExtractor:
             'clinician signature'
         ]
         
-        # Only filter out clear doctor/provider signatures, but allow witness and patient-related fields
+        # Filter out witness fields universally
+        for indicator in witness_indicators:
+            if indicator in line_lower:
+                return True
+        
+        # Filter out clear doctor/provider signatures
         for indicator in doctor_signatures:
             if indicator in line_lower:
                 return True
         
-        # Allow witness signatures and other patient-related fields for complete extraction
-        return False
-        
-        # Special handling: "legally authorized representative" is OK if it's for patient signature
-        # but filter it if it's clearly a separate witness field
+        # Special handling: "legally authorized representative" - filter if witness-related
         if 'legally authorized representative' in line_lower:
-            # Allow if it's part of patient signature context
-            if 'patient signature' in line_lower or 'signature' in line_lower:
-                return False
-            # Filter if it's a standalone witness field
-            else:
-                return True
-        
-        # "relationship" field is legitimate in consent forms when standalone
-        # Only filter if it's clearly witness-specific contexts
-        if line_lower.strip() == 'relationship':
-            return False  # Allow standalone relationship field
-        if 'witness relationship' in line_lower or 'guardian relationship' in line_lower:
             return True
         
-        # Check for printed name in context of witness/representative - but be more specific
+        # Check for printed name in context of witness/representative - filter these out
         if 'printed name' in line_lower:
-            # Allow "printed name if signed on behalf of the patient" - this is a legitimate field
-            if 'on behalf of the patient' in line_lower or 'behalf of patient' in line_lower:
-                return False
             # Filter if it's clearly witness context
-            elif any(context in line_lower for context in ['witness', 'guardian signature', 'parent signature']):
+            if any(context in line_lower for context in ['witness', 'guardian signature', 'parent signature']):
                 return True
             
         return False
@@ -2580,7 +2584,7 @@ class DocumentFormFieldExtractor:
                 # Check if it's a standalone field like "Patient Date of Birth:"
                 field_name = line.split(':')[0].strip()
                 if (len(field_name) > 3 and 
-                    field_name.lower() not in ['signature', 'witness signature'] and
+                    field_name.lower() not in ['signature'] and
                     not self._is_witness_or_doctor_signature_field(line.lower())):
                     
                     key = ModentoSchemaValidator.slugify(field_name)
@@ -3410,12 +3414,6 @@ class DocumentFormFieldExtractor:
         # "Patient Date of Birth:" pattern - be more specific
         if re.search(r'patient\s+date\s+of\s+birth\s*:', line, re.IGNORECASE):
             fields.append(('Patient Date of Birth', line))
-        
-        # "Witness" patterns - be more specific
-        if re.search(r'witness\s+signature\s*:', line, re.IGNORECASE):
-            fields.append(('Witness Signature', line))
-        if re.search(r'witness\s+printed\s+name\s*:', line, re.IGNORECASE):
-            fields.append(('Witness Printed Name', line))
             
         # "Name (please print)" patterns - be more specific
         if re.search(r"patient'?s?\s+name\s*\(\s*please\s+print\s*\)", line, re.IGNORECASE):
