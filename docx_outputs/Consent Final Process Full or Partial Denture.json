@@ -1,0 +1,60 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<div style=\"text-align:center\"><strong></strong><br>I have been given the opportunity to view my dentures in the mouth prior to final processing. I approve the color, shape, feel and overall appearance of my dentures. I understand that once the dentures arc processed by the laboratory, the factors of color, shape, feel and overall appearance cannot be changed without additional and possibly significant time being taken and fees assessed. By signing this Consent for final processing. I give Dr. my consent for final processing and acknowledge my approval of the appearance. Patient's Name (Please Print) : Date: Signature of patient, legal guardian or authorized representative: Date.</div>"
+    },
+    "section": "Form",
+    "optional": false
+  },
+  {
+    "key": "patient_s_name_please_print",
+    "type": "input",
+    "title": "Patient's Name (Please Print)",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "patient_s_name",
+    "type": "input",
+    "title": "Patient's Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "authorized_representative",
+    "type": "input",
+    "title": "Authorized Representative",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Signature",
+    "optional": false
+  }
+]
