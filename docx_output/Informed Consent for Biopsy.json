@@ -1,0 +1,62 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<div style=\"text-align:center\"><strong>Informed Consent for Biopsy</strong><br>Smile@Kingervdental.com • www.kingervdental.com Recommended Treatment I hereby give consent to Dr. to perform Biopsy procedure(s) on me or my dependent as follows: (“Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment. Treatment Alternatives Alternative methods of treatment have been explained to me, such as: but I wish to proceed with the Recommended Treatment described above. Risks and Potential Complications . I understand that there are risks and potential complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These risks and potential complications, include, but are not limited to, the following: . Drug reactions and side effects. . Post-operative pain, bleeding, oozing, soft tissue infection and/or bone infection. . Bruising and/or swelling, restricted mouth opening for several days or weeks, or, rarely, longer. . Delayed healing, necessitating post-operative care. . If you are taking medications to make your bones stronger (such as bisphosphonates) or if you have received radiation therapy to the head or neck area for tumors/cancer, then you are at a higher risk for poor bone healing or bone loss that may never completely resolve and which may require surgery or other treatment. . Regrowth of the tissue which was removed in the biopsy. . As a result of the Lidocaine injection or use of other local anesthesia, there may be swelling, jaw muscle tenderness or even resultant tingling/numbness/pain (possibly of an electric shock nature) of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent: this may include alteration or loss of taste. . Depending upon the results of the biopsy, further treatment may be required, to better obtain a diagnosis and/or to remove additional tissue.</div>",
+      "hint": null
+    },
+    "section": "Form"
+  },
+  {
+    "key": "relationship",
+    "type": "input",
+    "title": "Relationship",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {
+      "hint": null,
+      "input_type": null
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "hint": null,
+      "input_type": "any"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "printed_name_if_signed_on_behalf",
+    "type": "input",
+    "title": "Printed name if signed on behalf of the patient",
+    "control": {
+      "hint": null,
+      "input_type": null
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "patient_date_of_birth",
+    "type": "date",
+    "title": "Patient Date of Birth",
+    "control": {
+      "hint": null,
+      "input_type": "past"
+    },
+    "section": "Signature"
+  }
+]
