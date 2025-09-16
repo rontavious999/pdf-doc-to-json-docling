@@ -24,6 +24,11 @@ VALIDATION RULES (Client-side)
    - Wherever "control.options" (or "control.extra.options") is used, every
      option must have a non-null, non-empty "value".
 
+4) Witness fields are not allowed.
+
+5. Header and footer information like practice name, address, phone number, email
+and such should be filtered out.
+
 ===============================================================================
 UNIVERSAL QUESTION OBJECT
 ===============================================================================
