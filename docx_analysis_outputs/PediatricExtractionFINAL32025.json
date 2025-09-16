@@ -1,0 +1,30 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<p>Pediatric Tooth Extraction Patient Name: Date of Birth: I hereby give permission to to perform the extraction of tooth/teeth numbers: to be done with local anesthesia. Extraction of teeth is an irreversible process and weather routine or difficult is a surgical procedure. As in any surgery, there are some risks. They include but are not limited to the following: Swelling, bruising, and/or discomfort in the extraction area Stretching of the corners of the mouth resulting in cracking or bruising Possible infection requiring additional treatment Bleeding- significant bleeding is not common, but oozing can be expected for several hours Sharp ridges or bone splinters may form later at the edge of the socket. These usually require another treatment to smooth or remove. Signature of Parent/Guardian: Date: Witness: Date:</p>"
+    },
+    "section": "Form",
+    "optional": false
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Signature",
+    "optional": false
+  }
+]

@@ -245,10 +245,12 @@ class EnhancedConsentProcessor:
         for i, line in enumerate(text_lines):
             line_lower = line.lower()
             # Enhanced signature section detection - more universal patterns
-            if ('signature:' in line_lower or 
-                ('signature' in line_lower and ('printed name' in line_lower or 'date' in line_lower)) or
+            if (('signature:' in line_lower or 'signature' in line_lower) or 
+                ('print patient name' in line_lower) or
+                ('patient signature' in line_lower) or
+                ('printed name' in line_lower and 'date' in line_lower) or
                 line_lower.startswith('signature:') or
-                ('signature:' in line_lower and i > len(text_lines) * 0.7)):  # Near end of document
+                ('date:' in line_lower and i > len(text_lines) * 0.6)):  # Near end of document
                 signature_section_start = i
                 break
             elif line.strip() and not line.startswith('##'):
@@ -425,7 +427,7 @@ class EnhancedConsentProcessor:
         # Create HTML structure
         html_content = f'<div style="text-align:center"><strong>{title}</strong><br>'
         
-        # Process content lines to preserve structure
+        # Process content lines to preserve structure with improved paragraph detection
         formatted_content = []
         current_paragraph = []
         
@@ -438,9 +440,19 @@ class EnhancedConsentProcessor:
             line = re.sub(r'\t+', ' ', line)
             line = re.sub(r' +', ' ', line)
             
-            # Check if this is a section header (short line, title case)
-            if (len(line) < 50 and 
-                any(header in line.lower() for header in ['treatment', 'alternative', 'risk', 'complication', 'procedure'])):
+            # Enhanced section header detection (more patterns)
+            is_section_header = (
+                len(line) < 80 and 
+                any(header in line.lower() for header in [
+                    'treatment', 'alternative', 'risk', 'complication', 'procedure',
+                    'description', 'introduction', 'cost', 'consent', 'informed',
+                    'failure of', 'breakage', 'loose', 'allergies', 'uncomfortable',
+                    'esthetics', 'appearance'
+                ]) and
+                line.endswith(':') == False  # Not just descriptive text
+            )
+            
+            if is_section_header:
                 # Finish current paragraph
                 if current_paragraph:
                     paragraph_text = ' '.join(current_paragraph)
@@ -449,8 +461,9 @@ class EnhancedConsentProcessor:
                 # Add section header
                 formatted_content.append(f'<p><br></p><p><strong>{line}</strong></p>')
             
-            # Check if this is a bullet point
-            elif line.startswith('.') or line.startswith('•') or re.match(r'^\d+\.', line):
+            # Check if this is a bullet point or numbered item
+            elif (line.startswith('.') or line.startswith('•') or 
+                  re.match(r'^\(\d+\)', line) or re.match(r'^\d+\.', line)):
                 # Finish current paragraph
                 if current_paragraph:
                     paragraph_text = ' '.join(current_paragraph)
@@ -458,9 +471,20 @@ class EnhancedConsentProcessor:
                     current_paragraph = []
                 # Add bullet point (clean up the bullet formatting)
                 bullet_text = line.lstrip('.•').strip()
-                if re.match(r'^\d+\.', line):
+                if re.match(r'^\(\d+\)', line):
+                    bullet_text = re.sub(r'^\(\d+\)\s*', '', line)
+                elif re.match(r'^\d+\.', line):
                     bullet_text = re.sub(r'^\d+\.\s*', '', line)
                 formatted_content.append(f'<p>• {bullet_text}</p>')
+            
+            # Check for paragraph breaks (sentences that form complete thoughts)
+            elif (len(current_paragraph) > 0 and 
+                  (len(' '.join(current_paragraph)) > 300 or  # Long paragraph
+                   line.startswith(('I understand', 'I agree', 'INFORMED CONSENT', 'By signing')))) :
+                # Finish current paragraph and start new one
+                paragraph_text = ' '.join(current_paragraph)
+                formatted_content.append(f'<p>{paragraph_text}</p>')
+                current_paragraph = [line]
             
             else:
                 # Regular content line - add to current paragraph
@@ -479,106 +503,101 @@ class EnhancedConsentProcessor:
     def _extract_signature_fields(self, text_lines: List[str], signature_start: Optional[int]) -> List[Dict[str, Any]]:
         """Extract signature fields based on detected patterns - universally improved"""
         
-        if signature_start is None:
-            # Default signature fields if no signature line found
-            return [
-                {
-                    "key": "signature",
-                    "type": "signature",
-                    "title": "Signature",
-                    "control": {
-                        "input_type": None
-                    },
-                    "section": "Signature"
-                },
-                {
-                    "key": "date_signed", 
-                    "type": "date",
-                    "title": "Date Signed",
-                    "control": {
-                        "input_type": "past"
-                    },
-                    "section": "Signature"
-                }
-            ]
-        
-        # Analyze signature section patterns more comprehensively
-        signature_lines = text_lines[signature_start:signature_start+5] if signature_start < len(text_lines) - 5 else text_lines[signature_start:]
-        
         fields = []
-        # Initialize detected fields tracking (witness fields removed per requirements)
+        
+        # Always add core signature field first
+        fields.append({
+            "key": "signature",
+            "type": "signature", 
+            "title": "Signature",
+            "control": {},
+            "section": "Signature"
+        })
+        
+        # Enhanced universal signature field detection - analyze ALL text lines, not just after signature_start
         detected_fields = {
             'relationship': False,
             'printed_name': False,
-            'patient_dob': False
+            'patient_dob': False,
+            'date_signed': False
         }
         
-        # Universal pattern detection for signature fields - enhanced for better detection
-        for line in signature_lines:
+        # Analyze all text lines for signature field patterns
+        for line in text_lines:
             line_lower = line.lower()
             
-            # Check for relationship field
-            if 'relationship' in line_lower and 'minor' in line_lower:
+            # More comprehensive relationship pattern detection
+            if any(pattern in line_lower for pattern in [
+                'relationship (if patient is a minor)',
+                'relationship to patient',
+                'patient/parent/guardian',
+                'relationship'
+            ]) and not detected_fields['relationship']:
+                fields.append({
+                    "key": "relationship",
+                    "type": "input",
+                    "title": "Relationship",
+                    "control": {"input_type": "name"},
+                    "section": "Signature"
+                })
                 detected_fields['relationship'] = True
             
-            # Check for printed name patterns (multiple variations)
+            # Enhanced printed name pattern detection
             if any(pattern in line_lower for pattern in [
-                'printed name:', 'printed name', 'patient\'s name',
-                'please print', 'name (please print)'
-            ]):
+                'printed name:', 'printed name', 
+                "patient's name (please print)", 'please print',
+                'name (please print)', 'patient name',
+                'patient printed name', 'print patient name:'
+            ]) and not detected_fields['printed_name']:
+                fields.append({
+                    "key": "printed_name",
+                    "type": "input", 
+                    "title": "Printed Name",
+                    "control": {"input_type": "name"},
+                    "section": "Signature"
+                })
                 detected_fields['printed_name'] = True
             
-            # Check for patient date of birth
-            if 'patient date of birth' in line_lower:
+            # Patient date of birth detection
+            if any(pattern in line_lower for pattern in [
+                'patient date of birth',
+                'date of birth:',
+                'patient dob'
+            ]) and not detected_fields['patient_dob']:
+                fields.append({
+                    "key": "patient_date_of_birth",
+                    "type": "date",
+                    "title": "Patient Date of Birth", 
+                    "control": {"input_type": "past"},
+                    "section": "Signature"
+                })
                 detected_fields['patient_dob'] = True
+            
+            # Date signed detection (various patterns)
+            if any(pattern in line_lower for pattern in [
+                'date:', 'date signed', 'signature date',
+                'date   ', '\tdate'  # Tab-separated patterns
+            ]) and not detected_fields['date_signed']:
+                fields.append({
+                    "key": "date_signed",
+                    "type": "date",
+                    "title": "Date Signed",
+                    "control": {"input_type": "past"}, 
+                    "section": "Signature"
+                })
+                detected_fields['date_signed'] = True
         
-        # Build signature fields based on detected patterns in logical order
-        if detected_fields['relationship']:
+        # Ensure at least basic signature fields are present if none detected
+        if not detected_fields['date_signed']:
             fields.append({
-                "key": "relationship",
-                "type": "input",
-                "title": "Relationship", 
-                "control": {
-                    "input_type": "name"
-                },
+                "key": "date_signed",
+                "type": "date", 
+                "title": "Date Signed",
+                "control": {"input_type": "past"},
                 "section": "Signature"
             })
         
-        # Always include signature
-        fields.append({
-            "key": "signature",
-            "type": "signature",
-            "title": "Signature",
-            "control": {
-                "input_type": None
-            },
-            "section": "Signature"
-        })
-        
-        # Add printed name if detected - with proper title
-        if detected_fields['printed_name']:
-            fields.append({
-                "key": "printed_name",
-                "type": "input", 
-                "title": "Printed Name",
-                "control": {
-                    "input_type": "name"
-                },
-                "section": "Signature"
-            })
-        
-        # Always include date
-        fields.append({
-            "key": "date_signed", 
-            "type": "date",
-            "title": "Date Signed",
-            "control": {
-                "input_type": "past"
-            },
-            "section": "Signature"
-        })
-        
-        # Add patient DOB if detected
+        return fields
         if detected_fields['patient_dob']:
             fields.append({
                 "key": "patient_date_of_birth",
