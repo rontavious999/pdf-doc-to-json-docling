@@ -473,7 +473,7 @@ class EnhancedConsentProcessor:
             'witness_printed_name': False
         }
         
-        # Universal pattern detection for signature fields
+        # Universal pattern detection for signature fields - enhanced for better detection
         for line in signature_lines:
             line_lower = line.lower()
             
@@ -489,11 +489,13 @@ class EnhancedConsentProcessor:
             if 'patient date of birth' in line_lower:
                 detected_fields['patient_dob'] = True
                 
-            # Check for witness fields
-            if 'witness signature' in line_lower:
+            # Enhanced witness field detection - check for patterns like "Witness Signature:" and "Witness Printed Name:"
+            if ('witness signature' in line_lower or 
+                ('witness' in line_lower and 'signature' in line_lower)):
                 detected_fields['witness_signature'] = True
                 
-            if 'witness printed name' in line_lower:
+            if ('witness printed name' in line_lower or
+                ('witness' in line_lower and 'printed name' in line_lower)):
                 detected_fields['witness_printed_name'] = True
         
         # Build signature fields based on detected patterns in logical order

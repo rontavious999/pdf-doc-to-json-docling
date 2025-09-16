@@ -526,6 +526,64 @@ class DocumentFormFieldExtractor:
         self.docx_processor = None
         self._setup_docx_processor()
     
+    def remove_practice_headers_footers(self, text_lines: List[str]) -> List[str]:
+        """Universal header/footer removal to clean practice information from consent forms"""
+        
+        # Define patterns for practice information that should be removed
+        practice_patterns = [
+            # Email and website patterns
+            r'.*@.*\.com.*',
+            r'.*www\..*\.com.*',
+            
+            # Phone number patterns
+            r'.*\(\d{3}\)\s*\d{3}[-.\s]*\d{4}.*',
+            r'.*\d{3}[-.\s]*\d{3}[-.\s]*\d{4}.*',
+            
+            # Address patterns (IL Route, street addresses)
+            r'.*\d+\s+IL\s+Route\s+\d+.*',
+            r'.*\d+\s+[A-Za-z\s]+•.*IL\s+\d{5}.*',
+            r'.*•.*•.*•.*',  # Multiple bullet separators (common in headers/footers)
+            
+            # Practice name patterns (common practice naming conventions)
+            r'.*[Ss]mile.*[Dd]ental.*',
+            r'.*[Kk]ingery.*[Dd]ental.*',
+            r'.*[Dd]arien.*IL.*',
+            
+            # Generic patterns for header/footer content
+            r'^[^a-zA-Z]*$',  # Lines with only symbols/numbers
+            r'^\s*•\s*$',     # Lines with just bullet points
+        ]
+        
+        cleaned_lines = []
+        for line in text_lines:
+            # Skip empty lines
+            if not line.strip():
+                continue
+            
+            # Check if line matches any practice information pattern
+            is_practice_info = False
+            for pattern in practice_patterns:
+                if re.match(pattern, line, re.IGNORECASE):
+                    is_practice_info = True
+                    break
+            
+            # Additional check for lines that are clearly header/footer based on position and content
+            if not is_practice_info:
+                # Check for lines that combine practice info with form titles
+                if ('smile@' in line.lower() or 'www.' in line.lower()) and 'informed consent' in line.lower():
+                    # Split and keep only the form title part
+                    if 'informed consent' in line.lower():
+                        # Extract just the informed consent part
+                        consent_match = re.search(r'(informed\s+consent[^•]*)', line, re.IGNORECASE)
+                        if consent_match:
+                            cleaned_lines.append(consent_match.group(1).strip())
+                    continue
+                
+                # Normal content line - keep it
+                cleaned_lines.append(line)
+        
+        return cleaned_lines
+    
     def _setup_docx_processor(self):
         """RECOMMENDATION 1: Setup enhanced DOCX processing with python-docx"""
         try:
@@ -634,6 +692,9 @@ class DocumentFormFieldExtractor:
                     if row_text:
                         enhanced_lines.append(row_text)
             
+            # UNIVERSAL HEADER/FOOTER REMOVAL - Remove practice information lines
+            enhanced_lines = self.remove_practice_headers_footers(enhanced_lines)
+            
             # Detect form structure patterns
             full_text = ' '.join(enhanced_lines).lower()
             for form_type, patterns in self.form_classification_patterns.items():
@@ -678,6 +739,9 @@ class DocumentFormFieldExtractor:
                 # Keep line but avoid excessive empty line runs
                 if stripped or (text_lines and text_lines[-1].strip()):
                     text_lines.append(stripped)
+            
+            # UNIVERSAL HEADER/FOOTER REMOVAL for all document types
+            text_lines = self.remove_practice_headers_footers(text_lines)
             
             # Update pipeline info with actual conversion details
             pipeline_info = self.pipeline_info.copy()
