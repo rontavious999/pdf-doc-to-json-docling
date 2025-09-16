@@ -1390,6 +1390,13 @@ class DocumentFormFieldExtractor:
             # Patient date of birth pattern in consent forms
             r'Patient Date of Birth': [
                 ('Patient Date of Birth', 'patient_date_of_birth')
+            ],
+            # Standalone signature field patterns (for forms like ZOOMConsent)
+            r'Print\s+patient\s+name\s*:': [
+                ('Print patient name', 'printed_name')
+            ],
+            r'Patient\s+signature': [
+                ('Patient signature', 'patient_signature')  # Note: this becomes signature type automatically
             ]
         }
         
@@ -1836,11 +1843,6 @@ class DocumentFormFieldExtractor:
         for i, line in enumerate(text_lines):
             line = line.strip()
             if not line:
-                continue
-                
-            # Skip the content that was already processed into form_1
-            # The content filtering stops at signature lines, so process from there
-            if i < 14:  # Signature line starts around line 15, so process from line 14+
                 continue
                 
             # Use parse_inline_fields to detect multiple fields in signature lines
@@ -2901,34 +2903,67 @@ class DocumentFormFieldExtractor:
         return paragraphs
 
     def create_comprehensive_consent_html(self, text_lines: List[str]) -> str:
-        """Create comprehensive HTML for consent forms"""
-        # Join all text lines and format as proper HTML
-        full_text = ' '.join(text_lines)
+        """Create comprehensive HTML for consent forms with improved paragraph detection"""
+        if not text_lines:
+            return '<div style="text-align:center"><strong>Consent Form</strong></div>'
         
-        # Apply basic formatting
-        # Convert to paragraphs by splitting on double spaces or newlines
-        paragraphs = []
+        # Extract title from first line if it looks like a title
+        title = text_lines[0] if text_lines else "Consent Form"
+        content_lines = text_lines[1:] if len(text_lines) > 1 else text_lines
+        
+        # Create HTML structure with title
+        html_content = f'<div style="text-align:center"><strong>{title}</strong><br>'
+        
+        # Process content lines with improved paragraph detection
+        formatted_content = []
         current_paragraph = []
         
-        for line in text_lines:
+        for line in content_lines:
             line = line.strip()
             if not line:
-                if current_paragraph:
-                    paragraphs.append(' '.join(current_paragraph))
-                    current_paragraph = []
+                continue
+                
+            # Clean up tabs and excessive whitespace
+            line = re.sub(r'\t+', ' ', line)
+            line = re.sub(r' +', ' ', line)
+            
+            # Check for signature fields that should not be in text content
+            if any(pattern in line.lower() for pattern in [
+                'signature:', 'patient name:', 'date of birth:', 'witness:'
+            ]):
+                # Skip signature fields - they should be extracted as separate fields
+                continue
+            
+            # Enhanced paragraph break detection
+            should_break_paragraph = (
+                # Long paragraph (force break)
+                len(' '.join(current_paragraph)) > 300 or
+                # New sentence starting with key phrases
+                line.startswith(('I understand', 'I agree', 'I hereby', 'Extraction of', 'As in any', 'They include')) or
+                # Risk/complication items
+                any(risk in line for risk in ['Swelling', 'Stretching', 'Possible infection', 'Bleeding', 'Sharp ridges']) or
+                # Section indicators
+                any(section in line.lower() for section in ['risks', 'complications', 'alternative', 'treatment'])
+            )
+            
+            if should_break_paragraph and current_paragraph:
+                # Finish current paragraph and start new one
+                paragraph_text = ' '.join(current_paragraph)
+                formatted_content.append(f'<p>{paragraph_text}</p>')
+                current_paragraph = [line]
             else:
+                # Add to current paragraph
                 current_paragraph.append(line)
         
+        # Finish any remaining paragraph
         if current_paragraph:
-            paragraphs.append(' '.join(current_paragraph))
+            paragraph_text = ' '.join(current_paragraph)
+            formatted_content.append(f'<p>{paragraph_text}</p>')
         
-        # Format as HTML paragraphs
-        html_parts = []
-        for paragraph in paragraphs:
-            if paragraph:
-                html_parts.append(f'<p>{paragraph}</p>')
+        # Join all formatted content
+        html_content += ''.join(formatted_content) + '</div>'
         
-        return ''.join(html_parts)
+        return html_content
     
     def extract_records_release_fields(self, text_lines: List[str]) -> List[FieldInfo]:
         """Extract fields for records release forms as structured forms with checkboxes"""

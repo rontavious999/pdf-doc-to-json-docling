@@ -531,7 +531,8 @@ class EnhancedConsentProcessor:
                 'relationship (if patient is a minor)',
                 'relationship to patient',
                 'patient/parent/guardian',
-                'relationship'
+                'relationship',
+                'parent or legal guardian'
             ]) and not detected_fields['relationship']:
                 fields.append({
                     "key": "relationship",
@@ -542,12 +543,13 @@ class EnhancedConsentProcessor:
                 })
                 detected_fields['relationship'] = True
             
-            # Enhanced printed name pattern detection
+            # Enhanced printed name pattern detection  
             if any(pattern in line_lower for pattern in [
                 'printed name:', 'printed name', 
                 "patient's name (please print)", 'please print',
-                'name (please print)', 'patient name',
-                'patient printed name', 'print patient name:'
+                'name (please print)', 'patient name:',
+                'patient printed name', 'print patient name:',
+                'patient name (printed)'
             ]) and not detected_fields['printed_name']:
                 fields.append({
                     "key": "printed_name",
@@ -558,10 +560,20 @@ class EnhancedConsentProcessor:
                 })
                 detected_fields['printed_name'] = True
             
+            # Patient signature detection (standalone signature fields)
+            if any(pattern in line_lower for pattern in [
+                'patient signature',
+                'signature of patient',
+                'signature of parent/guardian',
+                'parent/guardian signature'
+            ]) and 'witness' not in line_lower:  # Exclude witness signatures per schema
+                # This is handled by the main signature field, but we note it's detected
+                pass
+            
             # Patient date of birth detection
             if any(pattern in line_lower for pattern in [
                 'patient date of birth',
-                'date of birth:',
+                'date of birth:', 
                 'patient dob'
             ]) and not detected_fields['patient_dob']:
                 fields.append({
@@ -576,7 +588,8 @@ class EnhancedConsentProcessor:
             # Date signed detection (various patterns)
             if any(pattern in line_lower for pattern in [
                 'date:', 'date signed', 'signature date',
-                'date   ', '\tdate'  # Tab-separated patterns
+                'date   ', '\tdate',  # Tab-separated patterns
+                'date of birth:' # This pattern suggests a date field
             ]) and not detected_fields['date_signed']:
                 fields.append({
                     "key": "date_signed",
