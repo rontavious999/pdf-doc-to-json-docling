@@ -1,0 +1,71 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<div style=\"text-align:center\"><strong>Informed Consent for Endodontic</strong><br>Smile@Kingervdental.com • www.kingerydental.com Procedures Recommended Treatment I hereby give consent to Dr. to perform Endodontic Procedures procedure(s) on me or my dependent as follows: (“Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment. Discussion of Treatment The Recommended Treatment works by removing bacteria from the hollow space inside the tooth, and by sealing off the inside of the tooth to prevent re-infection. Although the Recommended Treatment has a very high success rate, it is a biological procedure and cannot be guaranteed. Occasionally, a tooth which has had root canal treatment may require retreatment, additional surgery, or extraction. Treatment Alternatives Alternative methods of treatment have been explained to me, such as extraction of the involved teeth, or postponement of root canal therapy, but I wish to proceed with the Recommended Treatment described above. Risks and Complications I understand that there are risks and complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These potential risks and complications, include, but are not limited to, the following: . Instrument breakage in the root canal. . Inability to negotiate canals due to prior treatment or calcification. . Perforation to the outside of the tooth. . Irreparable damage to the existing crown or restoration. . Cracking or fracturing of the root or crown of the tooth. . Pain, infection and swelling. . Difficulty opening and closing. . Temporomandibular Dysfunction resulting in jaw pain. . Nerve injury resulting in temporary or permanent numbness, itching, burning or tingling of the lip, chin, tongue or teeth. . As a result of the injection or use of anesthesia, there may be swelling, jaw muscle tenderness or even resultant numbness of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent.</div>",
+      "hint": null
+    },
+    "section": "Form"
+  },
+  {
+    "key": "relationship",
+    "type": "input",
+    "title": "Relationship",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {
+      "hint": null,
+      "input_type": null
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "printed_name",
+    "type": "input",
+    "title": "Printed Name",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "hint": null,
+      "input_type": "any"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "witness_signature",
+    "type": "signature",
+    "title": "Witness Signature",
+    "control": {
+      "hint": null,
+      "input_type": null
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "witness_printed_name",
+    "type": "input",
+    "title": "Witness Printed Name",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  }
+]
