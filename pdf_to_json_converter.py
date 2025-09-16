@@ -240,9 +240,10 @@ class ModentoSchemaValidator:
             # Keep hints in control.hint for NPF reference compliance
             # Do NOT move them to control.extra.hint
             
-            # Add hint field to match reference - most fields in reference have hint: None
-            if 'hint' not in ctrl:
-                ctrl['hint'] = None
+            # SCHEMA COMPLIANCE: Remove null hint fields per Modento schema
+            # Only add hint if it has a meaningful value
+            if 'hint' in ctrl and ctrl['hint'] is None:
+                del ctrl['hint']
 
             if q_type == "input":
                 t = ctrl.get("input_type")
@@ -254,13 +255,15 @@ class ModentoSchemaValidator:
 
             if q_type == "date":
                 t = ctrl.get("input_type")
-                if t not in {"past","future","any"}:
-                    ctrl["input_type"] = "any"
+                # SCHEMA COMPLIANCE: Only allow "past" or "future", remove "any"
+                if t not in {"past","future"}:
+                    # Remove invalid input_type per schema - default behavior
+                    if "input_type" in ctrl:
+                        del ctrl["input_type"]
 
             if q_type == "signature":
-                # Signature fields should have input_type: "name" according to reference
-                if "input_type" not in ctrl:
-                    ctrl["input_type"] = "name"
+                # SCHEMA COMPLIANCE: Signature should have empty control per schema
+                ctrl.clear()
 
             # Keep boolean values as-is for proper NPF compliance, fill missing option values as strings
             if q_type in {"radio","checkbox","dropdown"}:
@@ -328,7 +331,7 @@ class ModentoSchemaValidator:
                 "title": "Date Signed",
                 "section": "Signature",
                 "optional": False,
-                "control": {"input_type": "any"}
+                "control": {"input_type": "past"}
             }
             spec.append(sig_date)
         
@@ -1511,7 +1514,7 @@ class DocumentFormFieldExtractor:
                 field_type="date",
                 section="Signature",
                 optional=False,
-                control={"input_type": "any"},
+                control={"input_type": "past"},
                 line_idx=line_idx + 3
             )
         ]
@@ -1785,8 +1788,7 @@ class DocumentFormFieldExtractor:
             section="Form",
             optional=False,
             control={
-                "html_text": consent_html,
-                "hint": None
+                "html_text": consent_html
             },
             line_idx=10  # Put form content first with low index
         ))
@@ -1821,9 +1823,9 @@ class DocumentFormFieldExtractor:
                 
                 if field_type == 'input':
                     input_type = self.detect_input_type(field_name)
-                    control = {'hint': None, 'input_type': input_type}
+                    control = {'input_type': input_type}
                 elif field_type == 'date':
-                    control = {'hint': None, 'input_type': 'any'}
+                    control = {'input_type': 'past'}
                 elif field_type == 'signature':
                     control = {}
                 
@@ -1858,9 +1860,9 @@ class DocumentFormFieldExtractor:
                         
                         if field_type == 'input':
                             input_type = self.detect_input_type(field_name)
-                            control = {'hint': None, 'input_type': input_type}
+                            control = {'input_type': input_type}
                         elif field_type == 'date':
-                            control = {'hint': None, 'input_type': 'past'}
+                            control = {'input_type': 'past'}
                         
                         section = "Signature" if any(sig_word in field_name.lower() 
                                                    for sig_word in ['signature', 'date', 'printed name', 'patient']) else "Form"
@@ -1902,9 +1904,9 @@ class DocumentFormFieldExtractor:
                                 
                                 if field_type == 'input':
                                     input_type = self.detect_input_type(field_name)
-                                    control = {'hint': None, 'input_type': input_type}
+                                    control = {'input_type': input_type}
                                 elif field_type == 'date':
-                                    control = {'hint': None, 'input_type': 'any'}
+                                    control = {'input_type': 'past'}
                                 
                                 section = "Signature"
                                 
@@ -1941,7 +1943,7 @@ class DocumentFormFieldExtractor:
                 field_type="date",
                 section="Signature",
                 optional=False,
-                control={'hint': None, 'input_type': 'any'},
+                control={'input_type': 'past'},
                 line_idx=201
             ))
         
@@ -2315,21 +2317,16 @@ class DocumentFormFieldExtractor:
             chosen_signature.field_type = 'signature'
             chosen_signature.key = 'signature'
             chosen_signature.title = 'Signature'
-            chosen_signature.control = {'hint': None}
+            chosen_signature.control = {}
             
             final_fields.append(chosen_signature)
         
         # Basic field validation and cleanup - ensure all controls have hint field
         for field in final_fields:
-            # Ensure hint field is always present for consistency with reference
-            if 'hint' not in field.control:
-                field.control['hint'] = None
-                
             # Fix input_type issues for signature fields only
             if field.field_type == 'signature':
-                # Signature fields should not have input_type  
-                existing_hint = field.control.get('hint')
-                field.control = {'hint': existing_hint}
+                # Signature fields should have empty control per schema
+                field.control = {}
                     
             # Fix mi field input_type to be 'name' to match reference  
             if field.key == 'mi':
@@ -2364,17 +2361,17 @@ class DocumentFormFieldExtractor:
         required_fields_by_section = {
             "Patient Information Form": [
                 # Main address state field
-                ("state", "State", "states", {"hint": None, "input_type": "name"}),
+                ("state", "State", "states", {"input_type": "name"}),
                 # Work address fields (numbered)
-                ("street_2", "Street", "input", {"input_type": "name", "hint": None}),
-                ("city_2", "City", "input", {"input_type": "name", "hint": None}),
-                ("state3", "State", "states", {"hint": None, "input_type": "name"}),
-                ("zip_2", "Zip", "input", {"input_type": "zip", "hint": None}),
+                ("street_2", "Street", "input", {"input_type": "name"}),
+                ("city_2", "City", "input", {"input_type": "name"}),
+                ("state3", "State", "states", {"input_type": "name"}),
+                ("zip_2", "Zip", "input", {"input_type": "zip"}),
                 # Driver's license state (numbered)
-                ("state2", "State", "states", {"hint": None, "input_type": "name"}),
+                ("state2", "State", "states", {"input_type": "name"}),
                 # Emergency contact phones
-                ("mobile_phone", "Mobile Phone", "input", {"input_type": "phone", "hint": None}),
-                ("home_phone", "Home Phone", "input", {"input_type": "phone", "hint": None}),
+                ("mobile_phone", "Mobile Phone", "input", {"input_type": "phone"}),
+                ("home_phone", "Home Phone", "input", {"input_type": "phone"}),
             ],
             "FOR CHILDREN/MINORS ONLY": [
                 # Responsible party info (numbered)
@@ -2382,7 +2379,7 @@ class DocumentFormFieldExtractor:
                 ("last_name_2", "Last Name", "input", {"input_type": "name", "hint": "Name of Responsible Party"}),
                 ("date_of_birth_2", "Date of Birth", "date", {"input_type": "past", "hint": "Responsible Party"}),
                 ("relationship_to_patient_2", "Relationship To Patient", "radio", {
-                    "hint": None, "options": [
+                    "options": [
                         {"name": "Self", "value": "Self"},
                         {"name": "Spouse", "value": "Spouse"},
                         {"name": "Parent", "value": "Parent"},
@@ -2391,20 +2388,20 @@ class DocumentFormFieldExtractor:
                 }),
                 # Address if different from patient (numbered)
                 ("city_3", "City", "input", {"input_type": "name", "hint": "If different from patient"}),
-                ("state4", "State", "states", {"hint": None, "input_type": "name"}),
+                ("state4", "State", "states", {"input_type": "name"}),
                 ("zip_3", "Zip", "input", {"input_type": "zip", "hint": "If different from patient"}),
                 # Contact info (numbered)
-                ("mobile_2", "Mobile", "input", {"input_type": "phone", "hint": None}),
-                ("home_2", "Home", "input", {"input_type": "phone", "hint": None}),
-                ("work_2", "Work", "input", {"input_type": "phone", "hint": None}),
+                ("mobile_2", "Mobile", "input", {"input_type": "phone"}),
+                ("home_2", "Home", "input", {"input_type": "phone"}),
+                ("work_2", "Work", "input", {"input_type": "phone"}),
                 # Employment info (numbered)
                 ("occupation_2", "Occupation", "input", {"input_type": "name", "hint": "(if different from above)"}),
                 ("street_3", "Street", "input", {"input_type": "name", "hint": "(if different from above)"}),
                 ("city_2_2", "City", "input", {"input_type": "name", "hint": "(if different from above)"}),
-                ("state5", "State", "states", {"hint": None, "input_type": "name"}),
+                ("state5", "State", "states", {"input_type": "name"}),
                 ("zip_4", "Zip", "input", {"input_type": "zip", "hint": "(if different from above)"}),
                 # School
-                ("name_of_school", "Name of School", "input", {"input_type": "name", "hint": None}),
+                ("name_of_school", "Name of School", "input", {"input_type": "name"}),
                 # Address field
                 ("if_different_from_patient_street", "Street", "input", {"hint": "If different from patient", "input_type": "address"}),
             ],
@@ -2412,31 +2409,31 @@ class DocumentFormFieldExtractor:
                 # Insurance company address (numbered)
                 ("street_4", "Street", "input", {"input_type": "name", "hint": "Insurance Company"}),
                 ("city_5", "City", "input", {"input_type": "name", "hint": "Insurance Company"}),
-                ("state_6", "State", "states", {"hint": None, "input_type": "name"}),
+                ("state_6", "State", "states", {"input_type": "name"}),
                 ("zip_5", "Zip", "input", {"input_type": "zip", "hint": "Insurance Company"}),
                 # Dental plan
-                ("dental_plan_name", "Dental Plan Name", "input", {"input_type": "name", "hint": None}),
+                ("dental_plan_name", "Dental Plan Name", "input", {"input_type": "name"}),
             ],
             "Secondary Dental Plan": [
                 # All secondary insurance fields (numbered)
-                ("name_of_insured_2", "Name of Insured", "input", {"input_type": "name", "hint": None}),
-                ("birthdate_2", "Birthdate", "date", {"input_type": "past", "hint": None}),
-                ("ssn_3", "Social Security No.", "input", {"input_type": "ssn", "hint": None}),
-                ("insurance_company_2", "Insurance Company", "input", {"input_type": "name", "hint": None}),
-                ("phone_2", "Phone", "input", {"input_type": "phone", "hint": None}),
-                ("street_5", "Street", "input", {"input_type": "name", "hint": None}),
-                ("city_6", "City", "input", {"input_type": "name", "hint": None}),
-                ("state_7", "State", "states", {"hint": None, "input_type": "name"}),
-                ("zip_6", "Zip", "input", {"input_type": "zip", "hint": None}),
-                ("dental_plan_name_2", "Dental Plan Name", "input", {"input_type": "name", "hint": None}),
-                ("plan_group_number_2", "Plan/Group Number", "input", {"input_type": "number", "hint": None}),
-                ("id_number_2", "ID Number", "input", {"input_type": "number", "hint": None}),
-                ("patient_relationship_to_insured_2", "Patient Relationship to Insured", "input", {"input_type": "name", "hint": None}),
+                ("name_of_insured_2", "Name of Insured", "input", {"input_type": "name"}),
+                ("birthdate_2", "Birthdate", "date", {"input_type": "past"}),
+                ("ssn_3", "Social Security No.", "input", {"input_type": "ssn"}),
+                ("insurance_company_2", "Insurance Company", "input", {"input_type": "name"}),
+                ("phone_2", "Phone", "input", {"input_type": "phone"}),
+                ("street_5", "Street", "input", {"input_type": "name"}),
+                ("city_6", "City", "input", {"input_type": "name"}),
+                ("state_7", "State", "states", {"input_type": "name"}),
+                ("zip_6", "Zip", "input", {"input_type": "zip"}),
+                ("dental_plan_name_2", "Dental Plan Name", "input", {"input_type": "name"}),
+                ("plan_group_number_2", "Plan/Group Number", "input", {"input_type": "number"}),
+                ("id_number_2", "ID Number", "input", {"input_type": "number"}),
+                ("patient_relationship_to_insured_2", "Patient Relationship to Insured", "input", {"input_type": "name"}),
             ],
             "Signature": [
                 # Required signature fields - only add if missing
-                ("initials_2", "Initial", "input", {"input_type": "initials", "hint": None}),
-                ("date_signed", "Date Signed", "date", {"input_type": "any", "hint": None}),
+                ("initials_2", "Initial", "input", {"input_type": "initials"}),
+                ("date_signed", "Date Signed", "date", {"input_type": "past"}),
             ]
         }
         
@@ -2556,8 +2553,7 @@ class DocumentFormFieldExtractor:
             section="Form",
             optional=False,
             control={
-                "html_text": consent_html,
-                "hint": None
+                "html_text": consent_html
             },
             line_idx=0
         ))
@@ -2602,9 +2598,9 @@ class DocumentFormFieldExtractor:
                 
                 if field_type == 'input':
                     input_type = self.detect_input_type(field_name)
-                    control = {'hint': None, 'input_type': input_type}
+                    control = {'input_type': input_type}
                 elif field_type == 'date':
-                    control = {'hint': None, 'input_type': 'any'}
+                    control = {'input_type': 'past'}
                 elif field_type == 'signature':
                     control = {}
                 
@@ -2641,9 +2637,9 @@ class DocumentFormFieldExtractor:
                         
                         if field_type == 'input':
                             input_type = self.detect_input_type(potential_field)
-                            control = {'hint': None, 'input_type': input_type}
+                            control = {'input_type': input_type}
                         elif field_type == 'date':
-                            control = {'hint': None, 'input_type': 'any'}
+                            control = {'input_type': 'past'}
                         
                         section = "Signature" if any(sig_word in potential_field.lower() 
                                                    for sig_word in ['signature', 'date', 'printed name', 'patient']) else "Form"
@@ -2685,9 +2681,9 @@ class DocumentFormFieldExtractor:
                                 
                                 if field_type == 'input':
                                     input_type = self.detect_input_type(field_name)
-                                    control = {'hint': None, 'input_type': input_type}
+                                    control = {'input_type': input_type}
                                 elif field_type == 'date':
-                                    control = {'hint': None, 'input_type': 'any'}
+                                    control = {'input_type': 'past'}
                                 
                                 section = "Signature"
                                 
@@ -2717,9 +2713,9 @@ class DocumentFormFieldExtractor:
                         
                         if field_type == 'input':
                             input_type = self.detect_input_type(field_name)
-                            control = {'hint': None, 'input_type': input_type}
+                            control = {'input_type': input_type}
                         elif field_type == 'date':
-                            control = {'hint': None, 'input_type': 'past'}
+                            control = {'input_type': 'past'}
                         
                         section = "Signature" if any(sig_word in field_name.lower() 
                                                    for sig_word in ['signature', 'date']) else "Form"
@@ -2754,7 +2750,7 @@ class DocumentFormFieldExtractor:
                 field_type="date",
                 section="Signature",
                 optional=False,
-                control={"hint": None, "input_type": "any"},
+                control={"input_type": "past"},
                 line_idx=210
             ))
         
@@ -2782,9 +2778,9 @@ class DocumentFormFieldExtractor:
         for i, field_info in enumerate(patient_fields):
             control = {}
             if field_info["type"] == "input":
-                control = {"input_type": field_info["input_type"], "hint": None}
+                control = {"input_type": field_info["input_type"]}
             elif field_info["type"] == "date":
-                control = {"input_type": field_info["input_type"], "hint": None}
+                control = {"input_type": field_info["input_type"]}
             elif field_info["type"] == "states":
                 control = {}
             
@@ -2811,8 +2807,7 @@ class DocumentFormFieldExtractor:
             section=release_section,
             optional=False,
             control={
-                "options": [{"name": "Complete records", "value": True}],
-                "hint": None
+                "options": [{"name": "Complete records", "value": True}]
             },
             line_idx=100
         ))
@@ -2829,8 +2824,7 @@ class DocumentFormFieldExtractor:
                     {"name": "Radiographs/Images", "value": "radiographs"},
                     {"name": "Reports", "value": "reports"},
                     {"name": "Other", "value": "other"}
-                ],
-                "hint": None
+                ]
             },
             line_idx=101
         ))
@@ -2842,7 +2836,7 @@ class DocumentFormFieldExtractor:
             field_type="input",
             section=release_section,
             optional=True,
-            control={"input_type": "name", "hint": None},
+            control={"input_type": "name"},
             line_idx=102
         ))
         
@@ -2862,7 +2856,7 @@ class DocumentFormFieldExtractor:
                 field_type=field_info["type"],
                 section=recipient_section,
                 optional=False,
-                control={"input_type": field_info["input_type"], "hint": None},
+                control={"input_type": field_info["input_type"]},
                 line_idx=200 + i
             )
             fields.append(field)
@@ -2876,7 +2870,7 @@ class DocumentFormFieldExtractor:
             field_type="input",
             section=signature_section,
             optional=False,
-            control={"input_type": "name", "hint": None},
+            control={"input_type": "name"},
             line_idx=300
         ))
         
@@ -2886,7 +2880,7 @@ class DocumentFormFieldExtractor:
             field_type="input", 
             section=signature_section,
             optional=False,
-            control={"input_type": "name", "hint": None},
+            control={"input_type": "name"},
             line_idx=301
         ))
         
@@ -2896,7 +2890,7 @@ class DocumentFormFieldExtractor:
             field_type="input",
             section=signature_section,
             optional=False,
-            control={"input_type": "name", "hint": None},
+            control={"input_type": "name"},
             line_idx=302
         ))
         
@@ -2906,7 +2900,7 @@ class DocumentFormFieldExtractor:
             field_type="input",
             section=signature_section,
             optional=False,
-            control={"input_type": "name", "hint": None},
+            control={"input_type": "name"},
             line_idx=303
         ))
         
@@ -2926,7 +2920,7 @@ class DocumentFormFieldExtractor:
             field_type="date",
             section=signature_section,
             optional=False,
-            control={"input_type": "any", "hint": None},
+            control={"input_type": "past"},
             line_idx=401
         ))
         
@@ -3001,7 +2995,7 @@ class DocumentFormFieldExtractor:
                     if 'birth' in field_name.lower():
                         control = {'input_type': 'past'}
                     else:
-                        control = {'input_type': 'any'}
+                        control = {'input_type': 'past'}
                 elif 'signature' in field_name.lower():
                     field_type = 'signature'
                     control = {}
@@ -3058,7 +3052,7 @@ class DocumentFormFieldExtractor:
                         field_type='date',
                         section=current_section,
                         optional=False,
-                        control={'input_type': 'any'},
+                        control={'input_type': 'past'},
                         line_idx=i
                     ))
                     processed_keys.add('date_signed')
@@ -3069,8 +3063,8 @@ class DocumentFormFieldExtractor:
                 'SSN': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn'}),
                 'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}]}),
                 'Social Security No.': ('ssn_2', 'Social Security No.', 'input', {'input_type': 'ssn'}),
-                "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'any'}),
-                'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any'}), 
+                "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'past'}),
+                'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'past'}), 
                 'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past'}),
                 'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past'}),
                 'Marital Status': ('marital_status', 'Marital Status', 'radio', {
@@ -3664,7 +3658,7 @@ class DocumentFormFieldExtractor:
                             ('street_2', 'Street', 'input', {'input_type': 'name'}),
                             ('city_2', 'City', 'input', {'input_type': 'name'}),
                             ('state_3', 'State', 'states', {'input_type': 'name'}),
-                            ('zip_2', 'Zip', 'input', {'hint': None, 'input_type': 'zip'})
+                            ('zip_2', 'Zip', 'input', {'input_type': 'zip'})
                         ]
                         section_for_work_address = "Patient Information Form"
                     
@@ -3725,8 +3719,8 @@ class DocumentFormFieldExtractor:
                 'Sex': ('sex', 'Sex', 'radio', {'options': [{"name": "Male", "value": "male"}, {"name": "Female", "value": "female"}]}),
                 'Social Security No.': ('ssn', 'Social Security No.', 'input', {'input_type': 'ssn'}),  # First SSN should be 'ssn', not 'ssn_2'
                 'State': ('state2', 'State', 'states', {'input_type': 'name'}),  # FIXED: match reference pattern - standalone State should be state2
-                "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'any'}),
-                'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'any'}), 
+                "Today 's Date": ('todays_date', "Today's Date", 'date', {'input_type': 'past'}),
+                'Today\'s Date': ('todays_date', 'Today\'s Date', 'date', {'input_type': 'past'}), 
                 'Date of Birth': ('date_of_birth', 'Date of Birth', 'date', {'input_type': 'past'}),
                 'Birthdate': ('birthdate', 'Birthdate', 'date', {'input_type': 'past'}),
                 'Mobile Phone': ('mobile_phone', 'Mobile Phone', 'input', {'input_type': 'phone'}),
@@ -3740,7 +3734,7 @@ class DocumentFormFieldExtractor:
                         {"name": "Widowed", "value": "Widowed"}
                     ]
                 }),
-                'Date Signed': ('date_signed', 'Date Signed', 'date', {'input_type': 'any'}),
+                'Date Signed': ('date_signed', 'Date Signed', 'date', {'input_type': 'past'}),
                 # Add dental plan specific standalone fields
                 'Name of Insured': ('name_of_insured', 'Name of Insured', 'input', {'input_type': 'name'}),
                 'Insurance Company': ('insurance_company', 'Insurance Company', 'input', {'input_type': 'name'}),
@@ -4031,7 +4025,7 @@ class DocumentFormFieldExtractor:
                         field_type='date',
                         section=current_section,
                         optional=False,
-                        control={'input_type': 'any'}
+                        control={'input_type': 'past'}
                     )
                     fields.append(field)
                     processed_keys.add('date_signed')
@@ -4155,15 +4149,12 @@ class DocumentFormFieldExtractor:
                     if field_type == 'input':
                         input_type = self.detect_input_type(field_name)
                         control['input_type'] = input_type
-                        control['hint'] = None
                     elif field_type == 'date':
                         if 'birth' in field_name.lower() or 'dob' in field_name.lower():
                             control['input_type'] = 'past'
-                        else:
-                            control['input_type'] = 'any'
-                        control['hint'] = None
+                        # For other dates, don't set input_type per schema
                     elif field_type == 'signature':
-                        control = {'hint': None}
+                        control = {}
                     
                     # Handle special cases
                     if 'state' in field_name.lower() and 'estate' not in field_name.lower():
@@ -4383,11 +4374,7 @@ class DocumentFormFieldExtractor:
                 elif field_type == 'date':
                     if 'birth' in field_name.lower() or 'dob' in field_name.lower():
                         control['input_type'] = 'past'
-                    elif 'today' in field_name.lower():
-                        control['input_type'] = 'any'
-                    else:
-                        control['input_type'] = 'past'
-                    control['hint'] = None
+                    # For other dates, don't set invalid input_type per schema
                 elif field_type == 'signature':
                     control = {}
                 
@@ -4598,7 +4585,7 @@ class DocumentFormFieldExtractor:
                 field_type='date',
                 section="Signature",
                 optional=False,
-                control={'input_type': 'any'},
+                control={'input_type': 'past'},
                 line_idx=9999  # Ensure it's at the end
             ))
         
@@ -4784,29 +4771,32 @@ class DocumentToJSONConverter:
         for field in fields:
             # Normalize control structure to match reference order
             normalized_control = {}
-            if field.control:
+            # Build control dict without null hint fields (schema compliance)
+            normalized_control = {}
+            if field.field_type == "states":
+                # States fields have empty control per schema
+                pass  # Leave normalized_control empty
+            elif field.field_type == "signature": 
+                # Signature fields have empty control per schema
+                pass  # Leave normalized_control empty
+            elif field.control:
                 # Special handling for text fields (different order)
                 if field.field_type == 'text':
                     # For text fields: temporary_html_text, html_text, text
-                    if 'temporary_html_text' in field.control:
+                    if 'temporary_html_text' in field.control and field.control['temporary_html_text'] is not None:
                         normalized_control['temporary_html_text'] = field.control['temporary_html_text']
-                    if 'html_text' in field.control:
+                    if 'html_text' in field.control and field.control['html_text'] is not None:
                         normalized_control['html_text'] = field.control['html_text']
-                    if 'text' in field.control:
+                    if 'text' in field.control and field.control['text'] is not None:
                         normalized_control['text'] = field.control['text']
-                    # Add any other fields
+                    # Add any other non-null fields
                     for key, value in field.control.items():
-                        if key not in ['temporary_html_text', 'html_text', 'text']:
+                        if key not in ['temporary_html_text', 'html_text', 'text'] and value is not None:
                             normalized_control[key] = value
                 else:
-                    # For other fields: hint first, then input_type, then others
-                    if 'hint' in field.control:
-                        normalized_control['hint'] = field.control['hint']
-                    if 'input_type' in field.control:
-                        normalized_control['input_type'] = field.control['input_type']
-                    # Add any other fields in original order
+                    # For other fields: only add non-null values per schema
                     for key, value in field.control.items():
-                        if key not in ['hint', 'input_type']:
+                        if value is not None:
                             normalized_control[key] = value
             
             field_dict = {
@@ -4814,19 +4804,13 @@ class DocumentToJSONConverter:
                 "type": field.field_type,  # Put type after key to match reference order
                 "title": field.title,
                 "control": normalized_control,
-                "section": field.section
+                "section": field.section,
+                "optional": field.optional  # SCHEMA COMPLIANCE: Always include optional field
             }
             
             # Transfer line_idx from FieldInfo to meta structure for proper ordering
             field_dict["meta"] = {"line_idx": getattr(field, 'line_idx', len(json_spec))}
             
-            # Only add optional field for specific types that have it in reference
-            if field.field_type in ["states", "text", "signature", "radio"] and field.key in [
-                "state", "state2", "state3", "state4", "state5", "state_6", "state_7",
-                "text_3", "text_4", "signature",
-                "i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_"
-            ]:
-                field_dict["optional"] = False
             json_spec.append(field_dict)
         
         # Final cleanup: Fix specific field types to match reference exactly

@@ -108,8 +108,7 @@ class EnhancedConsentProcessor:
                 "type": "text", 
                 "title": "",
                 "control": {
-                    "html_text": consent_content,
-                    "hint": None
+                    "html_text": consent_content
                 },
                 "section": "Form"
             }
@@ -240,8 +239,7 @@ class EnhancedConsentProcessor:
                 "type": "text", 
                 "title": "",
                 "control": {
-                    "html_text": consent_content,
-                    "hint": None
+                    "html_text": consent_content
                 },
                 "section": "Form"
             }
@@ -317,8 +315,7 @@ class EnhancedConsentProcessor:
                 "type": "text", 
                 "title": "",
                 "control": {
-                    "html_text": consent_content,
-                    "hint": None
+                    "html_text": consent_content
                 },
                 "section": "Form"
             }
@@ -366,7 +363,7 @@ class EnhancedConsentProcessor:
                     "key": "date_signed",
                     "type": "date",
                     "title": "Date Signed",
-                    "control": {"input_type": "any", "hint": None},
+                    "control": {"input_type": "past"},
                     "section": "Signature"
                 }
             ]
@@ -444,7 +441,6 @@ class EnhancedConsentProcessor:
                     "type": "signature",
                     "title": "Signature",
                     "control": {
-                        "hint": None,
                         "input_type": None
                     },
                     "section": "Signature"
@@ -454,8 +450,7 @@ class EnhancedConsentProcessor:
                     "type": "date",
                     "title": "Date Signed",
                     "control": {
-                        "hint": None,
-                        "input_type": "any"
+                        "input_type": "past"
                     },
                     "section": "Signature"
                 }
@@ -495,7 +490,6 @@ class EnhancedConsentProcessor:
                 "type": "input",
                 "title": "Relationship", 
                 "control": {
-                    "hint": None,
                     "input_type": "name"
                 },
                 "section": "Signature"
@@ -507,7 +501,6 @@ class EnhancedConsentProcessor:
             "type": "signature",
             "title": "Signature",
             "control": {
-                "hint": None,
                 "input_type": None
             },
             "section": "Signature"
@@ -520,7 +513,6 @@ class EnhancedConsentProcessor:
                 "type": "input", 
                 "title": "Printed Name",
                 "control": {
-                    "hint": None,
                     "input_type": "name"
                 },
                 "section": "Signature"
@@ -532,8 +524,7 @@ class EnhancedConsentProcessor:
             "type": "date",
             "title": "Date Signed",
             "control": {
-                "hint": None,
-                "input_type": "any"
+                "input_type": "past"
             },
             "section": "Signature"
         })
@@ -545,7 +536,6 @@ class EnhancedConsentProcessor:
                 "type": "date",
                 "title": "Patient Date of Birth",
                 "control": {
-                    "hint": None,
                     "input_type": "past"
                 },
                 "section": "Signature"
@@ -566,6 +556,29 @@ class EnhancedConsentProcessor:
             # Use enhanced consent processing
             print(f"[i] Detected consent form type: {form_type}")
             result = self.extract_consent_form_content(text_lines, form_type)
+            
+            # Apply schema compliance fixes to all fields
+            for field in result["fields"]:
+                # Add missing optional field
+                if "optional" not in field:
+                    field["optional"] = False
+                
+                # Remove null hint fields per schema
+                if "control" in field and "hint" in field["control"] and field["control"]["hint"] is None:
+                    del field["control"]["hint"]
+                
+                # Fix signature control - should be empty per schema
+                if field.get("type") == "signature":
+                    field["control"] = {}
+                
+                # Fix date input_type validation
+                if field.get("type") == "date":
+                    control = field.get("control", {})
+                    input_type = control.get("input_type")
+                    if input_type not in ["past", "future"]:
+                        # Remove invalid input_type per schema
+                        if "input_type" in control:
+                            del control["input_type"]
             
             return {
                 "spec": result["fields"],
