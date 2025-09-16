@@ -2867,8 +2867,34 @@ class DocumentFormFieldExtractor:
         return paragraphs
 
     def create_comprehensive_consent_html(self, text_lines: List[str]) -> str:
+        """Create comprehensive HTML for consent forms"""
+        # Join all text lines and format as proper HTML
+        full_text = ' '.join(text_lines)
         
-        return fields
+        # Apply basic formatting
+        # Convert to paragraphs by splitting on double spaces or newlines
+        paragraphs = []
+        current_paragraph = []
+        
+        for line in text_lines:
+            line = line.strip()
+            if not line:
+                if current_paragraph:
+                    paragraphs.append(' '.join(current_paragraph))
+                    current_paragraph = []
+            else:
+                current_paragraph.append(line)
+        
+        if current_paragraph:
+            paragraphs.append(' '.join(current_paragraph))
+        
+        # Format as HTML paragraphs
+        html_parts = []
+        for paragraph in paragraphs:
+            if paragraph:
+                html_parts.append(f'<p>{paragraph}</p>')
+        
+        return ''.join(html_parts)
     
     def extract_records_release_fields(self, text_lines: List[str]) -> List[FieldInfo]:
         """Extract fields for records release forms as structured forms with checkboxes"""

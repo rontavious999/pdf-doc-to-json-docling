@@ -1,0 +1,864 @@
+2025-09-16 06:40:53,372 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:53,376 - INFO - Going to convert document batch...
+2025-09-16 06:40:53,376 - INFO - Initializing pipeline for SimplePipeline with options hash 995a146ad601044538e6a923bea22f4e
+2025-09-16 06:40:53,383 - INFO - Loading plugin 'docling_defaults'
+2025-09-16 06:40:53,384 - INFO - Registered picture descriptions: ['vlm', 'api']
+2025-09-16 06:40:53,384 - INFO - Processing document DentureandPartialConsentFINAL122024.docx
+2025-09-16 06:40:53,460 - INFO - Finished converting document DentureandPartialConsentFINAL122024.docx in 0.09 sec.
+
+================================================================================
+EXTRACTING: DentureandPartialConsentFINAL122024.docx
+================================================================================
+Total text elements extracted: 27
+Document name: DentureandPartialConsentFINAL122024
+
+--- RAW TEXT EXTRACTION ---
+  1: INFORMATIONAL INFORMED CONSENT COMPLETE DENTURES AND PARTIAL DENTURES
+  2: I UNDERSTAND that the process of fabricating and fitting REMOVABLE PROSTHETIC APPLIANCES (PARTIAL DENTURES and/or COMPLETE ARTIFICIAL DENTURES) includes risks and possible failures. Even though the utmost care and diligence is exercised in preparation for and fabrication of prosthetic appliances, there is the possibility of failure with patients not adapting to the dentures. I agree to assume those risks and possible failures associated with but not limited to the following:
+  3: Failure of complete dentures
+  4: : There are many variables which may contribute to this possibility such as:
+  5: (1) gum tissues which cannot bear the pressures placed upon them resulting in excessive tenderness and sore spots; (2) jaw ridges which may not provide adequate support and/or retention; (3) musculature in the tongue, floor of the mouth, cheeks, etc., which may not adapt to and be able to accommodate the artificial appliances;
+  6: (4) excessive gagging reflexes; (5) excessive saliva or excessive dryness of mouth; (6) general psychological and/or physical problems interfering with success.
+  7: Failure of removable partial dentures
+  8: : Many variables may contribute to unsuccessful utilizing of partial dentures (removable bridges). The variables may include those problems related to failure of complete dentures, in addition to: (1) natural teeth to which partial dentures are anchored (called abutment teeth) may become tender, sore, and/or mobile; (2) abutment teeth may decay or erode around the clasps or attachments;
+  9: (3) tissues supporting the abutment teeth may fail.
+ 10: Breakage
+ 11: : Due to the types of materials which are necessary in the construction of these appliances, breakage may occur even though the materials used were not defective. Factors which may contribute to breakage are: (1) chewing on foods or objects which are excessively hard; (2) gum tissue shrinkage which causes excessive pressures to be exerted unevenly on the dentures; (3) cracks which may be unnoticeable and which occurred previously from causes such as those mentioned in (1) and (2); (4) use of porcelain teeth as part of the denture, or the dentures having been dropped or damaged previously in the event the dentures are relined. The above factors listed may also cause extensive denture tooth wear or chipping.
+ 12: Loose dentures
+ 13: : Complete dentures normally become less secure when there are changes in the supporting gum tissues. Dentures themselves do not change unless subjected to extreme heat or dryness. When dentures become "loose", relining the dentures may be necessary. Normally, it is necessary to charge a fee for relining dentures. Partial dentures become loose for the listed reasons in addition to clasps or other attachments loosening. Sometimes dentures feel loose for other reasons (See paragraph 1.).
+ 14: Allergies to denture materials
+ 15: : Infrequently, the oral tissues may exhibit allergic symptoms to the materials used in construction of either partial dentures or full dentures over which we have no control.
+ 16: Failure of supporting teeth and/or soft tissues
+ 17: . Natural teeth supporting partials may fail due to decay; excessive trauma; gum tissue or bony tissue problems. This may necessitate extraction. The supporting soft tissues may fail due to many problems including poor dental or general health.
+ 18: Uncomfortable or strange feeling
+ 19: : This may occur because of the differences between natural teeth and the artificial dentures. Most patients usually become accustomed to this feeling in time.
+ 20: Esthetics or appearance
+ 21: : Patients will be given the opportunity to observe the anticipated appearance of the dentures in the mouth prior to processing. If satisfactory, this fact will be acknowledged by the patient's signature (or signature of legal guardian) on this form where indicated.
+ 22: 1 It is the patient's responsibility to seek attention when problems occur and do not lessen in a reasonable amount of time; also, to be examined regularly to evaluate the dentures, condition of the gums, and the patient's oral health.
+ 23: INFORMED CONSENT: I have been given the opportunity to ask any questions regarding the nature and purpose of artificial dentures and have received answers to my satisfaction. I do voluntarily assume any and all possible problems and risks, including risk of substantial harm, if any, which may be associated with any phase of this treatment in hopes of obtaining the desired potential results, which may or may not be achieved. No guarantees or promises have been made to me concerning the results relating to my ability to utilize artificial dentures successfully nor to their longevity. The fee(s) for this service have been explained to me and are satisfactory. By signing this form, I freely give my consent to allow and authorize Dr. 	 to render the dental treatment necessary or advisable to my dental condition(s), including
+ 24: administering and prescribing all anesthetics and/or medications.
+ 25: Patient's name (please print)	Signature of patient or legal guardian	Date
+ 26: Or authorized signatory
+ 27: Witness to signature	Date
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 18
+  - CONTENT: INFORMATIONAL INFORMED CONSENT COMPLETE DENTURES AND PARTIAL DENTURES...
+  - CONTENT: I UNDERSTAND that the process of fabricating and fitting REMOVABLE PROSTHETIC APPLIANCES (PARTIAL DE...
+  - CONTENT: : There are many variables which may contribute to this possibility such as:...
+  - CONTENT: (1) gum tissues which cannot bear the pressures placed upon them resulting in excessive tenderness a...
+  - CONTENT: (4) excessive gagging reflexes; (5) excessive saliva or excessive dryness of mouth; (6) general psyc...
+  - CONTENT: : Many variables may contribute to unsuccessful utilizing of partial dentures (removable bridges). T...
+  - CONTENT: (3) tissues supporting the abutment teeth may fail....
+  - CONTENT: : Due to the types of materials which are necessary in the construction of these appliances, breakag...
+  - CONTENT: : Complete dentures normally become less secure when there are changes in the supporting gum tissues...
+  - CONTENT: : Infrequently, the oral tissues may exhibit allergic symptoms to the materials used in construction...
+  - CONTENT: . Natural teeth supporting partials may fail due to decay; excessive trauma; gum tissue or bony tiss...
+  - CONTENT: : This may occur because of the differences between natural teeth and the artificial dentures. Most ...
+  - SIGNATURE FIELD: : Patients will be given the opportunity to observe the anticipated appearance of the dentures in the mouth prior to processing. If satisfactory, this fact will be acknowledged by the patient's signature (or signature of legal guardian) on this form where indicated.
+  - CONTENT: 1 It is the patient's responsibility to seek attention when problems occur and do not lessen in a re...
+  - PROVIDER FIELD: INFORMED CONSENT: I have been given the opportunity to ask any questions regarding the nature and purpose of artificial dentures and have received answers to my satisfaction. I do voluntarily assume any and all possible problems and risks, including risk of substantial harm, if any, which may be associated with any phase of this treatment in hopes of obtaining the desired potential results, which may or may not be achieved. No guarantees or promises have been made to me concerning the results relating to my ability to utilize artificial dentures successfully nor to their longevity. The fee(s) for this service have been explained to me and are satisfactory. By signing this form, I freely give my consent to allow and authorize Dr. 	 to render the dental treatment necessary or advisable to my dental condition(s), including
+2025-09-16 06:40:53,461 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:53,463 - INFO - Going to convert document batch...
+2025-09-16 06:40:53,463 - INFO - Processing document Informed Consent Composite Restoratio.docx
+2025-09-16 06:40:53,482 - INFO - Finished converting document Informed Consent Composite Restoratio.docx in 0.02 sec.
+2025-09-16 06:40:53,482 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:53,484 - INFO - Going to convert document batch...
+2025-09-16 06:40:53,484 - INFO - Processing document Informed Consent Crown & Bridge Prosthetic.docx
+2025-09-16 06:40:53,500 - INFO - Finished converting document Informed Consent Crown & Bridge Prosthetic.docx in 0.02 sec.
+  - CONTENT: administering and prescribing all anesthetics and/or medications....
+  - SIGNATURE FIELD: Patient's name (please print)	Signature of patient or legal guardian	Date
+  - SIGNATURE FIELD: Witness to signature	Date
+
+================================================================================
+EXTRACTING: Informed Consent Composite Restoratio.docx
+================================================================================
+Total text elements extracted: 28
+Document name: Informed Consent Composite Restoratio
+
+--- RAW TEXT EXTRACTION ---
+  1: Smile@Kinqervdental.com
+  2: •
+  3: www.kinqervdental.com
+  4: Informed Consent for Composite Restoration
+  5: Recommended Treatment I hereby give consent to Dr.	to perform Composite Restoration
+  6: procedure(s) on me or my dependent as follows.
+  7: (‘"Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for
+  8: my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  9: Treatment Alternatives
+ 10: Alternative methods of treatment have been explained to me, such as: but I wish to proceed with the Recommended Treatment described above.
+ 11: Risks and Complications
+ 12: I understand drat there are risks and complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These potential risks and complications, include, but are not limited to, the following:
+ 13: . Drug reactions and side effects.
+ 14: . Damage to adjacent teeth or tooth restorations.
+ 15: . Necessity for root canal therapy due to injury of pulp tissue.
+ 16: . Breakage or dislodgement in buildup failure of restorative material.
+ 17: . Necessity for a more extensive restoration, such as a crown, than originally diagnosed, due to additional decay or unsupported
+ 18: . tooth structure found during preparation.
+ 19: . Inability to exactly match tooth coloration.
+ 20: . Changes in the shade of the composite restoration over time as a result of the oral environment.
+ 21: . Sensitivity" of teeth following the placement of the restorations, ty pically temporary.
+ 22: . As a result of the injection or use of anesthesia, there may be swelling, jaw muscle tenderness or even resultant
+ 23: numbness of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary , but in rare instances, may be permanent.
+ 24: Signature:	Printed Name:	Date:
+ 25: (Patient/Parent/Guardian)
+ 26: Relationship (If patient is a minor):
+ 27: Witness Signature:	Witness Printed Name:	Date:
+ 28: 6700 1L Route 83 • Darien, IL 60561 • (630)789.0900 • www.kingerydental.com
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 16
+  - PROVIDER FIELD: Recommended Treatment I hereby give consent to Dr.	to perform Composite Restoration
+  - CONTENT: (‘"Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for...
+  - PROVIDER FIELD: my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  - CONTENT: Alternative methods of treatment have been explained to me, such as: but I wish to proceed with the ...
+  - CONTENT: I understand drat there are risks and complications associated with the administration of medication...
+  - CONTENT: . Necessity for root canal therapy due to injury of pulp tissue....
+  - CONTENT: . Breakage or dislodgement in buildup failure of restorative material....
+  - CONTENT: . Necessity for a more extensive restoration, such as a crown, than originally diagnosed, due to add...
+  - CONTENT: . Changes in the shade of the composite restoration over time as a result of the oral environment....
+  - CONTENT: . Sensitivity" of teeth following the placement of the restorations, ty pically temporary....
+  - CONTENT: . As a result of the injection or use of anesthesia, there may be swelling, jaw muscle tenderness or...
+  - CONTENT: numbness of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary , but ...
+  - SIGNATURE FIELD: Signature:	Printed Name:	Date:
+  - SIGNATURE FIELD: Relationship (If patient is a minor):
+  - SIGNATURE FIELD: Witness Signature:	Witness Printed Name:	Date:
+  - CONTENT: 6700 1L Route 83 • Darien, IL 60561 • (630)789.0900 • www.kingerydental.com...
+
+================================================================================
+EXTRACTING: Informed Consent Crown & Bridge Prosthetic.docx
+================================================================================
+Total text elements extracted: 20
+Document name: Informed Consent Crown & Bridge Prosthetic
+
+--- RAW TEXT EXTRACTION ---
+  1: Smile@Kinqerydental.com • www.kinqervdental.com Informed Consent for Crown and Bridge Prosthetics Recommended Treatment
+  2: I hereby give consent to Dr.	to perform Crown and Bridge Prosthetics
+  3: procedure(s) on me or my dependent as follows:
+  4: (“Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to the result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  5: Treatment Alternatives
+  6: Alternative methods of treatment have been explained to me, such as: but I wish to proceed with the Recommended Treatment described above.
+  7: Risks and Complications
+  8: I understand that there are risks and complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These potential risks and complications, include, but are not limited to, the following:
+  9: . Sensitivity of teeth. If present, usually resolves within weeks or sometimes longer after placement.
+ 10: . Crown or bridge abutment teeth may require root canal treatment if sensitivity persists or the tooth becomes sensitive or painful to the bite.
+ 11: . Breakage of temporary or permanent restoration and/or tooth.
+ 12: . Uncomfortable or strange feelings, which is typically temporary. In limited situations, muscle soreness or tenderness of the jaw may persist following placement of the prosthesis.
+ 13: . Unsatisfactory aesthetics or appearance. You will be given the opportunity to approve the final restoration prior to permanent cementation.
+ 14: . Unsatisfactory longevity of crowns and bridges.
+ 15: . As a result of the injection or use of anesthesia, at times there may be swelling, jaw muscle tenderness or even resultant numbness of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent.
+ 16: Signature: 		Printed Name:	Date:
+ 17: (Patient/Parent/Guardian) Relationship (If patient is a minor):
+ 18: Patient Date of Birth:
+ 19: Witness Signature:	Witness Printed Name:	Date:
+ 20: 6700 IL Route 83 • Darien, IL 60561 • (630)789.0900 • www.kingerydental.com
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 15
+  - CONTENT: Smile@Kinqerydental.com • www.kinqervdental.com Informed Consent for Crown and Bridge Prosthetics Re...
+  - PROVIDER FIELD: I hereby give consent to Dr.	to perform Crown and Bridge Prosthetics
+2025-09-16 06:40:53,500 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:53,503 - INFO - Going to convert document batch...
+2025-09-16 06:40:53,503 - INFO - Processing document ExtractionConsentFINAL122024.docx
+2025-09-16 06:40:53,596 - INFO - Finished converting document ExtractionConsentFINAL122024.docx in 0.10 sec.
+2025-09-16 06:40:53,596 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:53,599 - INFO - Going to convert document batch...
+2025-09-16 06:40:53,599 - INFO - Processing document EndoConsentFINAL122024.docx
+2025-09-16 06:40:53,666 - INFO - Finished converting document EndoConsentFINAL122024.docx in 0.07 sec.
+  - PROVIDER FIELD: (“Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to the result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  - CONTENT: Alternative methods of treatment have been explained to me, such as: but I wish to proceed with the ...
+  - CONTENT: I understand that there are risks and complications associated with the administration of medication...
+  - CONTENT: . Sensitivity of teeth. If present, usually resolves within weeks or sometimes longer after placemen...
+  - CONTENT: . Crown or bridge abutment teeth may require root canal treatment if sensitivity persists or the too...
+  - CONTENT: . Breakage of temporary or permanent restoration and/or tooth....
+  - CONTENT: . Uncomfortable or strange feelings, which is typically temporary. In limited situations, muscle sor...
+  - CONTENT: . Unsatisfactory aesthetics or appearance. You will be given the opportunity to approve the final re...
+  - CONTENT: . As a result of the injection or use of anesthesia, at times there may be swelling, jaw muscle tend...
+  - SIGNATURE FIELD: Signature: 		Printed Name:	Date:
+  - SIGNATURE FIELD: (Patient/Parent/Guardian) Relationship (If patient is a minor):
+  - SIGNATURE FIELD: Witness Signature:	Witness Printed Name:	Date:
+  - CONTENT: 6700 IL Route 83 • Darien, IL 60561 • (630)789.0900 • www.kingerydental.com...
+
+================================================================================
+EXTRACTING: ExtractionConsentFINAL122024.docx
+================================================================================
+Total text elements extracted: 30
+Document name: ExtractionConsentFINAL122024
+
+--- RAW TEXT EXTRACTION ---
+  1: Welcome@westgatefamilydentistry.com
+  2: ●
+  3: www.westgatefamilydentistry.com
+  4: Informed Consent for Tooth Extraction
+  5: Recommended Treatment
+  6: I hereby give consent to Dr. 	 to perform Tooth Extraction procedure(s) on me or my dependent as follows:
+  7: (“Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  8: Treatment Alternatives
+  9: Alternative methods of treatment have been explained to me, such as:
+ 10: but I wish to proceed with the Recommended Treatment described above.
+ 11: Risks and Complications
+ 12: I understand that there are risks and complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These potential risks and complications, include, but are not limited to, the following:
+ 13: Drug reactions and side effects.
+ 14: Post-operative bleeding, oozing, infection and/or bone infection.
+ 15: Bruising and/or swelling, restricted mouth opening for several days or weeks.
+ 16: Loss or removal of bone during tooth extraction.
+ 17: Damage to, or fracture of, adjacent teeth or tooth restorations.
+ 18: Root tips may break during the oral surgery process. These root tips may be left in the bone to avoid more aggressive surgery. However, this more aggressive surgery may be needed and you may be referred for this procedure.
+ 19: Delayed healing, including but not limited to, dry socket, necessitating post-operative care
+ 20: Possible involvement of the sinus during the removal of the upper posterior teeth, which may require additional treatment or surgical repair at a later date.
+ 21: Possible involvement of the nerves of the lower jaw during the removal of teeth resulting in temporary or permanent tingling/numbness of the lower lip, chin, tongue or other surrounding structures.
+ 22: Jaw fracture.
+ 23: If you are taking medications to make your bones stronger (such as bisphosphonates) or if you have received radiation therapy to the head or neck area for tumors/cancer, then you are at a higher risk for poor bone healing or bone death that may never completely resolve.
+ 24: As a result of the injection or use of anesthesia, there may be swelling, jaw muscle tenderness or even resultant numbness of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent.
+ 25: Signature: 	 Printed Name: 	Date:
+ 26: (Patient/Parent/Guardian)
+ 27: Relationship (If patient is a minor
+ 28: ):
+ 29: Patient Date of Birth:
+ 30: Witness Signature:	 Witness Printed Name: 	 Date:
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 17
+  - PROVIDER FIELD: I hereby give consent to Dr. 	 to perform Tooth Extraction procedure(s) on me or my dependent as follows:
+  - PROVIDER FIELD: (“Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  - CONTENT: Alternative methods of treatment have been explained to me, such as:...
+  - CONTENT: but I wish to proceed with the Recommended Treatment described above....
+  - CONTENT: I understand that there are risks and complications associated with the administration of medication...
+  - CONTENT: Post-operative bleeding, oozing, infection and/or bone infection....
+  - CONTENT: Bruising and/or swelling, restricted mouth opening for several days or weeks....
+  - CONTENT: Damage to, or fracture of, adjacent teeth or tooth restorations....
+  - CONTENT: Root tips may break during the oral surgery process. These root tips may be left in the bone to avoi...
+  - CONTENT: Delayed healing, including but not limited to, dry socket, necessitating post-operative care...
+  - CONTENT: Possible involvement of the sinus during the removal of the upper posterior teeth, which may require...
+  - CONTENT: Possible involvement of the nerves of the lower jaw during the removal of teeth resulting in tempora...
+  - CONTENT: If you are taking medications to make your bones stronger (such as bisphosphonates) or if you have r...
+  - CONTENT: As a result of the injection or use of anesthesia, there may be swelling, jaw muscle tenderness or e...
+  - SIGNATURE FIELD: Signature: 	 Printed Name: 	Date:
+  - SIGNATURE FIELD: Relationship (If patient is a minor
+  - SIGNATURE FIELD: Witness Signature:	 Witness Printed Name: 	 Date:
+
+================================================================================
+EXTRACTING: EndoConsentFINAL122024.docx
+================================================================================
+Total text elements extracted: 27
+Document name: EndoConsentFINAL122024
+
+--- RAW TEXT EXTRACTION ---
+  1: Welcome@westgatefamilydentistry.com
+  2: ●
+  3: www.westgatefamilydentistry.com
+  4: Informed Consent for Endodontic Procedures
+  5: Recommended Treatment
+  6: I hereby give consent to Dr. 	 to perform Endodontic Procedures procedure(s) on me or my dependent as follows:
+2025-09-16 06:40:53,667 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:53,668 - INFO - Going to convert document batch...
+2025-09-16 06:40:53,669 - INFO - Processing document Consent Final Process Full or Partial Denture.docx
+2025-09-16 06:40:53,678 - INFO - Finished converting document Consent Final Process Full or Partial Denture.docx in 0.01 sec.
+2025-09-16 06:40:53,679 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:53,681 - INFO - Going to convert document batch...
+2025-09-16 06:40:53,681 - INFO - Processing document +Bone+Grafting+Consent+FINAL+32025.docx
+2025-09-16 06:40:53,766 - INFO - Finished converting document +Bone+Grafting+Consent+FINAL+32025.docx in 0.09 sec.
+  7: (“Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  8: Discussion of Treatment
+  9: The Recommended Treatment works by removing bacteria from the hollow space inside the tooth, and by sealing off the inside of the tooth to prevent re-infection. Although the Recommended Treatment has a very high success rate, it is a biological procedure and cannot be guaranteed. Occasionally, a tooth which has had root canal treatment may require retreatment, additional surgery, or extraction.
+ 10: Treatment Alternatives
+ 11: Alternative methods of treatment have been explained to me, such as extraction of the involved teeth, or postponement of root canal therapy, but I wish to proceed with the Recommended Treatment described above.
+ 12: Risks and Complications
+ 13: I understand that there are risks and complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These potential risks and complications, include, but are not limited to, the following:
+ 14: Instrument breakage in the root canal.
+ 15: Inability to negotiate canals due to prior treatment or calcification.
+ 16: Perforation to the outside of the tooth.
+ 17: Irreparable damage to the existing crown or restoration.
+ 18: Cracking or fracturing of the root or crown of the tooth.
+ 19: Pain, infection and swelling.
+ 20: Difficulty opening and closing.
+ 21: Temporomandibular Dysfunction resulting in jaw pain.
+ 22: Nerve injury resulting in temporary or permanent numbness, itching, burning or tingling of the lip, chin, tongue or teeth.
+ 23: As a result of the injection or use of anesthesia, there may be swelling, jaw muscle tenderness or even resultant numbness of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent.
+ 24: Signature: 	 Printed Name: 	Date:
+ 25: (Patient/Parent/Guardian)
+ 26: Relationship (If patient is a minor):
+ 27: Witness Signature:	 Witness Printed Name: 	 Date:
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 14
+  - PROVIDER FIELD: I hereby give consent to Dr. 	 to perform Endodontic Procedures procedure(s) on me or my dependent as follows:
+  - PROVIDER FIELD: (“Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  - CONTENT: The Recommended Treatment works by removing bacteria from the hollow space inside the tooth, and by ...
+  - CONTENT: Alternative methods of treatment have been explained to me, such as extraction of the involved teeth...
+  - CONTENT: I understand that there are risks and complications associated with the administration of medication...
+  - CONTENT: Inability to negotiate canals due to prior treatment or calcification....
+  - CONTENT: Irreparable damage to the existing crown or restoration....
+  - CONTENT: Cracking or fracturing of the root or crown of the tooth....
+  - CONTENT: Temporomandibular Dysfunction resulting in jaw pain....
+  - CONTENT: Nerve injury resulting in temporary or permanent numbness, itching, burning or tingling of the lip, ...
+  - CONTENT: As a result of the injection or use of anesthesia, there may be swelling, jaw muscle tenderness or e...
+  - SIGNATURE FIELD: Signature: 	 Printed Name: 	Date:
+  - SIGNATURE FIELD: Relationship (If patient is a minor):
+  - SIGNATURE FIELD: Witness Signature:	 Witness Printed Name: 	 Date:
+
+================================================================================
+EXTRACTING: Consent Final Process Full or Partial Denture.docx
+================================================================================
+Total text elements extracted: 14
+Document name: Consent Final Process Full or Partial Denture
+
+--- RAW TEXT EXTRACTION ---
+  1: Smile@Kinaervdental.com
+  2: •
+  3: www.kinqervdental.com
+  4: CONSENT FOR FINAL PROCESSING
+Full or Partial Denture
+  5: I have been given the opportunity to view my dentures in the mouth prior to final processing. I approve the color, shape, feel and overall appearance of my dentures. I understand that once the dentures arc processed by the laboratory, the factors of color, shape, feel and overall appearance cannot be changed without additional and possibly significant time being taken and fees assessed.
+  6: By signing this Consent for final processing. I give Dr. my consent for final processing and acknowledge my approval of the appearance.
+  7: Patient's Name (Please Print) :	 Date:
+  8: Signature of patient, legal guardian
+  9: or authorized representative:	 Date.
+ 10: Date:
+ 11: Date.
+ 12: Witness to Signature:
+ 13: Dentist's Signature :
+ 14: 6700 IL Route 83 • Darien, IL 60561 • (630)789.0900 • www.kingerydental.com
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 9
+  - CONTENT: CONSENT FOR FINAL PROCESSING
+Full or Partial Denture...
+  - CONTENT: I have been given the opportunity to view my dentures in the mouth prior to final processing. I appr...
+  - PROVIDER FIELD: By signing this Consent for final processing. I give Dr. my consent for final processing and acknowledge my approval of the appearance.
+  - SIGNATURE FIELD: Patient's Name (Please Print) :	 Date:
+  - SIGNATURE FIELD: Signature of patient, legal guardian
+  - SIGNATURE FIELD: Date:
+  - SIGNATURE FIELD: Witness to Signature:
+  - SIGNATURE FIELD: Dentist's Signature :
+  - CONTENT: 6700 IL Route 83 • Darien, IL 60561 • (630)789.0900 • www.kingerydental.com...
+
+================================================================================
+EXTRACTING: +Bone+Grafting+Consent+FINAL+32025.docx
+================================================================================
+Total text elements extracted: 28
+Document name: +Bone+Grafting+Consent+FINAL+32025
+
+--- RAW TEXT EXTRACTION ---
+  1: Welcome@westgatefamilydentistry.com
+  2: ●
+  3: www.westgatefamilydentistry.com
+  4: Informed Consent for Bone Grafting
+  5: Recommended Treatment
+  6: I give consent to Dr. 	 to perform Bone Grafting procedures on me or my dependent as follows:
+  7: (Recommended Treatment) and any such additional procedures as may be considered necessary for my wellbeing based on Bindings during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to the result or cure. I have been given satisfactory answers to all my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  8: Treatment Alternatives
+  9: Alternative methods of treatment have been explained to me, such as:
+ 10: But I wish to proceed with the Recommended Treatment described above.
+ 11: Risks and Complications
+ 12: I understand that there are risks and complications associated with the administration of medications including anesthesia, and performance of the Recommended Treatment. These potential risks and complications include, but are not limited to the following:
+ 13: Drug reactions and side effects
+ 14: Post operative pain, bleeding, oozing, infection and/or bone infection
+ 15: Bruising and/or swelling, delayed healing, restricted mouth opening for several days or weeks
+2025-09-16 06:40:53,767 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:53,768 - INFO - Going to convert document batch...
+2025-09-16 06:40:53,769 - INFO - Processing document Informed Consent Complete Dentures & Partial Dentures.docx
+2025-09-16 06:40:53,788 - INFO - Finished converting document Informed Consent Complete Dentures & Partial Dentures.docx in 0.02 sec.
+ 16: Damage to adjacent teeth or tooth restorations
+ 17: Possible involvement of the sinus cavity and creation of an opening from the mouth into the nasal or sinus cavity, which may require additional treatment or surgical repair at a later date.
+ 18: Nerve injury, which may occur from the surgical procedure and/or the delivery of local anesthesia, resulting in altered or loss sensation, numbness, pain, or altered feeling in the face, cheeks, lips, chin, teeth, gums, and/pr tongue (including loss of taste) that may resolve over time but, in some cases, may be permanent
+ 19: Discoloration and appearance changes of the gum tissue or unsatisfactory cosmetic result
+ 20: Failure, loss, infection, or rejection of the graft or membranes used to contain the graft
+ 21: If I have elected a banked bone or bone substitute graft, there is a rare chance of disease spread from the processed bone.
+ 22: Jaw fracture
+ 23: As a result of the injection or use of anesthesia, at times there may be swelling, jaw muscle tenderness, or even resultant numbness of the tongue, lips, teeth, jaws and/or muscle tissues which is temporary, but in rare instances, may be permanent
+ 24: Signature: 		Date:
+ 25: Patient/Parent/Guardian
+ 26: Patient Printed Name:
+ 27: Date of Birth: 	 Relationship (If patient is a minor):
+ 28: Witness Signature: 	 Date:
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 17
+  - PROVIDER FIELD: I give consent to Dr. 	 to perform Bone Grafting procedures on me or my dependent as follows:
+  - PROVIDER FIELD: (Recommended Treatment) and any such additional procedures as may be considered necessary for my wellbeing based on Bindings during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to the result or cure. I have been given satisfactory answers to all my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  - CONTENT: Alternative methods of treatment have been explained to me, such as:...
+  - CONTENT: But I wish to proceed with the Recommended Treatment described above....
+  - CONTENT: I understand that there are risks and complications associated with the administration of medication...
+  - CONTENT: Post operative pain, bleeding, oozing, infection and/or bone infection...
+  - CONTENT: Bruising and/or swelling, delayed healing, restricted mouth opening for several days or weeks...
+  - CONTENT: Possible involvement of the sinus cavity and creation of an opening from the mouth into the nasal or...
+  - CONTENT: Nerve injury, which may occur from the surgical procedure and/or the delivery of local anesthesia, r...
+  - CONTENT: Discoloration and appearance changes of the gum tissue or unsatisfactory cosmetic result...
+  - CONTENT: Failure, loss, infection, or rejection of the graft or membranes used to contain the graft...
+  - CONTENT: If I have elected a banked bone or bone substitute graft, there is a rare chance of disease spread f...
+  - CONTENT: As a result of the injection or use of anesthesia, at times there may be swelling, jaw muscle tender...
+  - SIGNATURE FIELD: Signature: 		Date:
+  - SIGNATURE FIELD: Patient Printed Name:
+  - SIGNATURE FIELD: Date of Birth: 	 Relationship (If patient is a minor):
+  - SIGNATURE FIELD: Witness Signature: 	 Date:
+
+================================================================================
+EXTRACTING: Informed Consent Complete Dentures & Partial Dentures.docx
+================================================================================
+Total text elements extracted: 23
+Document name: Informed Consent Complete Dentures & Partial Dentures
+
+--- RAW TEXT EXTRACTION ---
+  1: Smile@Kinaervdental.com • www.kinqervdental.com
+INFORMATIONAL INFORMED CONSENT
+COMPLETE DENTURES AND PARTIAL DENTURES
+  2: I UNDERSTAND that the process of fabricating and fitting REMOVABLE PROSTHETIC APPLIANCES (PARTIAL DENTURES and/or COMPLETE ARTIFICIAL DENTURES) includes risks and possible failures. Even though the utmost care and diligence is exercised in preparation for and fabrication of prosthetic appliances, there is the possibility of failure with patients not adapting to the dentures. I agree to assume those risks and possible failures associated with but not limited to the following:
+  3: Failure of complete dentures: There are many variables which may contribute to this possibility such as:
+  4: (1) gum tissues which cannot bear the pressures placed upon them resulting in excessive tenderness and sore spots; (2) jaw ridges which may not provide adequate support and/or retention; (3) musculature in the tongue, floor of the mouth, cheeks, etc., which may not adapt to and be able to accommodate the artificial appliances; (4) excessive gagging reflexes; (5) excessive saliva or excessive dryness of mouth; (6) general psychological and/or physical problems interfering with success.
+  5: Failure of removable partial dentures: Many variables may contribute to unsuccessful utilizing of partial dentures (removable bridges). The variables may include those problems related to failure of complete dentures, in addition to: (1) natural teeth to which partial dentures are anchored (called abutment teeth) may become tender, sore, and/or mobile; (2) abutment teeth may decay or erode around the clasps or attachments; (3) tissues supporting the abutment teeth may fail.
+  6: Breakage: Due to the types of materials which are necessary in the construction of these appliances, breakage may occur even though the materials used were not defective. Factors which may contribute to breakage are: (1) chewing on foods or objects which are excessively hard; (2) gum tissue shrinkage which causes excessive pressures to be exerted unevenly on the dentures; (3) cracks which may be unnoticeable and which occurred previously from causes such as those mentioned in (1) and (2); (4) use of porcelain teeth as part of the denture, or the dentures having been dropped or damaged previously in the event the dentures are relined. The above factors listed may also cause extensive denture tooth wear or chipping.
+  7: Loose dentures: Complete dentures normally become less secure when there are changes in the supporting gum tissues. Dentures themselves do not change unless subjected to extreme heat or dryness. When dentures become "loose", relining the dentures may be necessary. Normally, it is necessary to charge a fee for relining dentures. Partial dentures become loose for the listed reasons in addition to clasps or other attachments loosening. Sometimes dentures feel loose for other reasons (See paragraph 1.).
+  8: Allergies to denture materials: Infrequently, the ora! tissues may exhibit allergic symptoms to the materials used in construction of either partial dentures or full dentures over which we have no control.
+  9: Failure of supporting teeth and/or soft tissues. Natural teeth supporting partials may fail due to decay; excessive trauma; gum tissue or bony tissue problems. This may necessitate extraction. The supporting soft tissues may fail due to many problems including poor dental or general health.
+ 10: Uncomfortable or strange feeling: This may occur because of the differences between natural teeth and the artificial dentures. Most patients usually become accustomed to this feeling in time.
+ 11: Esthetics or appearance: Patients will be given the opportunity to observe the anticipated appearance of the dentures in the mouth prior to processing. If satisfactory, this fact will be acknowledged by the patient's signature (or signature of legal guardian) on this form where indicated.
+ 12: Smile@Kingervdental.com • www.kingervdental.com 9. It Is the patient's responsibility to seek attention when problems
+ 13: occur
+ 14: and
+ 15: do
+ 16: not lessen in a reasonable amount of time; also, to be examined regularly to evaluate the dentures, condition of the gums, and the patient's oral health.
+2025-09-16 06:40:53,789 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:53,791 - INFO - Going to convert document batch...
+2025-09-16 06:40:53,791 - INFO - Processing document SureSmileConsent122024.docx
+2025-09-16 06:40:53,864 - INFO - Finished converting document SureSmileConsent122024.docx in 0.07 sec.
+ 17: INFORMED CONSENT: I have been given the opportunity to ask any questions regarding the nature and purpose of artificial dentures and have received answers to my satisfaction. I do voluntarily assume any and all possible problems and risks, including risk of substantial harm, if any, which may be associated with any phase of this treatment in hopes of obtaining the desired potential results, which may or may not be achieved. No guarantees or promises have been made to me concerning the results relating to my ability to utilize artificial dentures successfully nor to their longevity. The fee(s) for this service have been explained to me and are
+ 18: satisfactory. By signing this form, I freely give my consent to allow and authorize Dr.	to
+ 19: render the dental treatment necessary or advisable to my dental condition(s), including administering and prescribing all anesthetics and/or medications.
+ 20: Patient's name (please print)	Signature of patient or legal guardian	Date
+ 21: Or authorized signatory
+ 22: Date
+ 23: Witness to signature
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 18
+  - CONTENT: Smile@Kinaervdental.com • www.kinqervdental.com
+INFORMATIONAL INFORMED CONSENT
+COMPLETE DENTURES AND...
+  - CONTENT: I UNDERSTAND that the process of fabricating and fitting REMOVABLE PROSTHETIC APPLIANCES (PARTIAL DE...
+  - CONTENT: Failure of complete dentures: There are many variables which may contribute to this possibility such...
+  - CONTENT: (1) gum tissues which cannot bear the pressures placed upon them resulting in excessive tenderness a...
+  - CONTENT: Failure of removable partial dentures: Many variables may contribute to unsuccessful utilizing of pa...
+  - CONTENT: Breakage: Due to the types of materials which are necessary in the construction of these appliances,...
+  - CONTENT: Loose dentures: Complete dentures normally become less secure when there are changes in the supporti...
+  - CONTENT: Allergies to denture materials: Infrequently, the ora! tissues may exhibit allergic symptoms to the ...
+  - CONTENT: Failure of supporting teeth and/or soft tissues. Natural teeth supporting partials may fail due to d...
+  - CONTENT: Uncomfortable or strange feeling: This may occur because of the differences between natural teeth an...
+  - SIGNATURE FIELD: Esthetics or appearance: Patients will be given the opportunity to observe the anticipated appearance of the dentures in the mouth prior to processing. If satisfactory, this fact will be acknowledged by the patient's signature (or signature of legal guardian) on this form where indicated.
+  - CONTENT: Smile@Kingervdental.com • www.kingervdental.com 9. It Is the patient's responsibility to seek attent...
+  - CONTENT: not lessen in a reasonable amount of time; also, to be examined regularly to evaluate the dentures, ...
+  - CONTENT: INFORMED CONSENT: I have been given the opportunity to ask any questions regarding the nature and pu...
+  - PROVIDER FIELD: satisfactory. By signing this form, I freely give my consent to allow and authorize Dr.	to
+  - CONTENT: render the dental treatment necessary or advisable to my dental condition(s), including administerin...
+  - SIGNATURE FIELD: Patient's name (please print)	Signature of patient or legal guardian	Date
+  - SIGNATURE FIELD: Witness to signature
+
+================================================================================
+EXTRACTING: SureSmileConsent122024.docx
+================================================================================
+Total text elements extracted: 20
+Document name: SureSmileConsent122024
+
+--- RAW TEXT EXTRACTION ---
+  1: SureSmile® Informed Consent Form
+  2: Congratulations on your decision to pursue orthodontic treatment for you or your child. SureSmile is an excellent choice made by your doctor to create beautiful, new smiles. Please read the following information and make sure that you ask any questions or raise any concerns you may have before signing this consent agreement.
+  3: RISKS OF TREATMENT:
+  4: Failing to follow you doctors instructions may interfere with achieving treatment objectives. This includes not wearing appliances as directed or missed appointments. All treatment times are estimated and may be extended by eruption of teeth or issues related to patient’s specific dentition, including uncommon tooth shape and any other anomaly encountered during treatment.
+  5: Inadequate patient oral hygiene during treatment may result in decay, gum irritation, tissue disease or permanent discoloration of teeth. In the event that all hygiene instructions are not followed, including regular brushing/flossing and regular practice of standard oral hygiene, intraoral inflammation or gum disease may result.
+  6: Minor discomfort when switching aligners during treatment is expected. However, any concern regarding pain or difficulty with placing a new appliance should be immediately reported to your doctor. In some cases patients may experience irritation to gums, cheeks or lips during treatment, which should also be communicated to your doctor. In a small amount of cases, allergic reactions may be present. In the case of allergic reactions, please contact your doctor or healthcare provider immediately.
+  7: Interproximal (space between the teeth) reduction or minor shaping may be required to allow space for teeth to move for proper alignment.
+  8: Orthodontic treatment involves moving teeth and, in some cases, after treatment is complete, teeth may shift. Retainers must be worn at the direction of your doctor to control this tendency. In short, wearing retainer’s post-treatment is essential to maintaining your new smile.
+  9: In some cases, additional treatment appliances may be required for treatment plans. Such supplementary clinical requirements will be explained by your doctor. These may include the need for oral surgery to correct jaw position or severe crowding, which must be completed prior to aligner treatment.
+ 10: Notify your doctor if you have any medical conditions or are on any medications as they could affect treatment.
+ 11: Dental implants cannot be moved by aligners. Additionally, existing restorations may require repositioning or replacement as the result of treatment, which may require additional dental, surgical or endodontic treatment. In extreme cases, teeth may be lost.
+ 12: Orthodontic appliances can possibly be swallowed or aspirated. Any looseness of aligners or any other appliance used during treatment should be immediately reported to your doctor. In cases involving extreme crowding or missing teeth, product breakage is more common.
+ 13: SureSmile Treatment Informed Consent
+ 14: Orthodontics is not an exact science, and I acknowledge that my doctor and Dentsply Sirona have not and cannot make any guarantee or provide any other assurances regarding the outcome of any treatment. I understand that Dentsply Sirona is not a provider of medical, dental or health care services and does not and cannot practice medicine, dentistry or give any medical advice.
+ 15: In signing this document, I am indicating that I understand the risks and options available for orthodontic treatment. Any concerns or questions that I may have had were sufficiently explained by my doctor and I consent to treatment for myself or a minor under my legal care.
+ 16: I consent that I have read, understood and agree to the terms stated in this document as indicated by my signature below.
+ 17: Print patient name:
+ 18: Patient signature
+ 19: (or in case of a minor, parent or legal guardian):
+ 20: Date:
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 16
+  - PROVIDER FIELD: Congratulations on your decision to pursue orthodontic treatment for you or your child. SureSmile is an excellent choice made by your doctor to create beautiful, new smiles. Please read the following information and make sure that you ask any questions or raise any concerns you may have before signing this consent agreement.
+2025-09-16 06:40:53,864 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:53,866 - INFO - Going to convert document batch...
+2025-09-16 06:40:53,866 - INFO - Processing document PediatricExtractionFINAL32025.docx
+2025-09-16 06:40:53,919 - INFO - Finished converting document PediatricExtractionFINAL32025.docx in 0.06 sec.
+2025-09-16 06:40:53,920 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:53,923 - INFO - Going to convert document batch...
+2025-09-16 06:40:53,923 - INFO - Processing document ZOOMConsentFINAL122024.docx
+2025-09-16 06:40:54,037 - INFO - Finished converting document ZOOMConsentFINAL122024.docx in 0.12 sec.
+  - PROVIDER FIELD: Failing to follow you doctors instructions may interfere with achieving treatment objectives. This includes not wearing appliances as directed or missed appointments. All treatment times are estimated and may be extended by eruption of teeth or issues related to patient’s specific dentition, including uncommon tooth shape and any other anomaly encountered during treatment.
+  - CONTENT: Inadequate patient oral hygiene during treatment may result in decay, gum irritation, tissue disease...
+  - PROVIDER FIELD: Minor discomfort when switching aligners during treatment is expected. However, any concern regarding pain or difficulty with placing a new appliance should be immediately reported to your doctor. In some cases patients may experience irritation to gums, cheeks or lips during treatment, which should also be communicated to your doctor. In a small amount of cases, allergic reactions may be present. In the case of allergic reactions, please contact your doctor or healthcare provider immediately.
+  - CONTENT: Interproximal (space between the teeth) reduction or minor shaping may be required to allow space fo...
+  - PROVIDER FIELD: Orthodontic treatment involves moving teeth and, in some cases, after treatment is complete, teeth may shift. Retainers must be worn at the direction of your doctor to control this tendency. In short, wearing retainer’s post-treatment is essential to maintaining your new smile.
+  - PROVIDER FIELD: In some cases, additional treatment appliances may be required for treatment plans. Such supplementary clinical requirements will be explained by your doctor. These may include the need for oral surgery to correct jaw position or severe crowding, which must be completed prior to aligner treatment.
+  - PROVIDER FIELD: Notify your doctor if you have any medical conditions or are on any medications as they could affect treatment.
+  - CONTENT: Dental implants cannot be moved by aligners. Additionally, existing restorations may require reposit...
+  - PROVIDER FIELD: Orthodontic appliances can possibly be swallowed or aspirated. Any looseness of aligners or any other appliance used during treatment should be immediately reported to your doctor. In cases involving extreme crowding or missing teeth, product breakage is more common.
+  - PROVIDER FIELD: Orthodontics is not an exact science, and I acknowledge that my doctor and Dentsply Sirona have not and cannot make any guarantee or provide any other assurances regarding the outcome of any treatment. I understand that Dentsply Sirona is not a provider of medical, dental or health care services and does not and cannot practice medicine, dentistry or give any medical advice.
+  - PROVIDER FIELD: In signing this document, I am indicating that I understand the risks and options available for orthodontic treatment. Any concerns or questions that I may have had were sufficiently explained by my doctor and I consent to treatment for myself or a minor under my legal care.
+  - SIGNATURE FIELD: I consent that I have read, understood and agree to the terms stated in this document as indicated by my signature below.
+  - SIGNATURE FIELD: Print patient name:
+  - SIGNATURE FIELD: Patient signature
+  - SIGNATURE FIELD: Date:
+
+================================================================================
+EXTRACTING: PediatricExtractionFINAL32025.docx
+================================================================================
+Total text elements extracted: 16
+Document name: PediatricExtractionFINAL32025
+
+--- RAW TEXT EXTRACTION ---
+  1: Welcome@westgatefamilydentistry.com
+  2: ●
+  3: www.westgatefamilydentistry.com
+  4: Pediatric Tooth Extraction
+  5: Patient Name: 		Date of Birth:
+  6: I hereby give permission to 	 to perform the extraction of tooth/teeth numbers: 	  to be done with local anesthesia.
+  7: Extraction of teeth is an irreversible process and weather routine or difficult is a surgical procedure. As in any surgery, there are some risks. They include but are not limited to the following:
+  8: Swelling, bruising, and/or discomfort in the extraction area
+  9: Stretching of the corners of the mouth resulting in cracking or bruising
+ 10: Possible infection requiring additional treatment
+ 11: Bleeding- significant bleeding is not common, but oozing can be expected for several hours
+ 12: Sharp ridges or bone splinters may form later at the edge of the socket. These usually require another treatment to smooth or remove.
+ 13: Signature of Parent/Guardian: 		Date:
+ 14: Witness: 		Date:
+ 15: 3381 W. Main St. ● Suite 3. ● St. Charles, IL 60175 ● (630)513.2121 ●
+ 16: www.westgatefamilydentistry.com
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 10
+  - SIGNATURE FIELD: Patient Name: 		Date of Birth:
+  - CONTENT: I hereby give permission to 	 to perform the extraction of tooth/teeth numbers: 	  to be done with l...
+  - CONTENT: Extraction of teeth is an irreversible process and weather routine or difficult is a surgical proced...
+  - CONTENT: Swelling, bruising, and/or discomfort in the extraction area...
+  - CONTENT: Stretching of the corners of the mouth resulting in cracking or bruising...
+  - CONTENT: Bleeding- significant bleeding is not common, but oozing can be expected for several hours...
+  - CONTENT: Sharp ridges or bone splinters may form later at the edge of the socket. These usually require anoth...
+  - SIGNATURE FIELD: Signature of Parent/Guardian: 		Date:
+  - SIGNATURE FIELD: Witness: 		Date:
+  - CONTENT: 3381 W. Main St. ● Suite 3. ● St. Charles, IL 60175 ● (630)513.2121 ●...
+
+================================================================================
+EXTRACTING: ZOOMConsentFINAL122024.docx
+================================================================================
+Total text elements extracted: 25
+Document name: ZOOMConsentFINAL122024
+
+--- RAW TEXT EXTRACTION ---
+  1: Informed Consent for Zoom Tooth Whitening Treatment
+  2: INTRODUCTION
+  3: This information has been given to me so that I can make an informed decision about having my teeth whitened. I may take as much time as I wish to make my decision about signing this informed consent form. I have the right to ask questions about any procedure before agreeing to undergo the procedure. My dentist has informed me that my teeth are discolored and could be treated by in-office whitening (also known as “bleaching”) of my teeth.
+  4: DESCRIPTION OF THE PROCEDURE
+  5: Zoom in-office tooth whitening is a procedure designed to lighten the color of my teeth using a combination of a hydrogen peroxide gel and a specially designed lamp. The Zoom treatment involves using the gel and lamp in conjunction with each other to produce maximum whitening results in the shortest possible time. During the procedure, the whitening gel will be applied to my teeth
+  6: and my teeth will be exposed to the light from the Zoom lamp for 3 to 4, 15-minute sessions. During the entire treatment, a plastic retractor will be placed in my mouth to help keep it open and the soft tissues of my mouth (i.e., my lips, gums, cheeks and tongue) will be covered to ensure they are not exposed to either the gel or light. I will be provided protective glasses for my eyes. After the treatment is completed, the retractor and all gel and tissue coverings will be removed from my mouth. Before and after the treatment, the shade of my upper-front teeth will be assessed and recorded.
+  7: ALTERNATIVE TREATMENTS
+  8: I understand I may decide not to have the Zoom treatment at all. However, should I decide to undergo the treatment, I understand there are alternative treatments for whitening my teeth for which my dentist can provide me additional information. These treatments include:
+  9: Whitening Toothpastes/Gels
+ 10: Other In-Office Whitening Treatments
+ 11: Take-Home Whitening Kits
+ 12: COST
+ 13: I understand that the cost of my Zoom treatment is determined by my dentist. I understand that my dentist will inform me if there are any other costs associated with my Zoom treatment.
+ 14: RISKS OF CONSENT FOR TREATMENT
+ 15: I understand that almost all natural teeth can benefit from Zoom whitening treatments and significant whitening can be achieved in most cases. I understand however that Zoom treatment results may vary or regress due to a variety of circumstances. I understand that Zoom whitening treatments are not intended to lighten artificial teeth, caps, crowns, veneers or porcelain, composite or other restorative materials and that people with darkly stained yellow or yellow-brown teeth frequently achieve better results than people with gray or bluish-gray teeth. I understand that teeth with multiple colorations, bands, splotches or spots due to tetracycline use, orthodontics, or fluorosis do not whiten as well, may need multiple treatments or may not whiten at all. I understand that teeth with many fillings, cavities may not lighten and are usually best treated with other non-bleaching alternatives. I understand that provisionals or temporaries made from acrylics may become discolored after exposure to Zoom treatment. I understand that Zoom treatment is not recommended for pregnant or lactating women, light sensitive individuals, patients receiving PUVA (Psoralen + UVA radiation) or other photo chemo-therapeutic drugs or treatment, as well as patients with melanoma, diabetes or heart conditions. I understand that the Zoom Lamp emits invisible blue light and that patients taking any drugs that increase photosensitivity should consult with their physician before undergoing Zoom treatment. I understand that the results of my Zoom Treatment cannot be guaranteed. I understand that in-office whitening treatments are considered generally safe by most dental professionals. I understand that although my dentist has been trained in the proper use of the Zoom whitening system, the treatment is not without risk. I understand that some of the potential complications of this treatment include, but are not limited to:
+ 16: Tooth Sensitivity/Pain – During the first 24 hours after Zoom treatment, some patients can experience some tooth sensitivity or pain. This is normal and is usually mild, but it can be worse in susceptible individuals. Normally, tooth sensitivity or pain following a Zoom treatment subsides within 24 hours, but in rare cases can persist for longer periods of time in susceptible individuals. People with existing sensitivity, recession, exposed dentin, exposed root surfaces, recently cracked teeth, abfractions (micro-cracks), open cavities, leaking fillings, or other dental conditions that cause sensitivity or allow penetration of the gel into the tooth may find that those conditions increase or prolong tooth sensitivity or pain after Zoom treatment.
+ 17: Gum/Lip/Cheek Inflammation – Whitening may cause inflammation of your gums, lips or cheek margins. This is due to inadvertent exposure of a small area of those tissues to the whitening gel or the light. The inflammation is usually temporary and will subside in a few days but may persist longer and may result in significant pain or discomfort, depending on the degree to which the soft tissues were exposed to the gel or light.
+ 18: Dry/Chapped Lips – The Zoom treatment involves three, or four 15-minute sessions during which the mouth is kept open continuously for the entire treatment by a plastic retractor. This could result in dryness or chapping of the lips or cheek margins, which can be treated by application of lip balm, petroleum jelly or Vitamin E cream.
+ 19: Cavities or Leaking Fillings – Most dental whitening is indicated for the outside of the teeth, except for patients who have already undergone a root canal procedure. If any open cavities or fillings that are leaking are present allowing gel to penetrate the tooth could result in significant pain. I understand that if my teeth have these conditions, I should have my cavities filled or my fillings redone before undergoing the Zoom treatment.
+ 20: Cervical Abrasion/Erosion – These are conditions which affect the roots of the teeth when the gums recede and they are characterized by grooves, notches and/or depressions, that appear darker than the rest of the teeth, where the teeth meet the gums. These areas appear darker because they lack the enamel that covers the rest of the teeth. Even if these areas are not currently sensitive, they can allow the whitening gel to penetrate the teeth, causing sensitivity. I understand that if cervical abrasion/erosion exists on my teeth, these areas will be covered with dental dam prior to my Zoom treatment.
+ 21: Root Resorption – This is a condition where the root of the tooth starts to dissolve either from the inside or outside. Although the cause of this is still uncertain, I understand that there is evidence that indicates the incidence of root resorption is higher in patients who have undergone root canals followed by whitening procedures.
+ 22: Relapse – After the Zoom treatment, it is natural for the teeth that underwent the Zoom treatment to regress somewhat in their shading after treatment. This is natural and should be very gradual, but it can be accelerated by exposing the teeth to various staining agents. Treatment may involve wearing a take-home tray or repeating the Zoom treatment.
+ 23: I understand that the results of the Zoom treatment are not intended to be permanent and secondary, repeat or take-home treatments may be needed for me to maintain the tooth shade I desire for my teeth. I understand that my dentist has evaluated whether I am a proper candidate for an in-office whitening procedure. The safety, efficacy, potential complications and risks of Zoom treatment can be explained to me by my dentist and I understand that more information on this will be provided to me upon my request. Since it is impossible to state every complication that may occur as a result of Zoom treatment, the list of complications in this form is incomplete. The basic procedures of Zoom treatment and the advantages and disadvantages, risks and known possible complications of alternative treatments have been explained to me by my dentist and my dentist has answered all my questions to my satisfaction.
+ 24: In signing this informed consent I am stating I have read this informed consent (or it has been read to me) and I fully understand it and the possible risks, complications and benefits that can result from the Zoom treatment and that I agree to undergo the treatment as described by my dentist.
+ 25: By signing this document in the space provided I indicate that I have read and understand the entire document and that I give my permission for Zoom treatment to be performed on me.
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 17
+  - CONTENT: Informed Consent for Zoom Tooth Whitening Treatment...
+  - CONTENT: This information has been given to me so that I can make an informed decision about having my teeth ...
+  - CONTENT: Zoom in-office tooth whitening is a procedure designed to lighten the color of my teeth using a comb...
+  - CONTENT: and my teeth will be exposed to the light from the Zoom lamp for 3 to 4, 15-minute sessions. During ...
+  - CONTENT: I understand I may decide not to have the Zoom treatment at all. However, should I decide to undergo...
+  - CONTENT: I understand that the cost of my Zoom treatment is determined by my dentist. I understand that my de...
+  - CONTENT: I understand that almost all natural teeth can benefit from Zoom whitening treatments and significan...
+  - CONTENT: Tooth Sensitivity/Pain – During the first 24 hours after Zoom treatment, some patients can experienc...
+  - CONTENT: Gum/Lip/Cheek Inflammation – Whitening may cause inflammation of your gums, lips or cheek margins. T...
+  - CONTENT: Dry/Chapped Lips – The Zoom treatment involves three, or four 15-minute sessions during which the mo...
+  - CONTENT: Cavities or Leaking Fillings – Most dental whitening is indicated for the outside of the teeth, exce...
+  - CONTENT: Cervical Abrasion/Erosion – These are conditions which affect the roots of the teeth when the gums r...
+  - CONTENT: Root Resorption – This is a condition where the root of the tooth starts to dissolve either from the...
+2025-09-16 06:40:54,038 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:54,040 - INFO - Going to convert document batch...
+2025-09-16 06:40:54,041 - INFO - Processing document +Dental+Records+Release+Form+FINAL+032025.docx
+2025-09-16 06:40:54,082 - INFO - Finished converting document +Dental+Records+Release+Form+FINAL+032025.docx in 0.04 sec.
+2025-09-16 06:40:54,082 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:54,084 - INFO - Going to convert document batch...
+2025-09-16 06:40:54,084 - INFO - Processing document Informed Consent Endodonti Procedure.docx
+2025-09-16 06:40:54,103 - INFO - Finished converting document Informed Consent Endodonti Procedure.docx in 0.02 sec.
+2025-09-16 06:40:54,103 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:54,105 - INFO - Going to convert document batch...
+2025-09-16 06:40:54,105 - INFO - Processing document Informed Consent Implant Supported Prosthetics.docx
+2025-09-16 06:40:54,131 - INFO - Finished converting document Informed Consent Implant Supported Prosthetics.docx in 0.03 sec.
+  - CONTENT: Relapse – After the Zoom treatment, it is natural for the teeth that underwent the Zoom treatment to...
+  - CONTENT: I understand that the results of the Zoom treatment are not intended to be permanent and secondary, ...
+  - CONTENT: In signing this informed consent I am stating I have read this informed consent (or it has been read...
+  - CONTENT: By signing this document in the space provided I indicate that I have read and understand the entire...
+
+================================================================================
+EXTRACTING: +Dental+Records+Release+Form+FINAL+032025.docx
+================================================================================
+Total text elements extracted: 20
+Document name: +Dental+Records+Release+Form+FINAL+032025
+
+--- RAW TEXT EXTRACTION ---
+  1: Welcome@westgatefamilydentistry.com
+  2: ●
+  3: www.westgatefamilydentistry.com
+  4: Dental Records Release Form
+  5: Patient information
+  6: Full name: 		 Date of birth: 		 Address:						 City: 	   State: 		  Zip:
+  7: Phone number: 	   Email address:
+  8: Current dental practice information
+  9: Name of current dental practice: 						 Address: 					 City: 		State: 	   Zip:
+ 10: Phone number: 		Email address:
+ 11: New dental practice information
+ 12: Name of current dental practice: 						 Address: 					 City: 		State: 	   Zip:
+ 13: Phone number: 		Email address:
+ 14: Date of release:
+ 15: Patient consent and authorization
+ 16: I, the undersigned, hereby authorize the transfer of my/patient’s dental records from the current dental practice listed above to the new dental practice specified above. This authorization includes, but is not limited to, the release of dental history, treatment reports, X-rays, and laboratory results. I understand that this transfer is essential for ensuring the continuity of dental care and treatment.
+ 17: Patient/legal guardian’s name (printed): 	 Patient/legal guardian’s signature: 	 Date:
+ 18: Witness/healthcare provider attestation
+ 19: Witness/healthcare provider signature:
+ 20: Date:
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 7
+  - CONTENT: Full name: 		 Date of birth: 		 Address:						 City: 	   State: 		  Zip:...
+  - CONTENT: Name of current dental practice: 						 Address: 					 City: 		State: 	   Zip:...
+  - CONTENT: Name of current dental practice: 						 Address: 					 City: 		State: 	   Zip:...
+  - CONTENT: I, the undersigned, hereby authorize the transfer of my/patient’s dental records from the current de...
+  - SIGNATURE FIELD: Patient/legal guardian’s name (printed): 	 Patient/legal guardian’s signature: 	 Date:
+  - SIGNATURE FIELD: Witness/healthcare provider signature:
+  - SIGNATURE FIELD: Date:
+
+================================================================================
+EXTRACTING: Informed Consent Endodonti Procedure.docx
+================================================================================
+Total text elements extracted: 26
+Document name: Informed Consent Endodonti Procedure
+
+--- RAW TEXT EXTRACTION ---
+  1: Smile@Kingervdental.com • www.kingerydental.com
+Informed Consent for Endodontic Procedures
+  2: Recommended Treatment
+  3: I hereby give consent to Dr.	to perform Endodontic Procedures procedure(s) on
+  4: me or my dependent as follows:
+  5: (“Recommended Treatment”) and any
+  6: such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  7: Discussion of Treatment
+  8: The Recommended Treatment works by removing bacteria from the hollow space inside the tooth, and by sealing off the inside of the tooth to prevent re-infection. Although the Recommended Treatment has a very high success rate, it is a biological procedure and cannot be guaranteed. Occasionally, a tooth which has had root canal treatment may require retreatment, additional surgery, or extraction.
+  9: Treatment Alternatives
+ 10: Alternative methods of treatment have been explained to me, such as extraction of the involved teeth, or postponement of root canal therapy, but I wish to proceed with the Recommended Treatment described above.
+ 11: Risks and Complications
+ 12: I understand that there are risks and complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These potential risks and complications, include, but are not limited to, the following:
+ 13: . Instrument breakage in the root canal.
+ 14: . Inability to negotiate canals due to prior treatment or calcification.
+ 15: . Perforation to the outside of the tooth.
+ 16: . Irreparable damage to the existing crown or restoration.
+ 17: . Cracking or fracturing of the root or crown of the tooth.
+ 18: . Pain, infection and swelling.
+ 19: . Difficulty opening and closing.
+ 20: . Temporomandibular Dysfunction resulting in jaw pain.
+ 21: . Nerve injury resulting in temporary or permanent numbness, itching, burning or tingling of the lip, chin, tongue or teeth.
+ 22: . As a result of the injection or use of anesthesia, there may be swelling, jaw muscle tenderness or even resultant numbness of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent.
+ 23: Signature:	Printed Name:	Date:
+ 24: (Patient/Parent/Guardian)	Relationship (If patient is a minor):
+ 25: Witness Signature:	Witness Printed Name:	Date:
+ 26: 6700 IL Route 83 • Darien, IL 60561 • (630)789.0900 • www.kingerydental.com
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 16
+  - CONTENT: Smile@Kingervdental.com • www.kingerydental.com
+Informed Consent for Endodontic Procedures...
+  - PROVIDER FIELD: I hereby give consent to Dr.	to perform Endodontic Procedures procedure(s) on
+  - PROVIDER FIELD: such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  - CONTENT: The Recommended Treatment works by removing bacteria from the hollow space inside the tooth, and by ...
+  - CONTENT: Alternative methods of treatment have been explained to me, such as extraction of the involved teeth...
+  - CONTENT: I understand that there are risks and complications associated with the administration of medication...
+  - CONTENT: . Inability to negotiate canals due to prior treatment or calcification....
+  - CONTENT: . Irreparable damage to the existing crown or restoration....
+  - CONTENT: . Cracking or fracturing of the root or crown of the tooth....
+  - CONTENT: . Temporomandibular Dysfunction resulting in jaw pain....
+  - CONTENT: . Nerve injury resulting in temporary or permanent numbness, itching, burning or tingling of the lip...
+  - CONTENT: . As a result of the injection or use of anesthesia, there may be swelling, jaw muscle tenderness or...
+  - SIGNATURE FIELD: Signature:	Printed Name:	Date:
+  - SIGNATURE FIELD: (Patient/Parent/Guardian)	Relationship (If patient is a minor):
+  - SIGNATURE FIELD: Witness Signature:	Witness Printed Name:	Date:
+  - CONTENT: 6700 IL Route 83 • Darien, IL 60561 • (630)789.0900 • www.kingerydental.com...
+
+================================================================================
+EXTRACTING: Informed Consent Implant Supported Prosthetics.docx
+================================================================================
+Total text elements extracted: 34
+2025-09-16 06:40:54,131 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:54,133 - INFO - Going to convert document batch...
+2025-09-16 06:40:54,133 - INFO - Processing document DentureProcessingConsentFINAL122024.docx
+2025-09-16 06:40:54,168 - INFO - Finished converting document DentureProcessingConsentFINAL122024.docx in 0.04 sec.
+Document name: Informed Consent Implant Supported Prosthetics
+
+--- RAW TEXT EXTRACTION ---
+  1: Smile@Kingervdental.com • www.kinaervdental.com
+Informed Consent for Implant-Supported Prosthetics
+  2: Recommended Treatment
+  3: I hereby give consent to Dr.		 to perform Single or Multi-stage
+  4: Implant Placement procedure(s) on me or my dependent for purposes of supporting a fixed and/or removable dental prosthetic device, and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of this treatment. The nature and purpose of this treatment have been explained to me and no guarantee has been made or implied as to the success or ultimate result of this treatment. I have been given satisfactory answers to all of my questions, I have been advised of the risks and benefits of, and alternatives to the planned procedures, and I wish to proceed with this treatment. I also consent to the administration of local anesthesia during the performance of this treatment.
+  5: Treatment Alternatives
+  6: Alternative methods of treatment have been explained to me, such as:
+  7: Use of a conventional removable dental prosthetic device (denture);
+  8: Other alternative implant procedures.
+  9: Placement of a fixed dental bridge which will be supported by adjacent teeth and/or implants.
+ 10: Bone and/or tissue grafting prior to implant placement.
+ 11: Sinus lift and/or nerve repositioning procedures.
+ 12: The option of no further treatment.
+ 13: However, I wish to proceed with the treatment described above.
+ 14: Risks and Potential Complications
+ 15: I understand that there are risks and potential complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These risks and potential complications, include, but are not limited to, the following:
+ 16: Drug reactions and side effects.
+ 17: Post-operative pain, bleeding, oozing, soft tissue infection and/or bone infection.
+ 18: Bruising and/or swelling, restricted mouth opening for several days or weeks, or, rarely, longer.
+ 19: Inability to surgically place a planned-for implant due to circumstances relating to bone quality and/or quantity, which were not able to be assessed with pre-treatment diagnostic tests.
+ 20: Smile@KinQervdental.com • www.kinqervdental.com
+ 21: Delayed healing, necessitating post-operative care and treatment.
+ 22: Possible involvement of the sinus when placing an implant in the upper posterior regions, which may require additional treatment or surgical repair at a later date.
+ 23: Possible injury of the nerves of the lower jaw when placing an implant in the lower jaw, resulting in temporary or permanent tingling/numbness/pain (possibly of an electric shock nature) of the lower lip, chin, tongue or other surrounding structures, with potential alteration or loss of taste.
+ 24: Non-healing of one or more of the implants, necessitating its removal and/or other procedures, possibly including the need for bone grafting and/or soft tissue grafting.
+ 25: If you are taking medications to make your bones stronger (such as bisphosphonates) or if you have received radiation therapy to the head or neck area for tumors/cancer, then you are at a higher risk for poor bone healing or bone loss that may never completely resolve and which may require surgery or other treatment.
+ 26: As a result of the Lidocaine injection or use of other local anesthesia, there may be swelling, jaw muscle tenderness or even resultant tingling/numbness/pain (possibly of an electric shock nature) of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent; this may include alteration or loss of taste.
+ 27: Pain and/or limited movement of the jaw joint, either of a temporary or permanent nature, which may require further treatment.
+ 28: Because of the unique issues associated with the placement of the implants in this procedure, there is an increased risk of infection, loss of bone in the jaw, loss of the implants, and loss of the prosthetics placed on the implants.
+ 29: Patient Name (Printed):
+ 30: Signature:	 Date:
+ 31: Patient/Parent/Guardian
+ 32: Relationship (if patient is a minor):
+ 33: Date:
+ 34: Witness (Signature):
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 25
+  - CONTENT: Smile@Kingervdental.com • www.kinaervdental.com
+Informed Consent for Implant-Supported Prosthetics...
+  - PROVIDER FIELD: I hereby give consent to Dr.		 to perform Single or Multi-stage
+  - PROVIDER FIELD: Implant Placement procedure(s) on me or my dependent for purposes of supporting a fixed and/or removable dental prosthetic device, and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of this treatment. The nature and purpose of this treatment have been explained to me and no guarantee has been made or implied as to the success or ultimate result of this treatment. I have been given satisfactory answers to all of my questions, I have been advised of the risks and benefits of, and alternatives to the planned procedures, and I wish to proceed with this treatment. I also consent to the administration of local anesthesia during the performance of this treatment.
+  - CONTENT: Alternative methods of treatment have been explained to me, such as:...
+  - CONTENT: Use of a conventional removable dental prosthetic device (denture);...
+  - CONTENT: Placement of a fixed dental bridge which will be supported by adjacent teeth and/or implants....
+  - CONTENT: Bone and/or tissue grafting prior to implant placement....
+  - CONTENT: However, I wish to proceed with the treatment described above....
+  - CONTENT: I understand that there are risks and potential complications associated with the administration of ...
+  - CONTENT: Post-operative pain, bleeding, oozing, soft tissue infection and/or bone infection....
+  - CONTENT: Bruising and/or swelling, restricted mouth opening for several days or weeks, or, rarely, longer....
+  - CONTENT: Inability to surgically place a planned-for implant due to circumstances relating to bone quality an...
+  - CONTENT: Delayed healing, necessitating post-operative care and treatment....
+  - CONTENT: Possible involvement of the sinus when placing an implant in the upper posterior regions, which may ...
+  - CONTENT: Possible injury of the nerves of the lower jaw when placing an implant in the lower jaw, resulting i...
+  - CONTENT: Non-healing of one or more of the implants, necessitating its removal and/or other procedures, possi...
+  - CONTENT: If you are taking medications to make your bones stronger (such as bisphosphonates) or if you have r...
+  - CONTENT: As a result of the Lidocaine injection or use of other local anesthesia, there may be swelling, jaw ...
+  - CONTENT: Pain and/or limited movement of the jaw joint, either of a temporary or permanent nature, which may ...
+  - CONTENT: Because of the unique issues associated with the placement of the implants in this procedure, there ...
+  - SIGNATURE FIELD: Patient Name (Printed):
+  - SIGNATURE FIELD: Signature:	 Date:
+  - SIGNATURE FIELD: Relationship (if patient is a minor):
+  - SIGNATURE FIELD: Date:
+  - SIGNATURE FIELD: Witness (Signature):
+
+================================================================================
+EXTRACTING: DentureProcessingConsentFINAL122024.docx
+================================================================================
+Total text elements extracted: 12
+Document name: DentureProcessingConsentFINAL122024
+
+--- RAW TEXT EXTRACTION ---
+  1: Welcome@westgatefamilydentistry.com
+  2: ●
+  3: www.westgatefamilydentistry.com
+  4: CONSENT FOR FINAL PROCESSING
+  5: Full or Partial Denture
+2025-09-16 06:40:54,169 - INFO - detected formats: [<InputFormat.DOCX: 'docx'>]
+2025-09-16 06:40:54,170 - INFO - Going to convert document batch...
+2025-09-16 06:40:54,171 - INFO - Processing document Informed Consent for Biopsy.docx
+2025-09-16 06:40:54,187 - INFO - Finished converting document Informed Consent for Biopsy.docx in 0.02 sec.
+  6: I have been given the opportunity to view my dentures in the mouth prior to final processing. I approve the color, shape, feel and overall appearance of my dentures. I understand that once the dentures are processed by the laboratory, the factors of color, shape, feel and overall appearance cannot be changed without additional and possibly significant time being taken and fees assessed.
+  7: By signing this Consent for final processing, I give Dr. my consent for final processing and acknowledge my approval of the appearance.
+  8: Patient's Name (Please Print) : 		Date:
+  9: Signature of patient, legal guardian
+ 10: or authorized representative: 	 Date:
+ 11: Witness to Signature: 	 Date:
+ 12: Dentist's Signature : 	 Date:
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 7
+  - CONTENT: I have been given the opportunity to view my dentures in the mouth prior to final processing. I appr...
+  - PROVIDER FIELD: By signing this Consent for final processing, I give Dr. my consent for final processing and acknowledge my approval of the appearance.
+  - SIGNATURE FIELD: Patient's Name (Please Print) : 		Date:
+  - SIGNATURE FIELD: Signature of patient, legal guardian
+  - SIGNATURE FIELD: or authorized representative: 	 Date:
+  - SIGNATURE FIELD: Witness to Signature: 	 Date:
+  - SIGNATURE FIELD: Dentist's Signature : 	 Date:
+
+================================================================================
+EXTRACTING: Informed Consent for Biopsy.docx
+================================================================================
+Total text elements extracted: 22
+Document name: Informed Consent for Biopsy
+
+--- RAW TEXT EXTRACTION ---
+  1: Smile@Kingervdental.com • www.kingervdental.com
+Informed Consent for Biopsy
+  2: Recommended Treatment
+  3: I hereby give consent to Dr.	to perform Biopsy procedure(s) on me or my dependent as
+  4: follows:
+  5: (“Recommended Treatment”) and any such
+  6: additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  7: Treatment Alternatives
+  8: Alternative methods of treatment have been explained to me, such as:	 but I wish to proceed with the Recommended Treatment described above.
+  9: Risks and Potential Complications
+ 10: . I understand that there are risks and potential complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These risks and potential complications, include, but are not limited to, the following:
+ 11: . Drug reactions and side effects.
+ 12: . Post-operative pain, bleeding, oozing, soft tissue infection and/or bone infection.
+ 13: . Bruising and/or swelling, restricted mouth opening for several days or weeks, or, rarely, longer.
+ 14: . Delayed healing, necessitating post-operative care.
+ 15: . If you are taking medications to make your bones stronger (such as bisphosphonates) or if you have received radiation therapy to the head or neck area for tumors/cancer, then you are at a higher risk for poor bone healing or bone loss that may never completely resolve and which may require surgery or other treatment.
+ 16: . Regrowth of the tissue which was removed in the biopsy.
+ 17: . As a result of the Lidocaine injection or use of other local anesthesia, there may be swelling, jaw muscle tenderness or even resultant tingling/numbness/pain (possibly of an electric shock nature) of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent: this may include alteration or loss of taste.
+ 18: . Depending upon the results of the biopsy, further treatment may be required, to better obtain a diagnosis and/or to remove additional tissue.
+ 19: Signature:	Printed Name:	Date:
+ 20: (Patient/Parent/Guardian) Relationship (If patient is a minor):
+ 21: Patient Date of Birth:
+ 22: 6700 IL Route 83 • Darien, IL 60561 • (630)789.0900 • www.kingerydental.com
+
+--- FIELD ANALYSIS ---
+Potential fields identified: 15
+  - CONTENT: Smile@Kingervdental.com • www.kingervdental.com
+Informed Consent for Biopsy...
+  - PROVIDER FIELD: I hereby give consent to Dr.	to perform Biopsy procedure(s) on me or my dependent as
+  - PROVIDER FIELD: additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment.
+  - CONTENT: Alternative methods of treatment have been explained to me, such as:	 but I wish to proceed with the...
+  - CONTENT: . I understand that there are risks and potential complications associated with the administration o...
+  - CONTENT: . Post-operative pain, bleeding, oozing, soft tissue infection and/or bone infection....
+  - CONTENT: . Bruising and/or swelling, restricted mouth opening for several days or weeks, or, rarely, longer....
+  - CONTENT: . Delayed healing, necessitating post-operative care....
+  - CONTENT: . If you are taking medications to make your bones stronger (such as bisphosphonates) or if you have...
+  - CONTENT: . Regrowth of the tissue which was removed in the biopsy....
+  - CONTENT: . As a result of the Lidocaine injection or use of other local anesthesia, there may be swelling, ja...
+  - CONTENT: . Depending upon the results of the biopsy, further treatment may be required, to better obtain a di...
+  - SIGNATURE FIELD: Signature:	Printed Name:	Date:
+  - SIGNATURE FIELD: (Patient/Parent/Guardian) Relationship (If patient is a minor):
+  - CONTENT: 6700 IL Route 83 • Darien, IL 60561 • (630)789.0900 • www.kingerydental.com...
