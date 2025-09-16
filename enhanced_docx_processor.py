@@ -50,6 +50,7 @@ class EnhancedConsentProcessor:
             'informed consent',
             'endodontic consent', 
             'endodonti procedure',
+            'endodontic procedure',  # Added for broader matching
             'composite restoration',
             'implant supported prosthetics',
             'biopsy consent'
@@ -158,49 +159,67 @@ class EnhancedConsentProcessor:
         }
     
     def _format_crown_bridge_text(self, text_lines: List[str]) -> str:
-        """Format crown & bridge consent text to match reference HTML exactly"""
+        """Format crown & bridge consent text to match reference HTML while preserving structure"""
         
-        # Join all text and create structured HTML content
-        full_text = ' '.join(text_lines)
+        if not text_lines:
+            return '<div style="text-align:center"><strong>Informed Consent for Crown And<br>Bridge Prosthetics</strong></div>'
         
-        # Clean up the text
-        full_text = full_text.replace('\t', ' ')
-        full_text = ' '.join(full_text.split())  # Normalize whitespace
-        
-        # Create the reference-style HTML structure
+        # Create the reference-style HTML structure with proper title
         html_content = f'<div style="text-align:center"><strong>Informed Consent for Crown And<br>Bridge Prosthetics</strong><br>'
         
-        # Add the main consent text
-        if 'I have been advised' in full_text:
-            # Extract the main text content starting from "I have been advised"
-            start_idx = full_text.find('I have been advised')
-            if start_idx != -1:
-                consent_text = full_text[start_idx:]
-                
-                # Split into paragraphs and format
-                paragraphs = []
-                current_para = ""
-                
-                for sentence in consent_text.split('.'):
-                    sentence = sentence.strip()
-                    if sentence:
-                        current_para += sentence + '. '
-                        
-                        # Start new paragraph for numbered sections
-                        if re.search(r'\d+\.\s*[A-Z]', sentence):
-                            if current_para.strip():
-                                paragraphs.append(current_para.strip())
-                            current_para = ""
-                
-                if current_para.strip():
-                    paragraphs.append(current_para.strip())
-                
-                html_content += '<br>'.join(paragraphs)
-        else:
-            # Fallback: use the text as-is
-            html_content += full_text
+        # Process content lines to preserve structure (skip title if it matches)
+        content_lines = text_lines
+        if text_lines and 'crown and bridge' in text_lines[0].lower():
+            content_lines = text_lines[1:]  # Skip title line
         
-        html_content += '</div>'
+        # Process content lines to preserve structure
+        formatted_content = []
+        current_paragraph = []
+        
+        for line in content_lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Clean up tabs and excessive whitespace within the line
+            line = re.sub(r'\t+', ' ', line)
+            line = re.sub(r' +', ' ', line)
+            
+            # Check if this is a section header (short line, title case)
+            if (len(line) < 50 and 
+                any(header in line.lower() for header in ['treatment', 'alternative', 'risk', 'complication', 'procedure'])):
+                # Finish current paragraph
+                if current_paragraph:
+                    paragraph_text = ' '.join(current_paragraph)
+                    formatted_content.append(f'<p>{paragraph_text}</p>')
+                    current_paragraph = []
+                # Add section header
+                formatted_content.append(f'<p><br></p><p><strong>{line}</strong></p>')
+            
+            # Check if this is a bullet point
+            elif line.startswith('.') or line.startswith('•') or re.match(r'^\d+\.', line):
+                # Finish current paragraph
+                if current_paragraph:
+                    paragraph_text = ' '.join(current_paragraph)
+                    formatted_content.append(f'<p>{paragraph_text}</p>')
+                    current_paragraph = []
+                # Add bullet point (clean up the bullet formatting)
+                bullet_text = line.lstrip('.•').strip()
+                if re.match(r'^\d+\.', line):
+                    bullet_text = re.sub(r'^\d+\.\s*', '', line)
+                formatted_content.append(f'<p>• {bullet_text}</p>')
+            
+            else:
+                # Regular content line - add to current paragraph
+                current_paragraph.append(line)
+        
+        # Finish any remaining paragraph
+        if current_paragraph:
+            paragraph_text = ' '.join(current_paragraph)
+            formatted_content.append(f'<p>{paragraph_text}</p>')
+        
+        # Join all formatted content
+        html_content += ''.join(formatted_content) + '</div>'
         
         return html_content
     
@@ -296,10 +315,15 @@ class EnhancedConsentProcessor:
         
         for i, line in enumerate(text_lines):
             line_lower = line.lower()
-            # Look for signature section patterns (witness removed per requirements)
-            if (any(pattern in line_lower for pattern in [
-                'signature:', 'printed name', 'patient\'s name', 'dentist'
-            ]) and i > len(text_lines) * 0.5):  # In the latter half of document
+            # Enhanced signature section detection - more universal patterns
+            signature_patterns = [
+                'signature:', 'printed name', 'patient\'s name', 'dentist',
+                'signature of patient', 'signature of legal guardian',
+                'patient name (please print)', 'please print',
+                'authorized signatory', 'witness to signature'
+            ]
+            if (any(pattern in line_lower for pattern in signature_patterns) and 
+                i > len(text_lines) * 0.5):  # In the latter half of document
                 signature_section_start = i
                 break
             elif line.strip() and not line.startswith('##'):
@@ -380,53 +404,66 @@ class EnhancedConsentProcessor:
         }
     
     def _format_general_consent_text(self, text_lines: List[str]) -> str:
-        """Format general consent text with universal styling"""
+        """Format general consent text with universal styling while preserving structure"""
         
-        # Join all text and create structured HTML content
-        full_text = ' '.join(text_lines)
+        if not text_lines:
+            return '<div style="text-align:center"><strong>Consent Form</strong></div>'
         
-        # Clean up the text
-        full_text = full_text.replace('\t', ' ')
-        full_text = ' '.join(full_text.split())  # Normalize whitespace
-        
-        # Extract title from first line or content
-        title = ""
-        content_start = 0
-        
-        # Look for consent form title patterns
-        title_patterns = [
-            r'informed consent.*?for.*?(endodontic|composite|implant|biopsy)',
-            r'informed consent.*?(endodontic|composite|implant|biopsy)',
-            r'(endodontic|composite|implant|biopsy).*?consent'
-        ]
-        
-        for pattern in title_patterns:
-            match = re.search(pattern, full_text, re.IGNORECASE)
-            if match:
-                title = match.group(0)
-                break
-        
-        if not title:
-            # Use first line as title if no pattern found
-            first_line = text_lines[0] if text_lines else ""
-            if len(first_line) < 100:  # Likely a title
-                title = first_line
-                content_start = 1
+        # Extract title from first line
+        title = text_lines[0] if text_lines else "Consent Form"
+        content_lines = text_lines[1:] if len(text_lines) > 1 else text_lines
         
         # Create HTML structure
         html_content = f'<div style="text-align:center"><strong>{title}</strong><br>'
         
-        # Add the main consent text, skipping the title line if used
-        remaining_text = ' '.join(text_lines[content_start:]) if content_start > 0 else full_text
-        if title and content_start == 0:
-            # Remove title from beginning of text
-            remaining_text = remaining_text.replace(title, '', 1).strip()
+        # Process content lines to preserve structure
+        formatted_content = []
+        current_paragraph = []
         
-        # Clean and format the content
-        remaining_text = remaining_text.replace('\t', ' ')
-        remaining_text = ' '.join(remaining_text.split())
+        for line in content_lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Clean up tabs and excessive whitespace within the line
+            line = re.sub(r'\t+', ' ', line)
+            line = re.sub(r' +', ' ', line)
+            
+            # Check if this is a section header (short line, title case)
+            if (len(line) < 50 and 
+                any(header in line.lower() for header in ['treatment', 'alternative', 'risk', 'complication', 'procedure'])):
+                # Finish current paragraph
+                if current_paragraph:
+                    paragraph_text = ' '.join(current_paragraph)
+                    formatted_content.append(f'<p>{paragraph_text}</p>')
+                    current_paragraph = []
+                # Add section header
+                formatted_content.append(f'<p><br></p><p><strong>{line}</strong></p>')
+            
+            # Check if this is a bullet point
+            elif line.startswith('.') or line.startswith('•') or re.match(r'^\d+\.', line):
+                # Finish current paragraph
+                if current_paragraph:
+                    paragraph_text = ' '.join(current_paragraph)
+                    formatted_content.append(f'<p>{paragraph_text}</p>')
+                    current_paragraph = []
+                # Add bullet point (clean up the bullet formatting)
+                bullet_text = line.lstrip('.•').strip()
+                if re.match(r'^\d+\.', line):
+                    bullet_text = re.sub(r'^\d+\.\s*', '', line)
+                formatted_content.append(f'<p>• {bullet_text}</p>')
+            
+            else:
+                # Regular content line - add to current paragraph
+                current_paragraph.append(line)
         
-        html_content += remaining_text + '</div>'
+        # Finish any remaining paragraph
+        if current_paragraph:
+            paragraph_text = ' '.join(current_paragraph)
+            formatted_content.append(f'<p>{paragraph_text}</p>')
+        
+        # Join all formatted content
+        html_content += ''.join(formatted_content) + '</div>'
         
         return html_content
     
@@ -475,8 +512,11 @@ class EnhancedConsentProcessor:
             if 'relationship' in line_lower and 'minor' in line_lower:
                 detected_fields['relationship'] = True
             
-            # Check for printed name (be more specific to avoid false positives)
-            if 'printed name:' in line_lower or 'printed name' in line_lower:
+            # Check for printed name patterns (multiple variations)
+            if any(pattern in line_lower for pattern in [
+                'printed name:', 'printed name', 'patient\'s name',
+                'please print', 'name (please print)'
+            ]):
                 detected_fields['printed_name'] = True
             
             # Check for patient date of birth
