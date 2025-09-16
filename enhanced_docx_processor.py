@@ -298,9 +298,9 @@ class EnhancedConsentProcessor:
         
         for i, line in enumerate(text_lines):
             line_lower = line.lower()
-            # Look for signature section patterns
+            # Look for signature section patterns (witness removed per requirements)
             if (any(pattern in line_lower for pattern in [
-                'signature:', 'printed name', 'patient\'s name', 'witness', 'dentist'
+                'signature:', 'printed name', 'patient\'s name', 'dentist'
             ]) and i > len(text_lines) * 0.5):  # In the latter half of document
                 signature_section_start = i
                 break
@@ -465,12 +465,11 @@ class EnhancedConsentProcessor:
         signature_lines = text_lines[signature_start:signature_start+5] if signature_start < len(text_lines) - 5 else text_lines[signature_start:]
         
         fields = []
+        # Initialize detected fields tracking (witness fields removed per requirements)
         detected_fields = {
             'relationship': False,
             'printed_name': False,
-            'patient_dob': False,
-            'witness_signature': False,
-            'witness_printed_name': False
+            'patient_dob': False
         }
         
         # Universal pattern detection for signature fields - enhanced for better detection
@@ -488,15 +487,6 @@ class EnhancedConsentProcessor:
             # Check for patient date of birth
             if 'patient date of birth' in line_lower:
                 detected_fields['patient_dob'] = True
-                
-            # Enhanced witness field detection - check for patterns like "Witness Signature:" and "Witness Printed Name:"
-            if ('witness signature' in line_lower or 
-                ('witness' in line_lower and 'signature' in line_lower)):
-                detected_fields['witness_signature'] = True
-                
-            if ('witness printed name' in line_lower or
-                ('witness' in line_lower and 'printed name' in line_lower)):
-                detected_fields['witness_printed_name'] = True
         
         # Build signature fields based on detected patterns in logical order
         if detected_fields['relationship']:
@@ -557,31 +547,6 @@ class EnhancedConsentProcessor:
                 "control": {
                     "hint": None,
                     "input_type": "past"
-                },
-                "section": "Signature"
-            })
-            
-        # Add witness fields if detected
-        if detected_fields['witness_signature']:
-            fields.append({
-                "key": "witness_signature",
-                "type": "signature",
-                "title": "Witness Signature",
-                "control": {
-                    "hint": None,
-                    "input_type": None
-                },
-                "section": "Signature"
-            })
-            
-        if detected_fields['witness_printed_name']:
-            fields.append({
-                "key": "witness_printed_name",
-                "type": "input",
-                "title": "Witness Printed Name",
-                "control": {
-                    "hint": None,
-                    "input_type": "name"
                 },
                 "section": "Signature"
             })
