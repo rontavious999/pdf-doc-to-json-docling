@@ -122,13 +122,19 @@ class EnhancedConsentProcessor:
         existing_keys = set(['form_1'])
         
         # Convert universal fields to the expected format and add them
+        # Apply field mappings for crown_bridge forms
+        field_mappings = self.consent_reference_patterns['crown_bridge']['field_mappings']
+        
         for field in universal_fields:
             # Skip if it's already covered by our consent structure or already added
             if field.key in existing_keys:
                 continue
+            
+            # Apply field mapping if exists
+            mapped_key = field_mappings.get(field.key, field.key)
                 
             field_dict = {
-                "key": field.key,
+                "key": mapped_key,
                 "type": field.field_type,
                 "title": field.title,
                 "control": field.control if field.control else {},
@@ -140,7 +146,7 @@ class EnhancedConsentProcessor:
                 field_dict["optional"] = field.optional
                 
             fields.append(field_dict)
-            existing_keys.add(field.key)
+            existing_keys.add(mapped_key)
         
         # Add signature fields using universal extraction - avoid duplicates
         signature_fields = self._extract_signature_fields(text_lines, 
@@ -148,9 +154,12 @@ class EnhancedConsentProcessor:
                                                               if 'signature:' in line.lower()), None))
         
         for sig_field in signature_fields:
-            if sig_field['key'] not in existing_keys:
+            # Apply field mapping for signature fields too
+            mapped_key = field_mappings.get(sig_field['key'], sig_field['key'])
+            if mapped_key not in existing_keys:
+                sig_field['key'] = mapped_key
                 fields.append(sig_field)
-                existing_keys.add(sig_field['key'])
+                existing_keys.add(mapped_key)
         
         return {
             "fields": fields,
@@ -596,6 +605,10 @@ class EnhancedConsentProcessor:
             # Use enhanced consent processing
             print(f"[i] Detected consent form type: {form_type}")
             result = self.extract_consent_form_content(text_lines, form_type)
+            
+            # Apply universal field key normalizations
+            from pdf_to_json_converter import ModentoSchemaValidator
+            result["fields"] = ModentoSchemaValidator.normalize_field_keys(result["fields"])
             
             # Apply schema compliance fixes to all fields
             for field in result["fields"]:

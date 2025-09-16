@@ -1,0 +1,60 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<div style=\"text-align:center\"><strong>Informed Consent for Crown And<br>Bridge Prosthetics</strong><br><p><br></p><p><strong>procedure(s) on me or my dependent as follows:</strong></p><p>(“Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to the result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment. Alternative methods of treatment have been explained to me, such as: but I wish to proceed with the Recommended Treatment described above. I understand that there are risks and complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These potential risks and complications, include, but are not limited to, the following:</p><p>• Sensitivity of teeth. If present, usually resolves within weeks or sometimes longer after placement.</p><p>• Crown or bridge abutment teeth may require root canal treatment if sensitivity persists or the tooth becomes sensitive or painful to the bite.</p><p>• Breakage of temporary or permanent restoration and/or tooth.</p><p>• Uncomfortable or strange feelings, which is typically temporary. In limited situations, muscle soreness or tenderness of the jaw may persist following placement of the prosthesis.</p><p>• Unsatisfactory aesthetics or appearance. You will be given the opportunity to approve the final restoration prior to permanent cementation.</p><p>• Unsatisfactory longevity of crowns and bridges.</p><p>• As a result of the injection or use of anesthesia, at times there may be swelling, jaw muscle tenderness or even resultant numbness of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent.</p></div>"
+    },
+    "section": "Form",
+    "optional": false
+  },
+  {
+    "key": "relationship",
+    "type": "input",
+    "title": "Relationship",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "patient_date_of_birth",
+    "type": "date",
+    "title": "Patient Date of Birth",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "printed_name_if_signed_on_behalf",
+    "type": "input",
+    "title": "Printed Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Signature",
+    "optional": false
+  }
+]

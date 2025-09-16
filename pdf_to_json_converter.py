@@ -66,6 +66,40 @@ class ModentoSchemaValidator:
         return text or fallback
     
     @staticmethod
+    def normalize_field_keys(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Normalize field keys to fix common issues universally"""
+        
+        # Define key normalization mappings
+        key_normalizations = {
+            # Fix possessive forms (patient's -> patient)
+            r'([a-z]+)_s_([a-z]+)': r'\1_\2',  # patient_s_name -> patient_name
+            r'([a-z]+)_s$': r'\1',  # patient_s -> patient
+        }
+        
+        # Direct key mappings for specific cases
+        direct_mappings = {
+            'patient_printed_name': 'printed_name',
+            'printed_patient_name': 'printed_name',
+        }
+        
+        for item in spec:
+            if "key" in item:
+                original_key = item["key"]
+                normalized_key = original_key
+                
+                # Apply direct mappings first
+                if original_key in direct_mappings:
+                    normalized_key = direct_mappings[original_key]
+                else:
+                    # Apply regex normalization patterns
+                    for pattern, replacement in key_normalizations.items():
+                        normalized_key = re.sub(pattern, replacement, normalized_key)
+                
+                item["key"] = normalized_key
+        
+        return spec
+    
+    @staticmethod
     def ensure_unique_keys(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Ensure all keys are globally unique with context-aware deduplication"""
         seen = set()
@@ -4970,6 +5004,9 @@ class DocumentToJSONConverter:
             # Fix initials fields to not have hint in reference
             if field_dict["key"] == "initials_3":
                 field_dict["control"].pop("hint", None)
+        
+        # Apply universal field key normalizations before validation
+        json_spec = ModentoSchemaValidator.normalize_field_keys(json_spec)
         
         # Validate and normalize
         is_valid, errors, normalized_spec = self.validator.validate_and_normalize(json_spec)
