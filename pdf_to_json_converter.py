@@ -279,6 +279,9 @@ class ModentoSchemaValidator:
         
         # Final cleanup: Remove unwanted duplicate fields that shouldn't exist
         spec = cls.remove_unwanted_duplicates(spec)
+        
+        # UNIVERSAL WITNESS FIELD COMPLIANCE: Ensure no witness fields remain
+        spec = cls.ensure_no_witness_fields(spec)
 
         return (len(errors) == 0), errors, spec
     
@@ -435,6 +438,29 @@ class ModentoSchemaValidator:
         
         # Filter out unwanted duplicates
         return [q for q in spec if q.get("key") not in unwanted_keys]
+    
+    @staticmethod 
+    def ensure_no_witness_fields(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Universal witness field removal - final safety check to ensure compliance"""
+        witness_indicators = [
+            'witness_signature', 'witness_printed_name', 'witness_name', 
+            'witness_date', 'witness_relationship', 'witness'
+        ]
+        
+        # Filter out any remaining witness fields
+        filtered_spec = []
+        for item in spec:
+            key = item.get("key", "").lower()
+            title = item.get("title", "").lower()
+            
+            # Skip if key or title contains witness indicators
+            is_witness_field = any(indicator in key for indicator in witness_indicators)
+            is_witness_title = any(indicator in title for indicator in witness_indicators)
+            
+            if not (is_witness_field or is_witness_title):
+                filtered_spec.append(item)
+        
+        return filtered_spec
 
 
 class DocumentFormFieldExtractor:
