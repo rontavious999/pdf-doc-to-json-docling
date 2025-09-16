@@ -308,6 +308,14 @@ class EnhancedConsentProcessor:
                 fields.append(sig_field)
                 existing_keys.add(sig_field['key'])
         
+        # ADDITIONAL ENHANCEMENT: Specifically check for missed signature fields that should be detected
+        # This is a safety net for common signature field patterns in consent forms
+        additional_signature_fields = self._detect_additional_signature_fields(text_lines, existing_keys)
+        for additional_field in additional_signature_fields:
+            if additional_field['key'] not in existing_keys:
+                fields.append(additional_field)
+                existing_keys.add(additional_field['key'])
+        
         return {
             "fields": fields,
             "sections": ["Form", "Signature"],
@@ -480,7 +488,12 @@ class EnhancedConsentProcessor:
             # Check for paragraph breaks (sentences that form complete thoughts)
             elif (len(current_paragraph) > 0 and 
                   (len(' '.join(current_paragraph)) > 300 or  # Long paragraph
-                   line.startswith(('I understand', 'I agree', 'INFORMED CONSENT', 'By signing')))) :
+                   line.startswith(('I understand', 'I agree', 'INFORMED CONSENT', 'By signing')) or
+                   # Additional natural break points for shorter consent forms
+                   any(phrase in line for phrase in [
+                       'By signing this', 'I acknowledge', 'I give my consent',
+                       'I approve the', 'Patient\'s Name', 'Signature of'
+                   ]))):
                 # Finish current paragraph and start new one
                 paragraph_text = ' '.join(current_paragraph)
                 formatted_content.append(f'<p>{paragraph_text}</p>')
@@ -684,6 +697,52 @@ class EnhancedConsentProcessor:
             from pdf_to_json_converter import DocumentToJSONConverter
             base_converter = DocumentToJSONConverter()
             return base_converter.convert_document_to_json(file_path)
+    
+    def _detect_additional_signature_fields(self, text_lines: List[str], existing_keys: set) -> List[Dict[str, Any]]:
+        """Detect additional signature fields that might have been missed - targeted fix for forms like ZOOMConsent"""
+        additional_fields = []
+        
+        for i, line in enumerate(text_lines):
+            line_lower = line.lower().strip()
+            
+            # Specific pattern for "Print patient name:" that's commonly missed
+            if 'print patient name:' in line_lower and 'printed_name' not in existing_keys:
+                additional_fields.append({
+                    "key": "printed_name",
+                    "type": "input",
+                    "title": "Print Patient Name",
+                    "control": {"input_type": "name"},
+                    "section": "Signature",
+                    "optional": False
+                })
+            
+            # Pattern for pipe-separated signature fields (like ZOOM consent)
+            elif '|' in line_lower and 'patient' in line_lower and 'name' in line_lower:
+                # Handle pipe-separated format: "PATIENT'S SIGNATURE | DATE | PATIENT'S NAME | DATE"
+                if 'printed_name' not in existing_keys:
+                    additional_fields.append({
+                        "key": "printed_name",
+                        "type": "input",
+                        "title": "Patient Name",
+                        "control": {"input_type": "name"},
+                        "section": "Signature",
+                        "optional": False
+                    })
+            
+            # Pattern for standalone "Patient signature" lines
+            elif line_lower == 'patient signature' and 'patient_signature_name' not in existing_keys:
+                # Note: This creates a separate input field for patient signature name
+                # The main signature field is handled separately per schema
+                additional_fields.append({
+                    "key": "patient_signature_name",
+                    "type": "input", 
+                    "title": "Patient Signature",
+                    "control": {"input_type": "name"},
+                    "section": "Signature",
+                    "optional": False
+                })
+        
+        return additional_fields
 
 
 def main():

@@ -26,5 +26,15 @@
     },
     "section": "Signature",
     "optional": false
+  },
+  {
+    "key": "printed_name",
+    "type": "input",
+    "title": "Patient Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
   }
 ]
