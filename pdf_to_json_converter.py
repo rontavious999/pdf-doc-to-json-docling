@@ -1949,7 +1949,114 @@ class DocumentFormFieldExtractor:
         
         return fields
     
-    def create_comprehensive_consent_html(self, text_lines: List[str]) -> str:
+    def _create_enhanced_consent_html(self, consent_text_lines: List[str], full_text: str, provider_patterns: List[str]) -> str:
+        """
+        Create properly formatted HTML content for consent forms with provider placeholders
+        Universal formatting that works for different consent types following Modento schema
+        """
+        
+        # Clean and join text
+        content = ' '.join(consent_text_lines)
+        content = re.sub(r'\s+', ' ', content).strip()
+        
+        # Remove practice header/footer information (Modento schema rule #5)
+        content = self._remove_practice_header_footer(content)
+        
+        # Apply provider placeholder substitution (Modento schema requirement)
+        for pattern in provider_patterns:
+            content = re.sub(pattern, 'Dr. {{provider}}', content, flags=re.IGNORECASE)
+        
+        # Detect form title/type
+        title = self._detect_consent_title(content)
+        
+        # Format as HTML with proper structure
+        if title:
+            html_content = f'<div style="text-align:center"><strong>{title}</strong><br>'
+        else:
+            html_content = '<div style="text-align:center"><strong>Informed Consent</strong><br>'
+        
+        # Add main content
+        # Split into logical paragraphs
+        paragraphs = self._split_into_paragraphs(content)
+        html_content += '<br>'.join(paragraphs)
+        html_content += '</div>'
+        
+        return html_content
+
+    def _remove_practice_header_footer(self, content: str) -> str:
+        """
+        Remove practice header/footer information per Modento schema rule #5
+        Universal patterns for practice information removal
+        """
+        
+        # Patterns for practice information that should be filtered out
+        practice_patterns = [
+            r'www\.\w+\.com',  # Website URLs
+            r'\w+@\w+\.com',   # Email addresses  
+            r'\(\d{3}\)\d{3}-?\d{4}',  # Phone numbers
+            r'\d+\s+[A-Z][A-Za-z\s]+,\s+[A-Z]{2}\s+\d{5}',  # Addresses
+            r'Route\s+\d+.*\d{5}',  # Route addresses
+            r'Smile@.*\.com',  # Practice email patterns
+        ]
+        
+        for pattern in practice_patterns:
+            content = re.sub(pattern, '', content, flags=re.IGNORECASE)
+        
+        # Clean up extra whitespace
+        content = re.sub(r'\s+', ' ', content).strip()
+        
+        return content
+
+    def _detect_consent_title(self, content: str) -> Optional[str]:
+        """
+        Detect consent form title from content
+        Universal title detection for different consent types
+        """
+        
+        title_patterns = [
+            r'Informed\s+Consent\s+for\s+([^.]+)',
+            r'Consent\s+for\s+([^.]+)', 
+            r'([^.]*Consent[^.]*)',
+        ]
+        
+        for pattern in title_patterns:
+            match = re.search(pattern, content, re.IGNORECASE)
+            if match:
+                title = match.group(1).strip()
+                # Clean up the title
+                title = re.sub(r'\s+', ' ', title)
+                return title
+        
+        return None
+
+    def _split_into_paragraphs(self, content: str) -> List[str]:
+        """
+        Split content into logical paragraphs for better HTML formatting
+        """
+        
+        # Split on sentence boundaries and common section markers
+        sections = re.split(r'(?:\.\s+|\n\s*\n)', content)
+        
+        paragraphs = []
+        current_para = ""
+        
+        for section in sections:
+            section = section.strip()
+            if not section:
+                continue
+                
+            # If section is very short, combine with current paragraph
+            if len(section) < 50 and current_para:
+                current_para += " " + section
+            else:
+                if current_para:
+                    paragraphs.append(current_para)
+                current_para = section
+        
+        if current_para:
+            paragraphs.append(current_para)
+        
+        return paragraphs
         """Create comprehensive consent HTML with full content extraction for all forms"""
         
         # Get the title from the first line if it's a header
@@ -2539,220 +2646,227 @@ class DocumentFormFieldExtractor:
         return fields
     
     def extract_consent_form_fields_enhanced(self, text_lines: List[str], form_type: str) -> List[FieldInfo]:
-        """Enhanced consent form extraction - creates proper form_1 field with full content"""
+        """Enhanced extraction for DOCX consent forms following Modento schema - universal approach"""
+        
         fields = []
+        processed_keys = set()
+        current_section = "Form"
         
-        # Create main consent form field with full content (like reference files)
-        consent_html = self.create_comprehensive_consent_html(text_lines)
+        # Join all text for pattern analysis
+        full_text = '\n'.join(text_lines)
         
-        # Always create the form_1 field for consent forms
-        fields.append(FieldInfo(
-            key="form_1",
-            title="",
-            field_type="text",
-            section="Form",
-            optional=False,
-            control={
-                "html_text": consent_html
-            },
-            line_idx=0
-        ))
+        # UNIVERSAL FIELD DETECTION PATTERNS (no hardcoding specific forms)
         
-        # Extract signature and related fields from the END of the text
-        # Look for individual field lines that typically appear after the main consent content
-        current_section = "Signature"
-        processed_keys = {"form_1"}  # Track what we've already added
+        # 1. Provider placeholder detection (following Modento schema)
+        provider_patterns = [
+            r'Dr\.\s*__+',  # Dr. with underscores
+            r'Dr\.\s*\t+',  # Dr. with tabs  
+            r'Dr\.\s*to\s+perform',  # Dr. to perform pattern
+            r'consent\s+to\s+Dr\.',  # consent to Dr. pattern
+            r'authorize\s+Dr\.',  # authorize Dr. pattern
+        ]
         
-        # Scan from the end of the document to find signature fields
-        # These typically appear as standalone lines after the main consent text
-        signature_fields_found = []
+        # 2. Universal field patterns for consent forms
+        field_patterns = [
+            (r'Patient.*Name.*Print', 'patient_name_print', 'Patient Name (Print)', 'input', {'input_type': 'name'}),
+            (r'Patient.*Name(?!\s*\()', 'patient_name', 'Patient Name', 'input', {'input_type': 'name'}),
+            (r'Printed?\s+Name', 'printed_name', 'Printed Name', 'input', {'input_type': 'name'}),
+            (r'Date\s*:?\s*$', 'date_signed', 'Date Signed', 'date', {'input_type': 'past'}),
+            (r'Date\s+of\s+Birth', 'date_of_birth', 'Date of Birth', 'date', {'input_type': 'past'}),
+            (r'Relationship.*(?:minor|patient)', 'relationship', 'Relationship', 'input', {'input_type': 'name'}),
+            (r'Authorized\s+Representative', 'authorized_representative', 'Authorized Representative', 'input', {'input_type': 'name'}),
+            (r'legal\s+guardian', 'legal_guardian', 'Legal Guardian', 'input', {'input_type': 'name'}),
+            (r'tooth\s+no(?:mber)?\.?\s*:?\s*__+', 'tooth_number', 'Tooth Number', 'input', {'input_type': 'name'}),
+            (r'procedure.*follows?', 'procedure_description', 'Procedure Description', 'input', {'input_type': 'name'}),
+            (r'alternative.*treatment', 'alternative_treatment', 'Alternative Treatment', 'input', {'input_type': 'name'}),
+        ]
         
-        # Enhanced field extraction using parse_inline_fields for comprehensive detection
+        # EXTRACT MAIN CONSENT TEXT BLOCK
+        consent_text_lines = []
+        signature_start_idx = None
+        
         for i, line in enumerate(text_lines):
-            line = line.strip()
-            if not line:
-                continue
-            
-            # Skip the content that was already processed into form_1
-            # The content filtering stops at signature lines, so process from there
-            if i < 14:  # Signature line starts around line 15, so process from line 14+
-                continue
-            
             line_lower = line.lower()
+            if any(sig_pattern in line_lower for sig_pattern in ['signature:', 'patient name', 'printed name:', 'date:']):
+                signature_start_idx = i
+                break
+            elif line.strip() and not line.startswith('#'):
+                consent_text_lines.append(line.strip())
+        
+        if consent_text_lines:
+            # Create main consent text field with provider placeholders
+            consent_html = self._create_enhanced_consent_html(consent_text_lines, full_text, provider_patterns)
             
-            # SKIP witness and doctor signature fields per requirements
-            if self._is_witness_or_doctor_signature_field(line_lower):
-                continue
+            consent_field = FieldInfo(
+                key='form_1',
+                title='',
+                field_type='text',
+                section='Form',
+                optional=False,
+                control={'html_text': consent_html},
+                line_idx=0
+            )
+            fields.append(consent_field)
+            processed_keys.add('form_1')
+        
+        # EXTRACT SIGNATURE SECTION FIELDS
+        if signature_start_idx is not None:
+            current_section = "Signature"
+            signature_lines = text_lines[signature_start_idx:]
             
-            # Use parse_inline_fields to detect multiple fields in signature lines
-            inline_fields = self.parse_inline_fields(line)
-            for field_name, full_line in inline_fields:
-                key = ModentoSchemaValidator.slugify(field_name)
+            # Process signature area fields using universal patterns
+            for i, line in enumerate(signature_lines):
+                line_stripped = line.strip()
                 
-                if key in processed_keys:
+                # Skip empty lines and headers
+                if not line_stripped or line_stripped.startswith('#'):
                     continue
-                    
-                # Determine field type and control
-                field_type = self.detect_field_type(field_name)
-                control = {}
                 
-                if field_type == 'input':
-                    input_type = self.detect_input_type(field_name)
-                    control = {'input_type': input_type}
-                elif field_type == 'date':
-                    control = {'input_type': 'past'}
-                elif field_type == 'signature':
-                    control = {}
-                
-                # Determine section
-                section = "Signature" if any(sig_word in field_name.lower() 
-                                           for sig_word in ['signature', 'date', 'printed name']) else "Form"
-                
-                fields.append(FieldInfo(
-                    key=key,
-                    title=field_name,
-                    field_type=field_type,
-                    section=section,
-                    optional=False,
-                    control=control,
-                    line_idx=100 + i  # High line index to put after form content
-                ))
-                processed_keys.add(key)
-                
-            # ENHANCED: Look for additional consent form field patterns that parse_inline_fields might miss
-            # This captures simpler consent form patterns not covered by the NPF-focused inline parser
-            
-            # Pattern 1: Simple "Field Name:" patterns (common in consent forms)
-            if ':' in line and len(line.strip()) < 80:
-                potential_field = line.split(':')[0].strip()
-                if (len(potential_field) > 3 and 
-                    potential_field.lower() not in ['signature'] and
-                    not self._is_witness_or_doctor_signature_field(line_lower) and
-                    not self._is_header_footer_content(line)):
-                    
-                    key = ModentoSchemaValidator.slugify(potential_field)
-                    if key not in processed_keys:
-                        field_type = self.detect_field_type(potential_field)
-                        control = {}
-                        
-                        if field_type == 'input':
-                            input_type = self.detect_input_type(potential_field)
-                            control = {'input_type': input_type}
-                        elif field_type == 'date':
-                            control = {'input_type': 'past'}
-                        
-                        section = "Signature" if any(sig_word in potential_field.lower() 
-                                                   for sig_word in ['signature', 'date', 'printed name', 'patient']) else "Form"
-                        
-                        fields.append(FieldInfo(
+                # Apply field patterns
+                for pattern, key, title, field_type, control in field_patterns:
+                    if re.search(pattern, line, re.IGNORECASE) and key not in processed_keys:
+                        # Skip witness fields per Modento schema rule #4
+                        if 'witness' in key.lower():
+                            continue
+                            
+                        field = FieldInfo(
                             key=key,
-                            title=potential_field,
+                            title=title,
                             field_type=field_type,
-                            section=section,
+                            section=current_section,
                             optional=False,
                             control=control,
-                            line_idx=101 + i
-                        ))
-                        processed_keys.add(key)
-            
-            # Pattern 2: Common consent form standalone field patterns (like "(Patient/Parent/Guardian)")
-            consent_field_patterns = [
-                r'\(Patient/Parent/Guardian\)',
-                r'Patient.*Name.*\(.*print.*\)',
-                r'Signature.*patient.*guardian',
-                r'authorized representative',
-                r'patient.*date.*birth'
-            ]
-            
-            for pattern in consent_field_patterns:
-                if re.search(pattern, line, re.IGNORECASE):
-                    # Extract the field name from the pattern match
-                    match = re.search(pattern, line, re.IGNORECASE)
-                    if match:
-                        field_name = match.group(0)
-                        # Clean up parentheses and normalize
-                        field_name = re.sub(r'[()]+', '', field_name).strip()
-                        
-                        if field_name and len(field_name) > 2:
-                            key = ModentoSchemaValidator.slugify(field_name)
-                            if key not in processed_keys:
-                                field_type = self.detect_field_type(field_name)
-                                control = {}
-                                
-                                if field_type == 'input':
-                                    input_type = self.detect_input_type(field_name)
-                                    control = {'input_type': input_type}
-                                elif field_type == 'date':
-                                    control = {'input_type': 'past'}
-                                
-                                section = "Signature"
-                                
-                                fields.append(FieldInfo(
-                                    key=key,
-                                    title=field_name,
-                                    field_type=field_type,
-                                    section=section,
-                                    optional=False,
-                                    control=control,
-                                    line_idx=102 + i
-                                ))
-                                processed_keys.add(key)
-            
-            # Also check for standalone field patterns
-            if ':' in line and len(line.strip()) < 100:
-                # Check if it's a standalone field like "Patient Date of Birth:"
-                field_name = line.split(':')[0].strip()
-                if (len(field_name) > 3 and 
-                    field_name.lower() not in ['signature'] and
-                    not self._is_witness_or_doctor_signature_field(line.lower())):
-                    
-                    key = ModentoSchemaValidator.slugify(field_name)
-                    if key not in processed_keys:
-                        field_type = self.detect_field_type(field_name)
-                        control = {}
-                        
-                        if field_type == 'input':
-                            input_type = self.detect_input_type(field_name)
-                            control = {'input_type': input_type}
-                        elif field_type == 'date':
-                            control = {'input_type': 'past'}
-                        
-                        section = "Signature" if any(sig_word in field_name.lower() 
-                                                   for sig_word in ['signature', 'date']) else "Form"
-                        
-                        fields.append(FieldInfo(
-                            key=key,
-                            title=field_name,
-                            field_type=field_type,
-                            section=section,
-                            optional=False,
-                            control=control,
-                            line_idx=100 + i
-                        ))
+                            line_idx=signature_start_idx + i
+                        )
+                        fields.append(field)
                         processed_keys.add(key)
         
-        # Always ensure signature and date fields exist if not already detected
+        # ENSURE SIGNATURE FIELD EXISTS (Modento schema requirement)
         if 'signature' not in processed_keys:
-            fields.append(FieldInfo(
-                key="signature",
-                title="Signature",
-                field_type="signature",
-                section="Signature",
+            signature_field = FieldInfo(
+                key='signature',
+                title='Signature',
+                field_type='signature',
+                section='Signature',
                 optional=False,
                 control={},
-                line_idx=200
-            ))
+                line_idx=len(text_lines)
+            )
+            fields.append(signature_field)
+            processed_keys.add('signature')
         
-        if 'date_signed' not in processed_keys and 'date' not in processed_keys:
-            fields.append(FieldInfo(
-                key="date_signed",
-                title="Date Signed",
-                field_type="date",
-                section="Signature",
-                optional=False,
-                control={"input_type": "past"},
-                line_idx=210
-            ))
+        return fields
+
+    def _create_enhanced_consent_html(self, consent_text_lines: List[str], full_text: str, provider_patterns: List[str]) -> str:
+        """
+        Create properly formatted HTML content for consent forms with provider placeholders
+        Universal formatting that works for different consent types following Modento schema
+        """
+        
+        # Clean and join text
+        content = ' '.join(consent_text_lines)
+        content = re.sub(r'\s+', ' ', content).strip()
+        
+        # Remove practice header/footer information (Modento schema rule #5)
+        content = self._remove_practice_header_footer(content)
+        
+        # Apply provider placeholder substitution (Modento schema requirement)
+        for pattern in provider_patterns:
+            content = re.sub(pattern, 'Dr. {{provider}}', content, flags=re.IGNORECASE)
+        
+        # Detect form title/type
+        title = self._detect_consent_title(content)
+        
+        # Format as HTML with proper structure
+        if title:
+            html_content = f'<div style="text-align:center"><strong>{title}</strong><br>'
+        else:
+            html_content = '<div style="text-align:center"><strong>Informed Consent</strong><br>'
+        
+        # Add main content
+        # Split into logical paragraphs
+        paragraphs = self._split_into_paragraphs(content)
+        html_content += '<br>'.join(paragraphs)
+        html_content += '</div>'
+        
+        return html_content
+
+    def _remove_practice_header_footer(self, content: str) -> str:
+        """
+        Remove practice header/footer information per Modento schema rule #5
+        Universal patterns for practice information removal
+        """
+        
+        # Patterns for practice information that should be filtered out
+        practice_patterns = [
+            r'www\.\w+\.com',  # Website URLs
+            r'\w+@\w+\.com',   # Email addresses  
+            r'\(\d{3}\)\d{3}-?\d{4}',  # Phone numbers
+            r'\d+\s+[A-Z][A-Za-z\s]+,\s+[A-Z]{2}\s+\d{5}',  # Addresses
+            r'Route\s+\d+.*\d{5}',  # Route addresses
+            r'Smile@.*\.com',  # Practice email patterns
+        ]
+        
+        for pattern in practice_patterns:
+            content = re.sub(pattern, '', content, flags=re.IGNORECASE)
+        
+        # Clean up extra whitespace
+        content = re.sub(r'\s+', ' ', content).strip()
+        
+        return content
+
+    def _detect_consent_title(self, content: str) -> Optional[str]:
+        """
+        Detect consent form title from content
+        Universal title detection for different consent types
+        """
+        
+        title_patterns = [
+            r'Informed\s+Consent\s+for\s+([^.]+)',
+            r'Consent\s+for\s+([^.]+)', 
+            r'([^.]*Consent[^.]*)',
+        ]
+        
+        for pattern in title_patterns:
+            match = re.search(pattern, content, re.IGNORECASE)
+            if match:
+                title = match.group(1).strip()
+                # Clean up the title
+                title = re.sub(r'\s+', ' ', title)
+                return title
+        
+        return None
+
+    def _split_into_paragraphs(self, content: str) -> List[str]:
+        """
+        Split content into logical paragraphs for better HTML formatting
+        """
+        
+        # Split on sentence boundaries and common section markers
+        sections = re.split(r'(?:\.\s+|\n\s*\n)', content)
+        
+        paragraphs = []
+        current_para = ""
+        
+        for section in sections:
+            section = section.strip()
+            if not section:
+                continue
+                
+            # If section is very short, combine with current paragraph
+            if len(section) < 50 and current_para:
+                current_para += " " + section
+            else:
+                if current_para:
+                    paragraphs.append(current_para)
+                current_para = section
+        
+        if current_para:
+            paragraphs.append(current_para)
+        
+        return paragraphs
+
+    def create_comprehensive_consent_html(self, text_lines: List[str]) -> str:
         
         return fields
     
