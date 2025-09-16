@@ -1848,7 +1848,8 @@ class DocumentFormFieldExtractor:
                 field_name = line.split(':')[0].strip()
                 if (len(field_name) > 3 and 
                     field_name.lower() not in ['signature'] and
-                    not self._is_witness_or_doctor_signature_field(line.lower())):
+                    not self._is_witness_or_doctor_signature_field(line.lower()) and
+                    not self._is_header_footer_content(line)):
                     
                     key = ModentoSchemaValidator.slugify(field_name)
                     if key not in processed_keys:
@@ -1862,7 +1863,7 @@ class DocumentFormFieldExtractor:
                             control = {'hint': None, 'input_type': 'past'}
                         
                         section = "Signature" if any(sig_word in field_name.lower() 
-                                                   for sig_word in ['signature', 'date']) else "Form"
+                                                   for sig_word in ['signature', 'date', 'printed name', 'patient']) else "Form"
                         
                         additional_fields.append(FieldInfo(
                             key=key,
@@ -1874,6 +1875,49 @@ class DocumentFormFieldExtractor:
                             line_idx=100 + i
                         ))
                         processed_keys.add(key)
+            
+            # ENHANCED: Additional consent form field pattern detection
+            # Pattern for common consent form standalone fields
+            consent_field_patterns = [
+                r'\(Patient/Parent/Guardian\)',
+                r'Patient.*Name.*\(.*print.*\)',
+                r'Signature.*patient.*guardian',
+                r'authorized representative'
+            ]
+            
+            for pattern in consent_field_patterns:
+                if re.search(pattern, line, re.IGNORECASE):
+                    # Extract the field name from the pattern match
+                    match = re.search(pattern, line, re.IGNORECASE)
+                    if match:
+                        field_name = match.group(0)
+                        # Clean up parentheses and normalize
+                        field_name = re.sub(r'[()]+', '', field_name).strip()
+                        
+                        if field_name and len(field_name) > 2:
+                            key = ModentoSchemaValidator.slugify(field_name)
+                            if key not in processed_keys:
+                                field_type = self.detect_field_type(field_name)
+                                control = {}
+                                
+                                if field_type == 'input':
+                                    input_type = self.detect_input_type(field_name)
+                                    control = {'hint': None, 'input_type': input_type}
+                                elif field_type == 'date':
+                                    control = {'hint': None, 'input_type': 'any'}
+                                
+                                section = "Signature"
+                                
+                                additional_fields.append(FieldInfo(
+                                    key=key,
+                                    title=field_name,
+                                    field_type=field_type,
+                                    section=section,
+                                    optional=False,
+                                    control=control,
+                                    line_idx=101 + i
+                                ))
+                                processed_keys.add(key)
         
         # Add the detected fields to the main fields list
         fields.extend(additional_fields)
@@ -2578,6 +2622,85 @@ class DocumentFormFieldExtractor:
                     line_idx=100 + i  # High line index to put after form content
                 ))
                 processed_keys.add(key)
+                
+            # ENHANCED: Look for additional consent form field patterns that parse_inline_fields might miss
+            # This captures simpler consent form patterns not covered by the NPF-focused inline parser
+            
+            # Pattern 1: Simple "Field Name:" patterns (common in consent forms)
+            if ':' in line and len(line.strip()) < 80:
+                potential_field = line.split(':')[0].strip()
+                if (len(potential_field) > 3 and 
+                    potential_field.lower() not in ['signature'] and
+                    not self._is_witness_or_doctor_signature_field(line_lower) and
+                    not self._is_header_footer_content(line)):
+                    
+                    key = ModentoSchemaValidator.slugify(potential_field)
+                    if key not in processed_keys:
+                        field_type = self.detect_field_type(potential_field)
+                        control = {}
+                        
+                        if field_type == 'input':
+                            input_type = self.detect_input_type(potential_field)
+                            control = {'hint': None, 'input_type': input_type}
+                        elif field_type == 'date':
+                            control = {'hint': None, 'input_type': 'any'}
+                        
+                        section = "Signature" if any(sig_word in potential_field.lower() 
+                                                   for sig_word in ['signature', 'date', 'printed name', 'patient']) else "Form"
+                        
+                        fields.append(FieldInfo(
+                            key=key,
+                            title=potential_field,
+                            field_type=field_type,
+                            section=section,
+                            optional=False,
+                            control=control,
+                            line_idx=101 + i
+                        ))
+                        processed_keys.add(key)
+            
+            # Pattern 2: Common consent form standalone field patterns (like "(Patient/Parent/Guardian)")
+            consent_field_patterns = [
+                r'\(Patient/Parent/Guardian\)',
+                r'Patient.*Name.*\(.*print.*\)',
+                r'Signature.*patient.*guardian',
+                r'authorized representative',
+                r'patient.*date.*birth'
+            ]
+            
+            for pattern in consent_field_patterns:
+                if re.search(pattern, line, re.IGNORECASE):
+                    # Extract the field name from the pattern match
+                    match = re.search(pattern, line, re.IGNORECASE)
+                    if match:
+                        field_name = match.group(0)
+                        # Clean up parentheses and normalize
+                        field_name = re.sub(r'[()]+', '', field_name).strip()
+                        
+                        if field_name and len(field_name) > 2:
+                            key = ModentoSchemaValidator.slugify(field_name)
+                            if key not in processed_keys:
+                                field_type = self.detect_field_type(field_name)
+                                control = {}
+                                
+                                if field_type == 'input':
+                                    input_type = self.detect_input_type(field_name)
+                                    control = {'hint': None, 'input_type': input_type}
+                                elif field_type == 'date':
+                                    control = {'hint': None, 'input_type': 'any'}
+                                
+                                section = "Signature"
+                                
+                                fields.append(FieldInfo(
+                                    key=key,
+                                    title=field_name,
+                                    field_type=field_type,
+                                    section=section,
+                                    optional=False,
+                                    control=control,
+                                    line_idx=102 + i
+                                ))
+                                processed_keys.add(key)
             
             # Also check for standalone field patterns
             if ':' in line and len(line.strip()) < 100:
