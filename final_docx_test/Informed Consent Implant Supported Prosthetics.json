@@ -1,0 +1,42 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<div style=\"text-align:center\"><strong>Informed Consent for Implant</strong><br>Smile@Kingervdental.com • www.kinaervdental.com -Supported Prosthetics I hereby give consent to Dr. to perform Single or Multi-stage Implant Placement procedure(s) on me or my dependent for purposes of supporting a fixed and/or removable dental prosthetic device, and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of this treatment. The nature and purpose of this treatment have been explained to me and no guarantee has been made or implied as to the success or ultimate result of this treatment. I have been given satisfactory answers to all of my questions, I have been advised of the risks and benefits of, and alternatives to the planned procedures, and I wish to proceed with this treatment. I also consent to the administration of local anesthesia during the performance of this treatment. Alternative methods of treatment have been explained to me, such as: Use of a conventional removable dental prosthetic device (denture); Other alternative implant procedures. Placement of a fixed dental bridge which will be supported by adjacent teeth and/or implants. Bone and/or tissue grafting prior to implant placement. Sinus lift and/or nerve repositioning procedures. The option of no further treatment. However, I wish to proceed with the treatment described above. I understand that there are risks and potential complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These risks and potential complications, include, but are not limited to, the following: Drug reactions and side effects. Post-operative pain, bleeding, oozing, soft tissue infection and/or bone infection. Bruising and/or swelling, restricted mouth opening for several days or weeks, or, rarely, longer. Inability to surgically place a planned-for implant due to circumstances relating to bone quality and/or quantity, which were not able to be assessed with pre-treatment diagnostic tests. Smile@KinQervdental.com • www.kinqervdental.com Delayed healing, necessitating post-operative care and treatment. Possible involvement of the sinus when placing an implant in the upper posterior regions, which may require additional treatment or surgical repair at a later date. Possible injury of the nerves of the lower jaw when placing an implant in the lower jaw, resulting in temporary or permanent tingling/numbness/pain (possibly of an electric shock nature) of the lower lip, chin, tongue or other surrounding structures, with potential alteration or loss of taste. Non-healing of one or more of the implants, necessitating its removal and/or other procedures, possibly including the need for bone grafting and/or soft tissue grafting. If you are taking medications to make your bones stronger (such as bisphosphonates) or if you have received radiation therapy to the head or neck area for tumors/cancer, then you are at a higher risk for poor bone healing or bone loss that may never completely resolve and which may require surgery or other treatment. As a result of the Lidocaine injection or use of other local anesthesia, there may be swelling, jaw muscle tenderness or even resultant tingling/numbness/pain (possibly of an electric shock nature) of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent; this may include alteration or loss of taste. Pain and/or limited movement of the jaw joint, either of a temporary or permanent nature, which may require further treatment. Because of the unique issues associated with the placement of the implants in this procedure, there is an increased risk of infection, loss of bone in the jaw, loss of the implants, and loss of the prosthetics placed on the implants. Patient Name (Printed):</div>",
+      "hint": null
+    },
+    "section": "Form"
+  },
+  {
+    "key": "relationship",
+    "type": "input",
+    "title": "Relationship",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {
+      "hint": null,
+      "input_type": null
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "hint": null,
+      "input_type": "any"
+    },
+    "section": "Signature"
+  }
+]
