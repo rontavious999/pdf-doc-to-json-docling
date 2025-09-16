@@ -2756,13 +2756,20 @@ class DocumentFormFieldExtractor:
                 if key in processed_keys:
                     continue
                     
-                # Determine field type
+                # Determine field type based on field name
                 if 'state' in field_name.lower() and 'estate' not in field_name.lower():
                     field_type = 'states'
                     control = {}  # States fields should have empty control
-                elif 'date' in field_name.lower():
+                elif 'date' in field_name.lower() or field_name.lower() in ['date']:
                     field_type = 'date'
-                    control = {'input_type': 'any'}
+                    # Determine date input type
+                    if 'birth' in field_name.lower():
+                        control = {'input_type': 'past'}
+                    else:
+                        control = {'input_type': 'any'}
+                elif 'signature' in field_name.lower():
+                    field_type = 'signature'
+                    control = {}
                 else:
                     field_type = 'input'
                     input_type = self.detect_input_type(field_name)
@@ -3263,6 +3270,74 @@ class DocumentFormFieldExtractor:
                     not label.lower() in ['the', 'and', 'for', 'with', 'this', 'that']):
                     # Only add if it looks like a field label
                     fields.append((label, line))
+        
+        # ENHANCEMENT: Pattern 5: Consent form specific patterns
+        # "Dr. ___" pattern - for doctor name fields
+        if re.search(r'dr\.\s+to\s+perform', line, re.IGNORECASE):
+            # This is the "Dr. ___ to perform" pattern - extract doctor name field
+            fields.append(('Doctor Name', line))
+        
+        # "Patient's Name (Please Print)" pattern
+        if re.search(r"patient'?s?\s+name\s*\(.*print.*\)", line, re.IGNORECASE):
+            fields.append(("Patient's Name", line))
+        
+        # "Date:" pattern at end of lines - be more specific
+        if re.search(r'\bdate\s*:\s*$', line, re.IGNORECASE) and len(line.strip()) < 30:
+            fields.append(('Date', line))
+        
+        # Multiple field pattern - signatures with tabs/spaces - be more specific
+        if ('signature:' in line.lower() and 'printed name:' in line.lower() and 
+            'date:' in line.lower()):
+            # This is the main signature line with multiple fields
+            # Extract specific fields based on the exact pattern
+            if re.search(r'signature:\s*\t+\s*printed name:\s*\t+\s*date:', line, re.IGNORECASE):
+                fields.append(('Signature', line))
+                fields.append(('Printed Name', line))  
+                fields.append(('Date', line))
+        
+        # "(Patient/Parent/Guardian) Relationship" pattern - be more specific
+        if re.search(r'\(patient.*parent.*guardian\).*relationship', line, re.IGNORECASE):
+            fields.append(('Relationship', line))
+            
+        # "Patient Date of Birth:" pattern - be more specific
+        if re.search(r'patient\s+date\s+of\s+birth\s*:', line, re.IGNORECASE):
+            fields.append(('Patient Date of Birth', line))
+        
+        # "Witness" patterns - be more specific
+        if re.search(r'witness\s+signature\s*:', line, re.IGNORECASE):
+            fields.append(('Witness Signature', line))
+        if re.search(r'witness\s+printed\s+name\s*:', line, re.IGNORECASE):
+            fields.append(('Witness Printed Name', line))
+            
+        # "Name (please print)" patterns - be more specific
+        if re.search(r"patient'?s?\s+name\s*\(\s*please\s+print\s*\)", line, re.IGNORECASE):
+            fields.append(("Patient's Name", line))
+            
+        # "authorized representative" patterns
+        if re.search(r'authorized\s+representative\s*:', line, re.IGNORECASE):
+            fields.append(('Authorized Representative', line))
+            
+        # "dentist" patterns
+        if re.search(r"dentist'?s?\s+signature\s*:", line, re.IGNORECASE):
+            fields.append(("Dentist's Signature", line))
+            
+        # Exclude overly broad patterns that capture sentences
+        # Filter out fields that are clearly sentences or paragraphs
+        filtered_fields = []
+        for field_name, full_line in fields:
+            # Skip if field name is too long (likely a sentence)
+            if len(field_name) > 60:
+                continue
+            # Skip if field name contains sentence indicators
+            if re.search(r'\b(the|there|are|is|was|were|have|has|had|will|would|shall|should)\b', 
+                        field_name, re.IGNORECASE):
+                continue
+            # Skip if field name is primarily lowercase (likely part of a sentence)
+            if field_name.islower() and len(field_name) > 10:
+                continue
+            filtered_fields.append((field_name, full_line))
+            
+        fields = filtered_fields
         
         return fields
     

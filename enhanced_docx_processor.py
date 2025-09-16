@@ -56,6 +56,16 @@ class EnhancedConsentProcessor:
         ]):
             return 'general_informed_consent'
         
+        # Broader consent patterns for simple consent forms
+        if any(pattern in full_text for pattern in [
+            'consent for final processing',
+            'denture consent',
+            'dental consent',
+            'treatment consent',
+            'by signing this consent'
+        ]):
+            return 'consent'
+        
         return None
     
     def extract_consent_form_content(self, text_lines: List[str], form_type: str) -> Dict[str, Any]:
@@ -65,11 +75,17 @@ class EnhancedConsentProcessor:
             return self._extract_crown_bridge_consent(text_lines)
         elif form_type == 'general_informed_consent':
             return self._extract_general_informed_consent(text_lines)
+        elif form_type == 'consent':
+            # Handle generic consent forms with universal extraction
+            return self._extract_general_consent_form(text_lines)
         
         return {}
     
     def _extract_crown_bridge_consent(self, text_lines: List[str]) -> Dict[str, Any]:
-        """Extract Crown & Bridge consent form matching reference exactly"""
+        """Extract Crown & Bridge consent form matching reference exactly with enhanced field detection"""
+        
+        # ENHANCEMENT: Extract ALL possible fields first using universal field extraction
+        universal_fields = self.extractor.extract_fields_universal(text_lines)
         
         # Find the main consent text (everything before signature fields)
         consent_text_lines = []
@@ -99,13 +115,42 @@ class EnhancedConsentProcessor:
             }
         ]
         
-        # Add signature fields using universal extraction
-        text_lines_for_signature = [line for line in text_lines if 'signature:' in line.lower() or 'printed name' in line.lower() or 'relationship' in line.lower()]
+        # ENHANCEMENT: Add all detected input fields to the consent form
+        from pdf_to_json_converter import ModentoSchemaValidator
+        
+        # Track which keys we've already added to prevent duplicates
+        existing_keys = set(['form_1'])
+        
+        # Convert universal fields to the expected format and add them
+        for field in universal_fields:
+            # Skip if it's already covered by our consent structure or already added
+            if field.key in existing_keys:
+                continue
+                
+            field_dict = {
+                "key": field.key,
+                "type": field.field_type,
+                "title": field.title,
+                "control": field.control if field.control else {},
+                "section": field.section if field.section else "Form"
+            }
+            
+            # Add optional flag if needed
+            if field.optional:
+                field_dict["optional"] = field.optional
+                
+            fields.append(field_dict)
+            existing_keys.add(field.key)
+        
+        # Add signature fields using universal extraction - avoid duplicates
         signature_fields = self._extract_signature_fields(text_lines, 
                                                          next((i for i, line in enumerate(text_lines) 
                                                               if 'signature:' in line.lower()), None))
         
-        fields.extend(signature_fields)
+        for sig_field in signature_fields:
+            if sig_field['key'] not in existing_keys:
+                fields.append(sig_field)
+                existing_keys.add(sig_field['key'])
         
         return {
             "fields": fields,
@@ -161,7 +206,10 @@ class EnhancedConsentProcessor:
         return html_content
     
     def _extract_general_informed_consent(self, text_lines: List[str]) -> Dict[str, Any]:
-        """Extract general informed consent forms with universal patterns"""
+        """Extract general informed consent forms with universal patterns and field detection"""
+        
+        # ENHANCEMENT: Extract ALL possible fields first using universal field extraction
+        universal_fields = self.extractor.extract_fields_universal(text_lines)
         
         # Find the main consent text (everything before signature fields)
         consent_text_lines = []
@@ -185,7 +233,7 @@ class EnhancedConsentProcessor:
         # Detect signature pattern and create appropriate fields
         signature_fields = self._extract_signature_fields(text_lines, signature_section_start)
         
-        # Create the universal consent JSON structure
+        # Create the universal consent JSON structure with form text
         fields = [
             {
                 "key": "form_1",
@@ -199,12 +247,139 @@ class EnhancedConsentProcessor:
             }
         ]
         
-        fields.extend(signature_fields)
+        # ENHANCEMENT: Add all detected input fields to the consent form
+        from pdf_to_json_converter import ModentoSchemaValidator
+        
+        # Track which keys we've already added to prevent duplicates
+        existing_keys = set(['form_1'])
+        
+        # Convert universal fields to the expected format and add them
+        for field in universal_fields:
+            # Skip if it's already covered by our consent structure or already added
+            if field.key in existing_keys:
+                continue
+                
+            field_dict = {
+                "key": field.key,
+                "type": field.field_type,
+                "title": field.title,
+                "control": field.control if field.control else {},
+                "section": field.section if field.section else "Form"
+            }
+            
+            # Add optional flag if needed
+            if field.optional:
+                field_dict["optional"] = field.optional
+                
+            fields.append(field_dict)
+            existing_keys.add(field.key)
+        
+        # Add signature fields - avoid duplicates
+        for sig_field in signature_fields:
+            if sig_field['key'] not in existing_keys:
+                fields.append(sig_field)
+                existing_keys.add(sig_field['key'])
         
         return {
             "fields": fields,
             "sections": ["Form", "Signature"],
             "form_type": "general_informed_consent"
+        }
+    
+    def _extract_general_consent_form(self, text_lines: List[str]) -> Dict[str, Any]:
+        """Extract generic consent forms with full universal field detection"""
+        
+        # ENHANCEMENT: Extract ALL possible fields first using universal field extraction
+        universal_fields = self.extractor.extract_fields_universal(text_lines)
+        
+        # Find the main consent text (everything before signature fields)
+        consent_text_lines = []
+        signature_section_start = None
+        
+        for i, line in enumerate(text_lines):
+            line_lower = line.lower()
+            # Look for signature section patterns
+            if (any(pattern in line_lower for pattern in [
+                'signature:', 'printed name', 'patient\'s name', 'witness', 'dentist'
+            ]) and i > len(text_lines) * 0.5):  # In the latter half of document
+                signature_section_start = i
+                break
+            elif line.strip() and not line.startswith('##'):
+                consent_text_lines.append(line.strip())
+        
+        # Create the main form text content
+        consent_content = self._format_general_consent_text(consent_text_lines)
+        
+        # Create the universal consent JSON structure with form text
+        fields = [
+            {
+                "key": "form_1",
+                "type": "text", 
+                "title": "",
+                "control": {
+                    "html_text": consent_content,
+                    "hint": None
+                },
+                "section": "Form"
+            }
+        ]
+        
+        # ENHANCEMENT: Add all detected input fields to the consent form
+        from pdf_to_json_converter import ModentoSchemaValidator
+        
+        # Track which keys we've already added to prevent duplicates
+        existing_keys = set(['form_1'])
+        
+        # Convert universal fields to the expected format and add them
+        for field in universal_fields:
+            # Skip if it's already covered by our consent structure or already added
+            if field.key in existing_keys:
+                continue
+                
+            field_dict = {
+                "key": field.key,
+                "type": field.field_type,
+                "title": field.title,
+                "control": field.control if field.control else {},
+                "section": field.section if field.section else "Form"
+            }
+            
+            # Add optional flag if needed
+            if field.optional:
+                field_dict["optional"] = field.optional
+                
+            fields.append(field_dict)
+            existing_keys.add(field.key)
+        
+        # Add default signature and date if no signature fields detected
+        if not any(f['type'] == 'signature' for f in fields):
+            signature_fields = [
+                {
+                    "key": "signature",
+                    "type": "signature",
+                    "title": "Signature",
+                    "control": {},
+                    "section": "Signature",
+                    "optional": False
+                },
+                {
+                    "key": "date_signed",
+                    "type": "date",
+                    "title": "Date Signed",
+                    "control": {"input_type": "any", "hint": None},
+                    "section": "Signature"
+                }
+            ]
+            
+            for sig_field in signature_fields:
+                if sig_field['key'] not in existing_keys:
+                    fields.append(sig_field)
+                    existing_keys.add(sig_field['key'])
+        
+        return {
+            "fields": fields,
+            "sections": ["Form", "Signature"],
+            "form_type": "general_consent"
         }
     
     def _format_general_consent_text(self, text_lines: List[str]) -> str:
