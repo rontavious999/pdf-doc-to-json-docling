@@ -55,5 +55,25 @@
       "input_type": "name"
     },
     "section": "Form"
+  },
+  {
+    "key": "witness_signature",
+    "type": "input",
+    "title": "Witness Signature",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "witness_printed_name",
+    "type": "input",
+    "title": "Witness Printed Name",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
   }
 ]

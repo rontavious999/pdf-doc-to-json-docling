@@ -28,5 +28,15 @@
       "input_type": "any"
     },
     "section": "Signature"
+  },
+  {
+    "key": "witness_signature",
+    "type": "signature",
+    "title": "Witness Signature",
+    "control": {
+      "hint": null,
+      "input_type": null
+    },
+    "section": "Signature"
   }
 ]
