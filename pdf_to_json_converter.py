@@ -4399,6 +4399,18 @@ class DocumentToJSONConverter:
     def __init__(self):
         self.extractor = DocumentFormFieldExtractor()
         self.validator = ModentoSchemaValidator()
+        self.enhanced_consent_processor = None
+        self._setup_enhanced_processors()
+    
+    def _setup_enhanced_processors(self):
+        """Setup enhanced processors for specific form types"""
+        try:
+            # Import enhanced consent processor if available
+            from enhanced_docx_processor import EnhancedConsentProcessor
+            self.enhanced_consent_processor = EnhancedConsentProcessor()
+            print("[i] Enhanced consent processing available")
+        except ImportError:
+            print("[i] Enhanced consent processing unavailable - using standard processing")
     
     def convert_document_to_json(self, document_path: Path, output_path: Optional[Path] = None) -> Dict[str, Any]:
         """Convert a PDF or DOCX to Modento Forms JSON with enhanced processing"""
@@ -4406,6 +4418,36 @@ class DocumentToJSONConverter:
         document_type = "DOCX" if document_path.suffix.lower() in ['.docx', '.doc'] else "PDF"
         print(f"[+] Processing {document_path.name} ({document_type}) ...")
         
+        # For DOCX files, try enhanced consent processing first
+        if (document_type == "DOCX" and 
+            self.enhanced_consent_processor and 
+            "consent" in document_path.name.lower()):
+            
+            try:
+                # Extract text to detect form type
+                text_lines, _ = self.extractor.extract_text_from_document(document_path)
+                form_type = self.enhanced_consent_processor.detect_consent_form_type(text_lines)
+                
+                if form_type:
+                    print(f"[i] Using enhanced consent processing for {form_type}")
+                    result = self.enhanced_consent_processor.process_docx_file(document_path)
+                    
+                    # Save to file if output path provided
+                    if output_path:
+                        output_path.parent.mkdir(parents=True, exist_ok=True)
+                        with open(output_path, 'w', encoding='utf-8') as f:
+                            json.dump(result["spec"], f, indent=2, ensure_ascii=False)
+                        
+                        print(f"[✓] Wrote JSON: {output_path.parent.name}/{output_path.name}")
+                        print(f"[i] Sections: {result['section_count']} | Fields: {result['field_count']}")
+                        print(f"[i] Pipeline/Model/Backend used: {result['pipeline_info']['pipeline']}/{result['pipeline_info']['backend']}")
+                        print(f"[i] Enhanced consent processing: {form_type}")
+                    
+                    return result
+            except Exception as e:
+                print(f"[!] Enhanced consent processing failed: {e}, falling back to standard processing")
+        
+        # Standard processing for all other cases
         # Extract text from document using Docling
         text_lines, pipeline_info = self.extractor.extract_text_from_document(document_path)
         if not text_lines:

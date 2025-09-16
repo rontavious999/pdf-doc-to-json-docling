@@ -1,0 +1,235 @@
+[
+  {
+    "key": "patient_name",
+    "type": "input",
+    "title": "Patient Name",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Patient Information"
+  },
+  {
+    "key": "date_of_birth",
+    "type": "date",
+    "title": "Date of Birth",
+    "control": {
+      "hint": null,
+      "input_type": "past"
+    },
+    "section": "Patient Information"
+  },
+  {
+    "key": "street",
+    "type": "input",
+    "title": "Street",
+    "control": {
+      "hint": null,
+      "input_type": "address"
+    },
+    "section": "Patient Information"
+  },
+  {
+    "key": "city",
+    "type": "input",
+    "title": "City",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Patient Information"
+  },
+  {
+    "key": "state",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "Patient Information",
+    "optional": false
+  },
+  {
+    "key": "zip",
+    "type": "input",
+    "title": "Zip",
+    "control": {
+      "hint": null,
+      "input_type": "zip"
+    },
+    "section": "Patient Information"
+  },
+  {
+    "key": "mobile_phone",
+    "type": "input",
+    "title": "Mobile Phone",
+    "control": {
+      "hint": null,
+      "input_type": "phone"
+    },
+    "section": "Patient Information"
+  },
+  {
+    "key": "home_phone",
+    "type": "input",
+    "title": "Home Phone",
+    "control": {
+      "hint": null,
+      "input_type": "phone"
+    },
+    "section": "Patient Information"
+  },
+  {
+    "key": "complete_records",
+    "type": "checkbox",
+    "title": "Complete records",
+    "control": {
+      "hint": null,
+      "options": [
+        {
+          "name": "Complete records",
+          "value": true
+        }
+      ]
+    },
+    "section": "Information to be Released"
+  },
+  {
+    "key": "limited_records_options",
+    "type": "checkbox",
+    "title": "Limited records",
+    "control": {
+      "hint": null,
+      "options": [
+        {
+          "name": "Radiographs/Images",
+          "value": "radiographs"
+        },
+        {
+          "name": "Reports",
+          "value": "reports"
+        },
+        {
+          "name": "Other",
+          "value": "other"
+        }
+      ]
+    },
+    "section": "Information to be Released"
+  },
+  {
+    "key": "other_specify",
+    "type": "input",
+    "title": "Other (specify)",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Information to be Released"
+  },
+  {
+    "key": "recipient_name",
+    "type": "input",
+    "title": "Name",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Release To"
+  },
+  {
+    "key": "recipient_address",
+    "type": "input",
+    "title": "Address",
+    "control": {
+      "hint": null,
+      "input_type": "address"
+    },
+    "section": "Release To"
+  },
+  {
+    "key": "recipient_phone",
+    "type": "input",
+    "title": "Phone",
+    "control": {
+      "hint": null,
+      "input_type": "phone"
+    },
+    "section": "Release To"
+  },
+  {
+    "key": "recipient_fax",
+    "type": "input",
+    "title": "Fax",
+    "control": {
+      "hint": null,
+      "input_type": "phone"
+    },
+    "section": "Release To"
+  },
+  {
+    "key": "patient_employed_by",
+    "type": "input",
+    "title": "Patient Employed By",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "occupation",
+    "type": "input",
+    "title": "Occupation",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "in_case_of_emergency_who_should_be_notified",
+    "type": "input",
+    "title": "In case of emergency, who should be notified",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "relationship_to_patient",
+    "type": "input",
+    "title": "Relationship to Patient",
+    "control": {
+      "hint": null,
+      "input_type": "name"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "hint": null,
+      "input_type": "any"
+    },
+    "section": "Signature"
+  },
+  {
+    "key": "initials_2",
+    "type": "input",
+    "title": "Initial",
+    "control": {
+      "input_type": "initials"
+    },
+    "section": "Signature"
+  }
+]
