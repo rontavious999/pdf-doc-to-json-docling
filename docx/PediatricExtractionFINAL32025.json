@@ -1,0 +1,50 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<p><div style=\"text-align:center\"><strong>Pediatric Tooth Extraction</strong><br><p>I hereby give permission to to perform the extraction of tooth/teeth numbers: to be done with local anesthesia.</p><p>Extraction of teeth is an irreversible process and weather routine or difficult is a surgical procedure. As in any surgery, there are some risks. They include but are not limited to the following:</p><p>Swelling, bruising, and/or discomfort in the extraction area</p><p>Stretching of the corners of the mouth resulting in cracking or bruising</p><p>Possible infection requiring additional treatment</p><p>Bleeding- significant bleeding is not common, but oozing can be expected for several hours</p><p>Sharp ridges or bone splinters may form later at the edge of the socket. These usually require another treatment to smooth or remove. Signature of Parent/Guardian: Date:</p></div></p>"
+    },
+    "section": "Form",
+    "optional": false
+  },
+  {
+    "key": "patient_name",
+    "type": "input",
+    "title": "Patient Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "signature_of_parent_guardian",
+    "type": "input",
+    "title": "Signature of Parent/Guardian",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Signature",
+    "optional": false
+  }
+]

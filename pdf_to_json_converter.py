@@ -66,6 +66,40 @@ class ModentoSchemaValidator:
         return text or fallback
     
     @staticmethod
+    def normalize_field_keys(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Normalize field keys to fix common issues universally"""
+        
+        # Define key normalization mappings
+        key_normalizations = {
+            # Fix possessive forms (patient's -> patient)
+            r'([a-z]+)_s_([a-z]+)': r'\1_\2',  # patient_s_name -> patient_name
+            r'([a-z]+)_s$': r'\1',  # patient_s -> patient
+        }
+        
+        # Direct key mappings for specific cases
+        direct_mappings = {
+            'patient_printed_name': 'printed_name',
+            'printed_patient_name': 'printed_name',
+        }
+        
+        for item in spec:
+            if "key" in item:
+                original_key = item["key"]
+                normalized_key = original_key
+                
+                # Apply direct mappings first
+                if original_key in direct_mappings:
+                    normalized_key = direct_mappings[original_key]
+                else:
+                    # Apply regex normalization patterns
+                    for pattern, replacement in key_normalizations.items():
+                        normalized_key = re.sub(pattern, replacement, normalized_key)
+                
+                item["key"] = normalized_key
+        
+        return spec
+    
+    @staticmethod
     def ensure_unique_keys(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Ensure all keys are globally unique with context-aware deduplication"""
         seen = set()
@@ -1356,6 +1390,13 @@ class DocumentFormFieldExtractor:
             # Patient date of birth pattern in consent forms
             r'Patient Date of Birth': [
                 ('Patient Date of Birth', 'patient_date_of_birth')
+            ],
+            # Standalone signature field patterns (for forms like ZOOMConsent)
+            r'Print\s+patient\s+name\s*:': [
+                ('Print patient name', 'printed_name')
+            ],
+            r'Patient\s+signature': [
+                ('Patient signature', 'patient_signature')  # Note: this becomes signature type automatically
             ]
         }
         
@@ -1802,11 +1843,6 @@ class DocumentFormFieldExtractor:
         for i, line in enumerate(text_lines):
             line = line.strip()
             if not line:
-                continue
-                
-            # Skip the content that was already processed into form_1
-            # The content filtering stops at signature lines, so process from there
-            if i < 14:  # Signature line starts around line 15, so process from line 14+
                 continue
                 
             # Use parse_inline_fields to detect multiple fields in signature lines
@@ -2867,8 +2903,67 @@ class DocumentFormFieldExtractor:
         return paragraphs
 
     def create_comprehensive_consent_html(self, text_lines: List[str]) -> str:
+        """Create comprehensive HTML for consent forms with improved paragraph detection"""
+        if not text_lines:
+            return '<div style="text-align:center"><strong>Consent Form</strong></div>'
         
-        return fields
+        # Extract title from first line if it looks like a title
+        title = text_lines[0] if text_lines else "Consent Form"
+        content_lines = text_lines[1:] if len(text_lines) > 1 else text_lines
+        
+        # Create HTML structure with title
+        html_content = f'<div style="text-align:center"><strong>{title}</strong><br>'
+        
+        # Process content lines with improved paragraph detection
+        formatted_content = []
+        current_paragraph = []
+        
+        for line in content_lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Clean up tabs and excessive whitespace
+            line = re.sub(r'\t+', ' ', line)
+            line = re.sub(r' +', ' ', line)
+            
+            # Check for signature fields that should not be in text content
+            if any(pattern in line.lower() for pattern in [
+                'signature:', 'patient name:', 'date of birth:', 'witness:'
+            ]):
+                # Skip signature fields - they should be extracted as separate fields
+                continue
+            
+            # Enhanced paragraph break detection
+            should_break_paragraph = (
+                # Long paragraph (force break)
+                len(' '.join(current_paragraph)) > 300 or
+                # New sentence starting with key phrases
+                line.startswith(('I understand', 'I agree', 'I hereby', 'Extraction of', 'As in any', 'They include')) or
+                # Risk/complication items
+                any(risk in line for risk in ['Swelling', 'Stretching', 'Possible infection', 'Bleeding', 'Sharp ridges']) or
+                # Section indicators
+                any(section in line.lower() for section in ['risks', 'complications', 'alternative', 'treatment'])
+            )
+            
+            if should_break_paragraph and current_paragraph:
+                # Finish current paragraph and start new one
+                paragraph_text = ' '.join(current_paragraph)
+                formatted_content.append(f'<p>{paragraph_text}</p>')
+                current_paragraph = [line]
+            else:
+                # Add to current paragraph
+                current_paragraph.append(line)
+        
+        # Finish any remaining paragraph
+        if current_paragraph:
+            paragraph_text = ' '.join(current_paragraph)
+            formatted_content.append(f'<p>{paragraph_text}</p>')
+        
+        # Join all formatted content
+        html_content += ''.join(formatted_content) + '</div>'
+        
+        return html_content
     
     def extract_records_release_fields(self, text_lines: List[str]) -> List[FieldInfo]:
         """Extract fields for records release forms as structured forms with checkboxes"""
@@ -4944,6 +5039,9 @@ class DocumentToJSONConverter:
             # Fix initials fields to not have hint in reference
             if field_dict["key"] == "initials_3":
                 field_dict["control"].pop("hint", None)
+        
+        # Apply universal field key normalizations before validation
+        json_spec = ModentoSchemaValidator.normalize_field_keys(json_spec)
         
         # Validate and normalize
         is_valid, errors, normalized_spec = self.validator.validate_and_normalize(json_spec)

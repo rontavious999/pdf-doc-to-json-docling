@@ -1,0 +1,70 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<div style=\"text-align:center\"><strong>I hereby give consent to Dr. \t to perform Tooth Extraction procedure(s) on me or my dependent as follows:</strong><br><p>(“Recommended Treatment”) and any such additional procedure(s) as may be considered necessary for my well- being based on findings made during the course of the Recommended Treatment. The nature and purpose of the Recommended Treatment have been explained to me and no guarantee has been made or implied as to result or cure. I have been given satisfactory answers to all of my questions, and I wish to proceed with the Recommended Treatment. I also consent to the administration of local anesthesia during the performance of the Recommended Treatment. Alternative methods of treatment have been explained to me, such as: but I wish to proceed with the Recommended Treatment described above. I understand that there are risks and complications associated with the administration of medications, including anesthesia, and performance of the Recommended Treatment. These potential risks and complications, include, but are not limited to, the following: Drug reactions and side effects. Post-operative bleeding, oozing, infection and/or bone infection. Bruising and/or swelling, restricted mouth opening for several days or weeks. Loss or removal of bone during tooth extraction. Damage to, or fracture of, adjacent teeth or tooth restorations. Root tips may break during the oral surgery process. These root tips may be left in the bone to avoid more aggressive surgery. However, this more aggressive surgery may be needed and you may be referred for this procedure. Delayed healing, including but not limited to, dry socket, necessitating post-operative care Possible involvement of the sinus during the removal of the upper posterior teeth, which may require additional treatment or surgical repair at a later date. Possible involvement of the nerves of the lower jaw during the removal of teeth resulting in temporary or permanent tingling/numbness of the lower lip, chin, tongue or other surrounding structures. Jaw fracture. If you are taking medications to make your bones stronger (such as bisphosphonates) or if you have received radiation therapy to the head or neck area for tumors/cancer, then you are at a higher risk for poor bone healing or bone death that may never completely resolve. As a result of the injection or use of anesthesia, there may be swelling, jaw muscle tenderness or even resultant numbness of the tongue, lips, teeth, jaws and/or facial tissues, which is typically temporary, but in rare instances, may be permanent.</p></div>"
+    },
+    "section": "Form",
+    "optional": false
+  },
+  {
+    "key": "doctor_name",
+    "type": "input",
+    "title": "Doctor Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Recommended Treatment",
+    "optional": false
+  },
+  {
+    "key": "relationship",
+    "type": "input",
+    "title": "Relationship",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "patient_date_of_birth",
+    "type": "date",
+    "title": "Patient Date of Birth",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "printed_name",
+    "type": "input",
+    "title": "Printed Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Signature",
+    "optional": false
+  }
+]

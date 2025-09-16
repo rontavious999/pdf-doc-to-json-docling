@@ -1,0 +1,236 @@
+[
+  {
+    "key": "patient_name",
+    "type": "input",
+    "title": "Patient Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information",
+    "optional": false
+  },
+  {
+    "key": "date_of_birth",
+    "type": "date",
+    "title": "Date of Birth",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Patient Information",
+    "optional": false
+  },
+  {
+    "key": "street",
+    "type": "input",
+    "title": "Street",
+    "control": {
+      "input_type": "address"
+    },
+    "section": "Patient Information",
+    "optional": false
+  },
+  {
+    "key": "city",
+    "type": "input",
+    "title": "City",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information",
+    "optional": false
+  },
+  {
+    "key": "state",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "Patient Information",
+    "optional": false
+  },
+  {
+    "key": "zip",
+    "type": "input",
+    "title": "Zip",
+    "control": {
+      "input_type": "zip"
+    },
+    "section": "Patient Information",
+    "optional": false
+  },
+  {
+    "key": "mobile_phone",
+    "type": "input",
+    "title": "Mobile Phone",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "Patient Information",
+    "optional": false
+  },
+  {
+    "key": "home_phone",
+    "type": "input",
+    "title": "Home Phone",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "Patient Information",
+    "optional": false
+  },
+  {
+    "key": "complete_records",
+    "type": "checkbox",
+    "title": "Complete records",
+    "control": {
+      "options": [
+        {
+          "name": "Complete records",
+          "value": true
+        }
+      ]
+    },
+    "section": "Information to be Released",
+    "optional": false
+  },
+  {
+    "key": "limited_records_options",
+    "type": "checkbox",
+    "title": "Limited records",
+    "control": {
+      "options": [
+        {
+          "name": "Radiographs/Images",
+          "value": "radiographs"
+        },
+        {
+          "name": "Reports",
+          "value": "reports"
+        },
+        {
+          "name": "Other",
+          "value": "other"
+        }
+      ]
+    },
+    "section": "Information to be Released",
+    "optional": false
+  },
+  {
+    "key": "other_specify",
+    "type": "input",
+    "title": "Other (specify)",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Information to be Released",
+    "optional": true
+  },
+  {
+    "key": "recipient_name",
+    "type": "input",
+    "title": "Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Release To",
+    "optional": false
+  },
+  {
+    "key": "recipient_address",
+    "type": "input",
+    "title": "Address",
+    "control": {
+      "input_type": "address"
+    },
+    "section": "Release To",
+    "optional": false
+  },
+  {
+    "key": "recipient_phone",
+    "type": "input",
+    "title": "Phone",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "Release To",
+    "optional": false
+  },
+  {
+    "key": "recipient_fax",
+    "type": "input",
+    "title": "Fax",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "Release To",
+    "optional": false
+  },
+  {
+    "key": "patient_employed_by",
+    "type": "input",
+    "title": "Patient Employed By",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "occupation",
+    "type": "input",
+    "title": "Occupation",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "in_case_of_emergency_who_should_be_notified",
+    "type": "input",
+    "title": "In case of emergency, who should be notified",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "relationship_to_patient",
+    "type": "input",
+    "title": "Relationship to Patient",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "initials_2",
+    "type": "input",
+    "title": "Initial",
+    "control": {
+      "input_type": "initials"
+    },
+    "section": "Signature",
+    "optional": false
+  }
+]
