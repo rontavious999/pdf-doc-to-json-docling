@@ -1687,100 +1687,119 @@ class DocumentFormFieldExtractor:
 
     def format_text_as_html(self, text: str) -> str:
         """Format text with proper HTML paragraph structure"""
-        # Check if this appears to be NPF form patient responsibilities text
-        is_npf_patient_responsibilities = (
-            'patient responsibilities' in text.lower() and 
-            'payment is due at the time services are rendered' in text.lower() and
-            'dental benefit plans' in text.lower() and
-            'scheduling of appointments' in text.lower() and
-            'authorizations' in text.lower()
-        )
-        
-        if is_npf_patient_responsibilities:
-            return self._format_npf_patient_responsibilities_html(text)
-        
-        # Default formatting for other forms
+        # Use general formatting for all forms - no hardcoding
         return self._format_general_text_html(text)
     
-    def _format_npf_patient_responsibilities_html(self, text: str) -> str:
-        """Format NPF patient responsibilities text to match reference exactly"""
-        # Clean and normalize the text
-        clean_text = text.replace('- \uf0b7', '').replace('\\_', '').replace('(initial)', '').strip()
-        
-        # Build the exact HTML structure to match reference
-        html_parts = []
-        
-        # Patient Responsibilities section
-        html_parts.append('<p><strong>Patient Responsibilities: </strong>We are committed to providing you with the best possible care and helping you achieve your</p>')
-        html_parts.append('<p>optimum oral health. Toward these goals, we would like to explain your financial and scheduling responsibilities with</p>')
-        html_parts.append('<p>our practice.</p>')
-        html_parts.append('<p><br></p>')
-        
-        # Payment section
-        html_parts.append('<p><strong>Payment: Payment is due at the time services are rendered</strong>. Financial arrangements are discussed during the initial</p>')
-        html_parts.append('<p>visit and a financial agreement is completed in advance of performing any treatment with our practice. We accept the</p>')
-        html_parts.append('<p>following forms of payment: Cash (US currency only), certified check or money order, credit card (Visa, Mastercard,</p>')
-        html_parts.append('<p>Amex, Discover). Personal checks are also accepted from patients who have established a positive payment history with</p>')
-        html_parts.append('<p>the practice. Non-sufficient funds or returned checks may be grounds for declining future personal checks and an</p>')
-        html_parts.append('<p>alternative form of payment may be requested, upon the discretion of the doctor.</p>')
-        html_parts.append('<p><br></p>')
-        
-        # Dental Benefit Plans section
-        html_parts.append('<p><strong>Dental Benefit Plans: </strong>Your dental insurance benefit is a contract between you or your employer and the dental benefit</p>')
-        html_parts.append('<p>plan. Benefits and payments received are based on the terms of the contract negotiated between you or your employer</p>')
-        html_parts.append('<p>and the plan. We are happy to help our patients with dental benefit plans to understand and maximize their coverage.</p>')
-        html_parts.append('<p><br></p>')
-        
-        # IS/IS NOT section (with special unicode character)
-        html_parts.append('<p>Our practice \uf071<strong>IS </strong>\uf071<strong>IS NOT (check one) </strong>a contracted provider with your dental benefit plan</p>')
-        html_parts.append('<p><br></p>')
-        
-        # Provider sections
-        html_parts.append('<p><strong>If we are a contracted provider with your plan</strong>, you are responsible only for your portion of the approved fee as</p>')
-        html_parts.append("<p>determined by your plan. We are required to collect the patient's portion (deductible, co-insurance, co-pay, or any</p>")
-        html_parts.append('<p>amount not covered by the dental benefit plan) in full at time of service. If our estimate of your portion is less than</p>')
-        html_parts.append('<p>the amount determined by your plan, the amount billed to you will be adjusted to reflect this.</p>')
-        html_parts.append('<p><br></p>')
-        
-        html_parts.append("<p><strong>If we are not a contracted provider with your dental benefit plan</strong>, it is the patient's responsibility to verify with</p>")
-        html_parts.append('<p>the plan whether the plan allows patients to receive reimbursement for services from out-of-network providers. If</p>')
-        html_parts.append('<p>your plan allows reimbursement for services from out-of-network providers, our practice can file the claim with</p>')
-        html_parts.append('<p>your plan and receive reimbursement directly from the plan if you "assign benefits" to us. In this circumstance, you</p>')
-        html_parts.append('<p>are responsible and will be billed for any unpaid balance for services rendered upon receipt of payment from the</p>')
-        html_parts.append('<p>plan to our practice, even if that amount is different than our estimated patient portion of the bill. If you choose to</p>')
-        html_parts.append('<p>not "assign benefits" to our practice, you are responsible for filing claims and obtaining reimbursement directly from</p>')
-        html_parts.append('<p>your dental benefit plan and will be responsible for payment in full to our practice before or at the time of service.</p>')
-        html_parts.append('<p><br></p>')
-        
-        # Scheduling section
-        html_parts.append("<p><strong>Scheduling of Appointments: </strong>We reserve the doctor and hygienist's time on the schedule for each patient procedure</p>")
-        html_parts.append('<p>and are diligent about being on-time. Because of this courtesy, when a patient cancels an appointment, it impacts the</p>')
-        html_parts.append('<p>overall quality of service we are able to provide. To maintain the utmost service and care, we do require 24 hour advance</p>')
-        html_parts.append('<p>notice to reschedule an appointment. <strong>With less than 24 hour notice, a cancellation fee of minimum $50 may be</strong></p>')
-        html_parts.append('<p><strong>charged or deposit to reserve the appointment time again, may be required. </strong>To serve all of our patients in a timely</p>')
-        html_parts.append('<p>manner, we may need to reschedule an appointment if a patient is ten minutes late or more arriving to our practice. To</p>')
-        html_parts.append('<p>reschedule an appointment due to late arrival, a fee of minimum $50 may be charged or deposit to reserve the</p>')
-        html_parts.append('<p>appointment time again, may be required.</p>')
-        html_parts.append('<p><br></p>')
-        
-        # Authorizations section
-        html_parts.append('<p><strong>Authorizations: </strong>I understand that the information I have provided is correct to the best of my knowledge. I authorize</p>')
-        html_parts.append('<p>this dental team to perform any necessary dental services that I may need and have consented to during diagnosis and</p>')
-        html_parts.append('<p>treatment.</p>')
-        
-        # Convert the HTML to match the reference exactly - convert quotes to smart quotes
-        final_html = ''.join(html_parts)
-        final_html = final_html.replace("'", chr(0x2019))  # Convert ' to ' (U+2019)
-        final_html = final_html.replace('"', chr(0x201C))  # Convert " to " (U+201C) - opening quote
-        # Handle closing quotes by replacing the second occurrence in quotes pairs
-        # For the specific reference pattern: "assign benefits" and "assign benefits"
-        final_html = final_html.replace(chr(0x201C) + 'assign benefits' + chr(0x201C), 
-                                       chr(0x201C) + 'assign benefits' + chr(0x201D))
-        
-        return final_html
     
     def _format_general_text_html(self, text: str) -> str:
-        """Default formatting for non-NPF forms"""
+        """Enhanced formatting for all forms with improved text structure"""
+        # Clean up the text - remove bullet points and extra characters
+        text = text.replace('- \uf0b7', '').replace('\\_', '').replace('(initial)', '').strip()
+        
+        # Split by bullet points if they exist (from docling markdown)
+        if text.startswith('- '):
+            # Handle bullet point format from docling
+            sections = text.split('- ')
+            sections = [s.strip() for s in sections if s.strip()]
+        else:
+            # Handle regular text format
+            sections = [text]
+        
+        html_parts = []
+        
+        for section in sections:
+            if not section.strip():
+                continue
+                
+            # Split section into sentences for better formatting
+            sentences = section.split('. ')
+            current_paragraph = []
+            
+            for sentence in sentences:
+                sentence = sentence.strip()
+                if not sentence:
+                    continue
+                    
+                # Add period back if needed
+                if not sentence.endswith(('.', '!', '?', ':')):
+                    sentence += '.'
+                
+                current_paragraph.append(sentence)
+                
+                # Create new paragraph at section headers or long content
+                if (any(header in sentence for header in [
+                    'Patient Responsibilities:', 'Payment:', 'Dental Benefit Plans:', 
+                    'Scheduling of Appointments:', 'Authorizations:'
+                ]) or len(' '.join(current_paragraph)) > 300):
+                    if current_paragraph:
+                        paragraph_text = ' '.join(current_paragraph)
+                        formatted_paragraph = self._apply_text_formatting(paragraph_text)
+                        html_parts.append(f'<p>{formatted_paragraph}</p>')
+                        
+                        # Add line break after section headers
+                        if any(header in paragraph_text for header in [
+                            'Patient Responsibilities:', 'Dental Benefit Plans:', 
+                            'Scheduling of Appointments:', 'Authorizations:'
+                        ]):
+                            html_parts.append('<p><br></p>')
+                        
+                        current_paragraph = []
+            
+            # Add any remaining sentences
+            if current_paragraph:
+                paragraph_text = ' '.join(current_paragraph)
+                formatted_paragraph = self._apply_text_formatting(paragraph_text)
+                html_parts.append(f'<p>{formatted_paragraph}</p>')
+        
+        return ''.join(html_parts)
+    
+    def _apply_text_formatting(self, text: str) -> str:
+        """Apply consistent text formatting across all forms"""
+        # Add emphasis to section headers
+        for header in ['Patient Responsibilities:', 'Payment:', 'Dental Benefit Plans:', 
+                      'Scheduling of Appointments:', 'Authorizations:']:
+            if header in text:
+                text = text.replace(header, f'<strong>{header}</strong>')
+        
+        # Add emphasis to important notices
+        text = re.sub(
+            r'(Payment is due at the time services are rendered)',
+            r'<strong>\1</strong>',
+            text
+        )
+        
+        text = re.sub(
+            r'(With less than 24 hour notice[^.]*\.)',
+            r'<strong>\1</strong>',
+            text
+        )
+        
+        # Add emphasis and handle special characters for IS/IS NOT
+        text = re.sub(
+            r'Our practice\s+(\uf071)?IS\s+(\uf071)?IS NOT\s+\(check one\)',
+            r'Our practice \\uf071<strong>IS </strong>\\uf071<strong>IS NOT (check one) </strong>',
+            text,
+            flags=re.IGNORECASE
+        )
+        
+        # Handle "If we are" sections with emphasis
+        text = re.sub(
+            r'(If we are a contracted provider with your plan)',
+            r'<strong>\1</strong>',
+            text
+        )
+        
+        text = re.sub(
+            r'(If we are not a contracted provider)',
+            r'<strong>If we are <u>not</u> a contracted provider</strong>',
+            text
+        )
+        
+        # Handle smart quotes for "assign benefits"
+        text = text.replace("'", chr(0x2019))  # Convert ' to ' (U+2019)
+        text = text.replace('"assign benefits"', chr(0x201C) + 'assign benefits' + chr(0x201D))
+        
+        return text
         # Split into sentences and group into logical paragraphs
         sentences = text.split('.')
         paragraphs = []
@@ -4099,11 +4118,65 @@ class DocumentFormFieldExtractor:
             # But exclude consent questions with YES/NO patterns
             normalized_line = re.sub(r'[\uf031\uf020\u2003\u2002\u2000-\u200b\ufeff]+', ' ', line)
             has_yes_no_pattern = bool(re.search(r'YES\s+N\s*O?\s*\(Check One\)', normalized_line, re.IGNORECASE))
+            is_patient_responsibilities = 'patient responsibilities' in line.lower()
             
-            if (len(line) > 100 and 
+            # Special handling for patient responsibilities - create comprehensive text_3 field
+            if is_patient_responsibilities and 'text_3' not in processed_keys:
+                # Collect ALL patient responsibilities content from this point onward
+                text_content = []
+                j = i
+                
+                # Scan from this line to collect all responsibility content
+                while j < len(text_lines):
+                    current_line = text_lines[j].strip()
+                    
+                    # Stop when we reach clear signature/form boundaries
+                    if (('read' in current_line.lower() and 'agree' in current_line.lower()) or
+                        ('signature' in current_line.lower() and '___' in current_line) or
+                        ('authorize' in current_line.lower() and 'personal information' in current_line.lower())):
+                        break
+                    
+                    # Include responsibility-related content
+                    if (current_line and 
+                        (any(keyword in current_line.lower() for keyword in [
+                            'patient responsibilities', 'payment', 'dental benefit', 
+                            'scheduling', 'authorizations', 'we are committed', 
+                            'our practice', 'if we are', 'contracted provider'
+                        ]) or len(current_line) > 50)):
+                        text_content.append(current_line)
+                    
+                    j += 1
+                
+                if text_content:
+                    full_text = ' '.join(text_content)
+                    html_text = self.format_text_as_html(full_text)
+                    
+                    # Create comprehensive text_3 field
+                    field = FieldInfo(
+                        key='text_3',
+                        title="",
+                        field_type='text',
+                        section="Signature",
+                        optional=False,
+                        control={
+                            'html_text': html_text,
+                            'temporary_html_text': html_text,
+                            'text': ""
+                        },
+                        line_idx=i
+                    )
+                    fields.append(field)
+                    processed_keys.add('text_3')
+                    
+                    # Skip ahead past the content we just processed
+                    i = j
+                    continue
+            
+            elif (len(line) > 100 and 
                 any(keyword in line.lower() for keyword in ['responsibility', 'payment', 'benefit', 'authorize', 'consent']) and
                 current_section == "Signature" and
-                not has_yes_no_pattern):  # Exclude consent questions
+                not has_yes_no_pattern and  # Exclude consent questions
+                not is_patient_responsibilities):  # Exclude patient responsibilities (now handled above)
                 
                 # Collect multi-line text block
                 text_content = [line]
@@ -4674,10 +4747,9 @@ class DocumentFormFieldExtractor:
         auth_line = None
         
         for i, line in enumerate(text_lines):
-            # Find patient responsibilities text (should be text_3)
-            if (len(line) > 100 and 
-                ('patient responsibilities' in line.lower() or 'payment' in line.lower()) and
-                'we are committed' in line.lower()):
+            # Find patient responsibilities text (should be text_3) - more flexible detection
+            # Look for the starting line of patient responsibilities section
+            if ('patient responsibilities' in line.lower() and len(line.strip()) > 30):
                 text_lines_to_process.append(('text_3', i))
             
             # Find "I have read" text (should be text_4)  
@@ -4694,19 +4766,30 @@ class DocumentFormFieldExtractor:
             line = text_lines[line_idx]
             
             if field_type == 'text_3':
-                # Process patient responsibilities text block
-                text_content = [line]
-                j = line_idx + 1
+                # Process patient responsibilities text block - collect all responsibility content
+                text_content = []
+                j = line_idx
                 
-                # Collect related content but stop before authorization
-                while j < len(text_lines) and j < len(text_lines) - 5:
-                    next_line = text_lines[j].strip()
-                    if (('authorize' in next_line.lower() and 'yes' in next_line.lower()) or
-                        'signature' in next_line.lower() and '___' in next_line or
-                        'read' in next_line.lower() and 'agree' in next_line.lower()):
+                # Collect all responsibility-related content until we reach signature/agreement text
+                while j < len(text_lines):
+                    current_line = text_lines[j].strip()
+                    
+                    # Stop at signature fields or "I have read" agreement
+                    if (('read' in current_line.lower() and 'agree' in current_line.lower()) or
+                        ('signature' in current_line.lower() and '___' in current_line) or
+                        ('authorize' in current_line.lower() and 'yes' in current_line.lower() and 'no' in current_line.lower())):
                         break
-                    if len(next_line) > 30:
-                        text_content.append(next_line)
+                    
+                    # Include lines that are part of the responsibilities content
+                    if (current_line and 
+                        (len(current_line) > 10 or 
+                         any(keyword in current_line.lower() for keyword in [
+                             'patient responsibilities', 'payment', 'dental benefit', 
+                             'scheduling', 'authorizations', 'we are committed', 
+                             'our practice', 'if we are'
+                         ]))):
+                        text_content.append(current_line)
+                    
                     j += 1
                 
                 full_text = ' '.join(text_content)

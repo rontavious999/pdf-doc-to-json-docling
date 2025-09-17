@@ -23,8 +23,9 @@ class HeaderFooterManager:
         r'.*\b\d+\s+[A-Za-z\s]+(?:street|st|avenue|ave|road|rd|drive|dr|lane|ln|blvd|boulevard)\b.*',
         r'.*\b[A-Za-z\s]+,\s*[A-Z]{2}\s+\d{5}.*',  # City, State ZIP
         
-        # Practice types and names
-        r'.*\b(dental|dentistry|orthodontics|endodontics|periodontics|oral\s+surgery)\b.*',
+        # Practice types and names - more specific patterns to avoid matching form content
+        r'.*\b(family\s+dental|cosmetic\s+dentistry|pediatric\s+dentistry|general\s+dentistry)\b.*',
+        r'.*\b(orthodontic\s+office|endodontic\s+practice|periodontal\s+office)\b.*',
         r'.*\b(clinic|center|associates|group|practice|office|care|solutions)\b.*',
         
         # Header/footer formatting
@@ -37,16 +38,16 @@ class HeaderFooterManager:
         
         # Generic patterns for header/footer content
         r'^[^a-zA-Z]*$',  # Lines with only symbols/numbers
-        r'^\\s*•\\s*$',     # Lines with just bullet points
+        r'^\s*•\s*$',     # Lines with just bullet points
         
         # Footer information
-        r'.*page\\s+\\d+.*',
-        r'.*©.*\\d{4}.*',
-        r'.*all\\s+rights\\s+reserved.*',
+        r'.*page\s+\d+.*',
+        r'.*©.*\d{4}.*',
+        r'.*all\s+rights\s+reserved.*',
         
         # Form metadata
-        r'.*form\\s*(id|number|version).*',
-        r'.*revised.*\\d{4}.*',
+        r'.*form\s*(id|number|version).*',
+        r'.*revised.*\d{4}.*',
     ]
     
     def __init__(self):
@@ -91,6 +92,10 @@ class HeaderFooterManager:
         """Check if a line contains practice information that should be removed"""
         line = line.strip()
         
+        # SAFEGUARD: Protect form content from being removed
+        if self._is_form_content(line):
+            return False
+        
         # Check against compiled patterns
         for pattern in self.compiled_patterns:
             if pattern.match(line):
@@ -106,6 +111,35 @@ class HeaderFooterManager:
         
         return any(keyword in line_lower for keyword in practice_keywords)
     
+    def _is_form_content(self, line: str) -> bool:
+        """Check if a line contains actual form content that should be preserved"""
+        line_lower = line.strip().lower()
+        
+        # Form content indicators - content that should never be removed
+        form_content_patterns = [
+            'patient responsibilities',
+            'dental benefit plans',
+            'payment is due',
+            'scheduling of appointments', 
+            'authorizations',
+            'we are committed',
+            'if we are a contracted provider',
+            'assign benefits',
+            'financial and scheduling terms',
+            # Add specific field patterns that were being incorrectly removed
+            'plan/group number',
+            'our practice',
+            'is not (check one)',
+            'i authorize the release',
+            'personal information necessary to process',
+            'yes  n o (check one)',
+            'check one',
+            '(initial)',
+            'contracted provider'
+        ]
+        
+        return any(pattern in line_lower for pattern in form_content_patterns)
+    
     def _has_mixed_practice_content(self, line: str) -> bool:
         """Check if line contains both practice info and form content"""
         line_lower = line.lower()
@@ -119,7 +153,7 @@ class HeaderFooterManager:
     def _extract_form_content(self, line: str) -> str:
         """Extract form content from a line that has mixed practice/form information"""
         # Extract just the informed consent part
-        consent_match = re.search(r'(informed\\s+consent[^•]*)', line, re.IGNORECASE)
+        consent_match = re.search(r'(informed\s+consent[^•]*)', line, re.IGNORECASE)
         if consent_match:
             return consent_match.group(1).strip()
         
@@ -139,12 +173,12 @@ class HeaderFooterManager:
             return content
         
         # Split into lines, clean each line, then rejoin
-        lines = content.split('\\n')
+        lines = content.split('\n')
         cleaned_lines = self.remove_practice_headers_footers(lines)
         
         # Clean up extra whitespace
-        content = '\\n'.join(cleaned_lines)
-        content = re.sub(r'\\s+', ' ', content).strip()
+        content = '\n'.join(cleaned_lines)
+        content = re.sub(r'\s+', ' ', content).strip()
         
         return content
     
