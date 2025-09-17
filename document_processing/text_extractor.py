@@ -110,7 +110,7 @@ class DocumentTextExtractor:
             pipeline_info = {
                 "pipeline": "SimplePipeline", 
                 "backend": "python-docx",
-                "format": "DOCX"
+                "document_format": "DOCX"
             }
             
             print(f"[i] Enhanced DOCX extraction: {len(text_lines)} lines from {document_path.name}")
