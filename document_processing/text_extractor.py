@@ -63,63 +63,10 @@ class DocumentTextExtractor:
         
     def remove_practice_headers_footers(self, text_lines: List[str]) -> List[str]:
         """Universal header/footer removal to clean practice information from consent forms"""
-        
-        # Define patterns for practice information that should be removed
-        practice_patterns = [
-            # Email and website patterns
-            r'.*@.*\.com.*',
-            r'.*www\..*\.com.*',
-            
-            # Phone number patterns
-            r'.*\(\d{3}\).*\d{3}.*\d{4}.*',
-            r'.*\d{3}[-\.]\d{3}[-\.]\d{4}.*',
-            
-            # Address patterns (street numbers, zip codes)
-            r'.*\d+\s+[A-Za-z\s]+(St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard).*',
-            r'.*\b\d{5}(-\d{4})?\b.*',  # ZIP codes
-            
-            # Practice name patterns (common dental practice words)
-            r'.*(dental|dentistry|oral|surgery|care|clinic|center|associates|group|practice).*',
-            
-            # Footer information
-            r'.*page\s+\d+.*',
-            r'.*©.*\d{4}.*',
-            r'.*all\s+rights\s+reserved.*',
-            
-            # Form metadata
-            r'.*form\s*(id|number|version).*',
-            r'.*revised.*\d{4}.*',
-        ]
-        
-        # Compile patterns for efficiency
-        compiled_patterns = [re.compile(pattern, re.IGNORECASE) for pattern in practice_patterns]
-        
-        # Filter out lines matching practice patterns
-        filtered_lines = []
-        for line in text_lines:
-            line = line.strip()
-            if not line:  # Keep empty lines for structure
-                filtered_lines.append(line)
-                continue
-                
-            # Check if line matches any practice pattern
-            is_practice_info = any(pattern.search(line) for pattern in compiled_patterns)
-            
-            # Additional checks for specific practice content
-            if not is_practice_info:
-                line_lower = line.lower()
-                # Remove lines that are clearly practice-specific
-                practice_keywords = [
-                    'smile solutions', 'dental office', 'family dentistry', 
-                    'cosmetic dentistry', 'orthodontics', 'endodontics',
-                    'periodontics', 'oral surgery', 'implant dentistry'
-                ]
-                is_practice_info = any(keyword in line_lower for keyword in practice_keywords)
-            
-            if not is_practice_info:
-                filtered_lines.append(line)
-        
-        return filtered_lines
+        # Use the centralized HeaderFooterManager to eliminate code duplication
+        from field_processing import HeaderFooterManager
+        header_footer_manager = HeaderFooterManager()
+        return header_footer_manager.remove_practice_headers_footers(text_lines)
 
     def extract_enhanced_docx_structure(self, document_path: Path) -> Tuple[List[str], Dict[str, Any]]:
         """Enhanced DOCX structure recognition using python-docx"""

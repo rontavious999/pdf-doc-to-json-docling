@@ -628,61 +628,10 @@ class DocumentFormFieldExtractor:
     
     def remove_practice_headers_footers(self, text_lines: List[str]) -> List[str]:
         """Universal header/footer removal to clean practice information from consent forms"""
-        
-        # Define patterns for practice information that should be removed
-        practice_patterns = [
-            # Email and website patterns
-            r'.*@.*\.com.*',
-            r'.*www\..*\.com.*',
-            
-            # Phone number patterns
-            r'.*\(\d{3}\)\s*\d{3}[-.\s]*\d{4}.*',
-            r'.*\d{3}[-.\s]*\d{3}[-.\s]*\d{4}.*',
-            
-            # Address patterns (IL Route, street addresses)
-            r'.*\d+\s+IL\s+Route\s+\d+.*',
-            r'.*\d+\s+[A-Za-z\s]+•.*IL\s+\d{5}.*',
-            r'.*•.*•.*•.*',  # Multiple bullet separators (common in headers/footers)
-            
-            # Practice name patterns (common practice naming conventions)
-            r'.*[Ss]mile.*[Dd]ental.*',
-            r'.*[Kk]ingery.*[Dd]ental.*',
-            r'.*[Dd]arien.*IL.*',
-            
-            # Generic patterns for header/footer content
-            r'^[^a-zA-Z]*$',  # Lines with only symbols/numbers
-            r'^\s*•\s*$',     # Lines with just bullet points
-        ]
-        
-        cleaned_lines = []
-        for line in text_lines:
-            # Skip empty lines
-            if not line.strip():
-                continue
-            
-            # Check if line matches any practice information pattern
-            is_practice_info = False
-            for pattern in practice_patterns:
-                if re.match(pattern, line, re.IGNORECASE):
-                    is_practice_info = True
-                    break
-            
-            # Additional check for lines that are clearly header/footer based on position and content
-            if not is_practice_info:
-                # Check for lines that combine practice info with form titles
-                if ('smile@' in line.lower() or 'www.' in line.lower()) and 'informed consent' in line.lower():
-                    # Split and keep only the form title part
-                    if 'informed consent' in line.lower():
-                        # Extract just the informed consent part
-                        consent_match = re.search(r'(informed\s+consent[^•]*)', line, re.IGNORECASE)
-                        if consent_match:
-                            cleaned_lines.append(consent_match.group(1).strip())
-                    continue
-                
-                # Normal content line - keep it
-                cleaned_lines.append(line)
-        
-        return cleaned_lines
+        # Use the centralized HeaderFooterManager to eliminate code duplication
+        from field_processing import HeaderFooterManager
+        header_footer_manager = HeaderFooterManager()
+        return header_footer_manager.remove_practice_headers_footers(text_lines)
     
     def _setup_docx_processor(self):
         """RECOMMENDATION 1: Setup enhanced DOCX processing with python-docx"""
@@ -4916,6 +4865,19 @@ class DocumentToJSONConverter:
         self.extractor = DocumentFormFieldExtractor()
         self.validator = ModentoSchemaValidator()
         self.enhanced_consent_processor = None
+        
+        # Initialize field processing managers
+        from field_processing import (
+            FieldOrderingManager, 
+            FieldNormalizationManager, 
+            ConsentShapingManager,
+            HeaderFooterManager
+        )
+        self.field_ordering_manager = FieldOrderingManager()
+        self.field_normalization_manager = FieldNormalizationManager()
+        self.consent_shaping_manager = ConsentShapingManager()
+        self.header_footer_manager = HeaderFooterManager()
+        
         self._setup_enhanced_processors()
     
     def _setup_enhanced_processors(self):
@@ -4929,7 +4891,7 @@ class DocumentToJSONConverter:
             print("[i] Enhanced consent processing unavailable - using standard processing")
     
     def convert_document_to_json(self, document_path: Path, output_path: Optional[Path] = None) -> Dict[str, Any]:
-        """Convert a PDF or DOCX to Modento Forms JSON with enhanced processing"""
+        """Convert a PDF or DOCX to Modento Forms JSON with modular processing"""
         # Start processing message
         document_type = "DOCX" if document_path.suffix.lower() in ['.docx', '.doc'] else "PDF"
         print(f"[+] Processing {document_path.name} ({document_type}) ...")
@@ -4950,14 +4912,7 @@ class DocumentToJSONConverter:
                     
                     # Save to file if output path provided
                     if output_path:
-                        output_path.parent.mkdir(parents=True, exist_ok=True)
-                        with open(output_path, 'w', encoding='utf-8') as f:
-                            json.dump(result["spec"], f, indent=2, ensure_ascii=False)
-                        
-                        print(f"[✓] Wrote JSON: {output_path.parent.name}/{output_path.name}")
-                        print(f"[i] Sections: {result['section_count']} | Fields: {result['field_count']}")
-                        print(f"[i] Pipeline/Model/Backend used: {result['pipeline_info']['pipeline']}/{result['pipeline_info']['backend']}")
-                        print(f"[i] Enhanced consent processing: {form_type}")
+                        self._save_result_to_file(result["spec"], output_path, result)
                     
                     return result
             except Exception as e:
@@ -4972,120 +4927,105 @@ class DocumentToJSONConverter:
         # Extract form fields
         fields = self.extractor.extract_fields_from_text(text_lines)
         
-        # Sort fields by line_idx to preserve document order, then apply ordering fixes
-        fields.sort(key=lambda f: getattr(f, 'line_idx', 0))
-        
-        # CRITICAL FIX: Apply proper field ordering to match reference exactly
-        # The reference has a specific field order that we need to maintain
-        reference_order = [
-            "todays_date", "first_name", "mi", "last_name", "nickname", "street", "apt_unit_suite", 
-            "city", "state", "zip", "mobile", "home", "work", "e_mail", "drivers_license", "state2",
-            "what_is_your_preferred_method_of_contact", "ssn", "date_of_birth", "patient_employed_by",
-            "occupation", "street_2", "city_2", "state3", "zip_2", "sex", "marital_status",
-            "in_case_of_emergency_who_should_be_notified", "relationship_to_patient", "mobile_phone",
-            "home_phone", "is_the_patient_a_minor", "full_time_student", "name_of_school", 
-            "first_name_2", "last_name_2", "date_of_birth_2", "relationship_to_patient_2",
-            "if_patient_is_a_minor_primary_residence", "if_different_from_patient_street", "city_3",
-            "state4", "zip_3", "mobile_2", "home_2", "work_2", "employer_if_different_from_above",
-            "occupation_2", "street_3", "city_2_2", "state5", "zip_4", "name_of_insured",
-            "birthdate", "ssn_2", "insurance_company", "phone", "street_4", "city_5", "state_6",
-            "zip_5", "dental_plan_name", "plan_group_number", "id_number", "patient_relationship_to_insured",
-            "name_of_insured_2", "birthdate_2", "ssn_3", "insurance_company_2", "phone_2", "street_5",
-            "city_6", "state_7", "zip_6", "dental_plan_name_2", "plan_group_number_2", "id_number_2",
-            "patient_relationship_to_insured_2", "text_3", "initials", "text_4", "initials_2",
-            "i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_",
-            "initials_3", "signature", "date_signed"
-        ]
-        
-        # Create lookup for current fields
-        field_lookup = {field.key: field for field in fields}
-        
-        # Reorder fields according to reference order
-        ordered_fields = []
-        for key in reference_order:
-            if key in field_lookup:
-                ordered_fields.append(field_lookup[key])
-        
-        # Add any missing fields that aren't in the reference order (shouldn't happen)
-        for field in fields:
-            if field.key not in reference_order:
-                ordered_fields.append(field)
-        
-        fields = ordered_fields
+        # Apply field processing using new managers
+        fields = self._process_fields_with_managers(fields)
         
         # Convert to Modento format
-        json_spec = []
-        for field in fields:
-            # Normalize control structure to match reference order
-            normalized_control = {}
-            # Build control dict without null hint fields (schema compliance)
-            normalized_control = {}
-            if field.field_type == "states":
-                # States fields have empty control per schema
-                pass  # Leave normalized_control empty
-            elif field.field_type == "signature": 
-                # Signature fields have empty control per schema
-                pass  # Leave normalized_control empty
-            elif field.control:
-                # Special handling for text fields (different order)
-                if field.field_type == 'text':
-                    # For text fields: temporary_html_text, html_text, text
-                    if 'temporary_html_text' in field.control and field.control['temporary_html_text'] is not None:
-                        normalized_control['temporary_html_text'] = field.control['temporary_html_text']
-                    if 'html_text' in field.control and field.control['html_text'] is not None:
-                        normalized_control['html_text'] = field.control['html_text']
-                    if 'text' in field.control and field.control['text'] is not None:
-                        normalized_control['text'] = field.control['text']
-                    # Add any other non-null fields
-                    for key, value in field.control.items():
-                        if key not in ['temporary_html_text', 'html_text', 'text'] and value is not None:
-                            normalized_control[key] = value
-                else:
-                    # For other fields: only add non-null values per schema
-                    for key, value in field.control.items():
-                        if value is not None:
-                            normalized_control[key] = value
-            
-            field_dict = {
-                "key": field.key,
-                "type": field.field_type,  # Put type after key to match reference order
-                "title": field.title,
-                "control": normalized_control,
-                "section": field.section,
-                "optional": field.optional  # SCHEMA COMPLIANCE: Always include optional field
-            }
-            
-            # Transfer line_idx from FieldInfo to meta structure for proper ordering
-            field_dict["meta"] = {"line_idx": getattr(field, 'line_idx', len(json_spec))}
-            
-            json_spec.append(field_dict)
+        json_spec = self._convert_fields_to_json_spec(fields)
         
-        # Final cleanup: Fix specific field types to match reference exactly
-        for field_dict in json_spec:
-            # States fields should have empty control
-            if field_dict["type"] == "states":
-                field_dict["control"] = {}
-            # Fix specific field with special input_type
-            if field_dict["key"] == "if_different_from_patient_street":
-                field_dict["control"]["input_type"] = "address"
-            # Fix phone fields that should have hint: None instead of context hints
-            if field_dict["key"] in ["mobile_2", "home_2", "work_2", "phone_2"]:
-                field_dict["control"]["hint"] = None
-            # Fix signature field to have empty control
-            if field_dict["key"] == "signature":
-                field_dict["control"] = {}
-            # Fix initials fields to not have hint in reference
-            if field_dict["key"] == "initials_3":
-                field_dict["control"].pop("hint", None)
-        
-        # Apply universal field key normalizations before validation
-        json_spec = ModentoSchemaValidator.normalize_field_keys(json_spec)
+        # Apply final normalizations using managers
+        json_spec = self._apply_final_normalizations(json_spec)
         
         # Validate and normalize
         is_valid, errors, normalized_spec = self.validator.validate_and_normalize(json_spec)
         
-        # SIGNATURE VALIDATION: Ensure exactly one signature field with canonical key
+        # Final signature validation and cleanup
+        normalized_spec = self._ensure_signature_compliance(normalized_spec)
+        
+        # Final cleanup and text normalization
+        normalized_spec = self._apply_final_cleanup(normalized_spec)
+        
+        # Count sections and remove meta fields
+        section_count = len(set(field.get("section", "Unknown") for field in normalized_spec))
+        for field in normalized_spec:
+            field.pop("meta", None)
+        
+        # Save to file if output path provided
+        if output_path:
+            self._save_result_to_file(normalized_spec, output_path, {
+                "field_count": len(normalized_spec),
+                "section_count": section_count,
+                "pipeline_info": pipeline_info
+            })
+        
+        return {
+            "spec": normalized_spec,
+            "is_valid": is_valid,
+            "errors": errors,
+            "field_count": len(normalized_spec),
+            "section_count": section_count,
+            "pipeline_info": pipeline_info
+        }
+    
+    def _process_fields_with_managers(self, fields):
+        """Process fields using the new field processing managers"""
+        from field_processing import FieldInfo
+        
+        # Ensure required signature fields are present
+        fields = self.field_ordering_manager.ensure_required_signature_fields(fields)
+        fields = self.field_ordering_manager.ensure_date_signed_field(fields)
+        
+        # Order fields properly
+        fields = self.field_ordering_manager.order_fields(fields)
+        
+        return fields
+    
+    def _convert_fields_to_json_spec(self, fields):
+        """Convert FieldInfo objects to JSON specification format"""
+        json_spec = []
+        
+        for field in fields:
+            # Normalize control structure using the normalization manager
+            normalized_control = self.field_normalization_manager._normalize_control_by_type(
+                field.control, field.field_type, field.key
+            )
+            
+            field_dict = {
+                "key": field.key,
+                "type": field.field_type,
+                "title": field.title,
+                "control": normalized_control,
+                "section": field.section,
+                "optional": field.optional
+            }
+            
+            # Transfer line_idx for ordering
+            field_dict["meta"] = {"line_idx": getattr(field, 'line_idx', len(json_spec))}
+            
+            json_spec.append(field_dict)
+        
+        return json_spec
+    
+    def _apply_final_normalizations(self, json_spec):
+        """Apply final normalizations using the managers"""
+        # Apply key normalizations
+        json_spec = self.field_normalization_manager.normalize_field_keys(json_spec)
+        
+        # Apply consent shaping if this is a consent form
+        json_spec = self.consent_shaping_manager.apply_consent_shaping(json_spec)
+        
+        # Normalize text content
+        json_spec = self.field_normalization_manager.normalize_text_content(json_spec)
+        
+        # Normalize authorization field
+        json_spec = self.field_normalization_manager.normalize_authorization_field(json_spec)
+        
+        return json_spec
+    
+    def _ensure_signature_compliance(self, normalized_spec):
+        """Ensure signature compliance with Modento schema"""
         signature_fields = [field for field in normalized_spec if field.get('type') == 'signature']
+        
         if len(signature_fields) > 1:
             # Keep only the first one and set canonical key
             first_sig = signature_fields[0]
@@ -5106,7 +5046,10 @@ class DocumentToJSONConverter:
                 "control": {}
             })
         
-        # FINAL CLEANUP: Clean up text content to match reference exactly
+        return normalized_spec
+    
+    def _apply_final_cleanup(self, normalized_spec):
+        """Apply final cleanup to normalized specification"""
         for field in normalized_spec:
             control = field.get('control', {})
             
@@ -5118,90 +5061,31 @@ class DocumentToJSONConverter:
             if field.get('type') == 'signature':
                 field['control'] = {}
             
-            # Remove hint field from specific field types that don't have it in reference
-            if field.get('type') in ['states', 'text'] or field.get('key', '').startswith('initials'):
-                if 'hint' in control:
-                    del control['hint']
-            
-            # Clean up authorization field control - should only have options
-            if field.get('key') == 'i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_':
-                # Keep options and text fields for this radio field
-                options = control.get('options', [])
-                html_text = control.get('html_text', '<p>I have read the above and agree to the financial and scheduling terms.</p>')
-                temp_html_text = control.get('temporary_html_text', '<p>I have read the above and agree to the financial and scheduling terms.</p>')
-                field['control'] = {
-                    'temporary_html_text': temp_html_text,
-                    'html_text': html_text,
-                    'text': '',
-                    'options': options
-                }
-            
-            # Clean up HTML text content
-            for text_key in ['html_text', 'temporary_html_text']:
-                if text_key in control:
-                    text = control[text_key]
-                    # Remove escaped underscores
-                    text = text.replace('\\_', '')
-                    
-                    # For text_3 field (NPF patient responsibilities), preserve \uf071 character
-                    if field.get('key') == 'text_3':
-                        # Only remove escaped unicode sequences, but preserve actual unicode characters like \uf071 and smart quotes
-                        import re
-                        text = re.sub(r'\\u[0-9a-fA-F]{4}', '', text)
-                        # DO NOT convert smart quotes or remove \uf071 for text_3 field - preserve reference formatting exactly
-                    else:
-                        # Remove Unicode characters like \uf071, \u2019, \u201c, \u201d for other fields
-                        import re
-                        text = re.sub(r'\\u[0-9a-fA-F]{4}', '', text)
-                        text = text.replace('\uf071', '').replace('\u2019', "'").replace('\u201c', '"').replace('\u201d', '"')
-                    
-                    # Clean up extra spaces
-                    text = ' '.join(text.split())
-                    control[text_key] = text if text.startswith('<p>') else f"<p>{text}</p>"
-            
-            # Clean up field titles - remove trailing spaces and Unicode characters
+            # Clean up field titles using normalization manager
             if 'title' in field:
-                title = field['title']
-                # Remove Unicode characters like \uf071
-                import re
-                title = re.sub(r'[\uf000-\uffff]', '', title)
-                title = title.replace('\uf071', '').rstrip()
-                field['title'] = title
+                field['title'] = self.field_normalization_manager._normalize_title(field['title'])
         
-        # Count sections
-        sections = set(field.get("section", "Unknown") for field in normalized_spec)
-        section_count = len(sections)
+        return normalized_spec
+    
+    def _save_result_to_file(self, spec, output_path, result_info):
+        """Save the JSON specification to a file with proper messaging"""
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(spec, f, indent=2, ensure_ascii=False)
         
-        # Remove meta fields from final output (they were only for internal sorting)
-        for field in normalized_spec:
-            field.pop("meta", None)
+        # Success message with requested format
+        print(f"[✓] Wrote JSON: {output_path.parent.name}/{output_path.name}")
+        print(f"[i] Sections: {result_info.get('section_count', 0)} | Fields: {result_info.get('field_count', len(spec))}")
         
-        # Save to file if output path provided
-        if output_path:
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump(normalized_spec, f, indent=2, ensure_ascii=False)
-            
-            # Success message with requested format
-            print(f"[✓] Wrote JSON: {output_path.parent.name}/{output_path.name}")
-            print(f"[i] Sections: {section_count} | Fields: {len(normalized_spec)}")
-            print(f"[i] Pipeline/Model/Backend used: {pipeline_info['pipeline']}/{pipeline_info['backend']}")
-            
-            # Show appropriate processing info based on document type
-            if pipeline_info.get('document_format') == 'DOCX':
-                print(f"[i] Document format: DOCX (native text extraction)")
-            else:
-                ocr_status = "used" if pipeline_info.get('ocr_enabled', False) else "not used"
-                print(f"[x] OCR ({pipeline_info.get('ocr_engine', 'Unknown')}): {ocr_status}")
+        pipeline_info = result_info.get('pipeline_info', {})
+        print(f"[i] Pipeline/Model/Backend used: {pipeline_info.get('pipeline', 'Unknown')}/{pipeline_info.get('backend', 'Unknown')}")
         
-        return {
-            "spec": normalized_spec,
-            "is_valid": is_valid,
-            "errors": errors,
-            "field_count": len(normalized_spec),  # Use final normalized count
-            "section_count": section_count,
-            "pipeline_info": pipeline_info
-        }
+        # Show appropriate processing info based on document type
+        if pipeline_info.get('document_format') == 'DOCX':
+            print(f"[i] Document format: DOCX (native text extraction)")
+        else:
+            ocr_status = "used" if pipeline_info.get('ocr_enabled', False) else "not used"
+            print(f"[x] OCR ({pipeline_info.get('ocr_engine', 'Unknown')}): {ocr_status}")
     
     def convert_pdf_to_json(self, pdf_path: Path, output_path: Optional[Path] = None) -> Dict[str, Any]:
         """Legacy method name for backward compatibility - delegates to convert_document_to_json"""
