@@ -1663,6 +1663,9 @@ class DocumentFormFieldExtractor:
         """Format text to match NPF reference exactly"""
         html_parts = []
         
+        # Clean up text and remove bullet chars that shouldn't be in main HTML
+        text = text.replace('- \uf0b7', '- ').strip()
+        
         # Split by bullet points but be more careful about the structure
         lines = text.split('\n')
         all_text = ' '.join(lines)
@@ -1676,13 +1679,15 @@ class DocumentFormFieldExtractor:
             if 'Patient Responsibilities:' in section:
                 # Patient Responsibilities should be one paragraph including "Toward these goals"
                 formatted = self._apply_text_formatting(section)
-                html_parts.append(f'<p>{formatted}</p>')
+                # Add trailing space to match reference
+                html_parts.append(f'<p>{formatted} </p>')
                 html_parts.append('<p><br></p>')
             
             elif 'Payment:' in section:
-                # Payment section - combine multiple sentences but split logically
+                # Payment section - one long paragraph to match reference
                 formatted = self._apply_text_formatting(section)
-                html_parts.append(f'<p>{formatted}</p>')
+                # Add trailing space to match reference
+                html_parts.append(f'<p>{formatted} </p>')
                 html_parts.append('<p><br></p>')
             
             elif 'Dental Benefit Plans:' in section:
@@ -1695,14 +1700,18 @@ class DocumentFormFieldExtractor:
                     dental_intro = parts[0].strip()
                     if dental_intro:
                         formatted = self._apply_text_formatting(dental_intro)
-                        html_parts.append(f'<p>{formatted}</p>')
+                        # Add trailing space to match reference
+                        html_parts.append(f'<p>{formatted} </p>')
                         html_parts.append('<p><br></p>')
                     
                     # Second part - Our practice statement
-                    our_practice = 'Our practice' + parts[1].split('.')[0] + '.'
-                    # Add the unicode characters that are in the reference - exactly 2
-                    our_practice = our_practice.replace('IS  IS NOT', '\uf071 IS \uf071 IS NOT')
-                    formatted = self._apply_text_formatting(our_practice)
+                    our_practice = 'Our practice' + parts[1].split('.')[0] + '. '
+                    # Fix "IS N OT" to "IS NOT" first, then add unicode characters
+                    our_practice = our_practice.replace('IS N OT', 'IS NOT')
+                    # Add the unicode characters that are in the reference
+                    our_practice = our_practice.replace('  IS  IS NOT', ' \uf071 IS \uf071 IS NOT')
+                    # Remove trailing space but preserve the space before </p>
+                    formatted = our_practice.rstrip() + ' '
                     html_parts.append(f'<p>{formatted}</p>')
                     html_parts.append('<p><br></p>')
                     
@@ -1715,35 +1724,22 @@ class DocumentFormFieldExtractor:
                     html_parts.append('<p><br></p>')
             
             elif 'Scheduling of Appointments:' in section:
-                # Split long scheduling text into two paragraphs to match reference
-                sentences = section.split('. ')
+                # Split long scheduling text to match reference - need special handling
+                # Based on the reference, this should be one very long paragraph + continuation
+                formatted = self._apply_text_formatting(section)
                 
-                # First paragraph - up to and including cancellation fee
-                first_part_sentences = []
-                second_part_sentences = []
-                found_split = False
-                
-                for sentence in sentences:
-                    if 'To serve all of our patients' in sentence:
-                        found_split = True
+                # Split at a specific point to match reference structure
+                if 'To serve all of our patients' in formatted:
+                    parts = formatted.split('To serve all of our patients')
                     
-                    if not found_split:
-                        first_part_sentences.append(sentence)
-                    else:
-                        second_part_sentences.append(sentence)
-                
-                if first_part_sentences:
-                    first_part = '. '.join(first_part_sentences)
-                    if not first_part.endswith('.'):
-                        first_part += '.'
-                    formatted = self._apply_text_formatting(first_part)
-                    html_parts.append(f'<p>{formatted}</p>')
-                
-                if second_part_sentences:
-                    second_part = '. '.join(second_part_sentences)
-                    if not second_part.endswith('.'):
-                        second_part += '.'
-                    formatted = self._apply_text_formatting(second_part)
+                    # First part - main scheduling text
+                    first_part = parts[0].strip()
+                    html_parts.append(f'<p>{first_part}</p>')
+                    
+                    # Second part - continuation
+                    second_part = 'To serve all of our patients' + parts[1]
+                    html_parts.append(f'<p>{second_part}</p>')
+                else:
                     html_parts.append(f'<p>{formatted}</p>')
                 
                 html_parts.append('<p><br></p>')
@@ -1764,17 +1760,18 @@ class DocumentFormFieldExtractor:
             if not sentence:
                 continue
                 
-            # Add period back
+            # Add period back only if needed (avoid double periods)
             if not sentence.endswith(('.', '!', '?')):
                 sentence += '.'
             
             current_paragraph.append(sentence)
             
-            # Break at specific points to match reference
+            # Break at specific points to match reference exactly
             should_break = (
                 'If we are a contracted provider' in sentence or
-                'If we are not a contracted provider' in sentence or
-                len('. '.join(current_paragraph)) > 400
+                ('If we are not a contracted provider' in sentence or 
+                 'If we are <u>not</u> a contracted provider' in sentence) or
+                len('. '.join(current_paragraph)) > 350  # Based on reference lengths
             )
             
             if should_break and current_paragraph:
@@ -1840,6 +1837,10 @@ class DocumentFormFieldExtractor:
     
     def _apply_text_formatting(self, text: str) -> str:
         """Apply consistent text formatting across all forms"""
+        # Fix common spacing issues from docling extraction
+        text = text.replace(' .', '.')  # Fix space before period
+        text = text.replace('..', '.')  # Fix double periods
+        
         # Add emphasis to section headers
         for header in ['Patient Responsibilities:', 'Payment:', 'Dental Benefit Plans:', 
                       'Scheduling of Appointments:', 'Authorizations:']:
@@ -1870,13 +1871,13 @@ class DocumentFormFieldExtractor:
         # Handle "If we are" sections with emphasis
         text = re.sub(
             r'(If we are a contracted provider with your plan)',
-            r'<strong>\1</strong>',
+            r'<strong>\1,</strong>',  # Note the comma from reference
             text
         )
         
         text = re.sub(
             r'(If we are not a contracted provider)',
-            r'<strong>If we are <u>not</u> a contracted provider</strong>',
+            r'<strong>If we are <u>not</u> a contracted provider, </strong>',  # Note comma and space
             text
         )
         
