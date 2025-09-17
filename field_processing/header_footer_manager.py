@@ -125,7 +125,17 @@ class HeaderFooterManager:
             'we are committed',
             'if we are a contracted provider',
             'assign benefits',
-            'financial and scheduling terms'
+            'financial and scheduling terms',
+            # Add specific field patterns that were being incorrectly removed
+            'plan/group number',
+            'our practice',
+            'is not (check one)',
+            'i authorize the release',
+            'personal information necessary to process',
+            'yes  n o (check one)',
+            'check one',
+            '(initial)',
+            'contracted provider'
         ]
         
         return any(pattern in line_lower for pattern in form_content_patterns)
