@@ -5,6 +5,7 @@ This is a modular version that integrates the new modules while maintaining comp
 """
 
 import sys
+import json
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 
