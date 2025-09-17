@@ -1,0 +1,987 @@
+[
+  {
+    "key": "todays_date",
+    "type": "date",
+    "title": "Today's Date",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "first_name",
+    "type": "input",
+    "title": "First Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "mi",
+    "type": "input",
+    "title": "Middle Initial",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "last_name",
+    "type": "input",
+    "title": "Last Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "nickname",
+    "type": "input",
+    "title": "Nickname",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "street",
+    "type": "input",
+    "title": "Street",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "apt_unit_suite",
+    "type": "input",
+    "title": "Apt/Unit/Suite",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "city",
+    "type": "input",
+    "title": "City",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "state",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "zip",
+    "type": "input",
+    "title": "Zip",
+    "control": {
+      "input_type": "zip"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "mobile",
+    "type": "input",
+    "title": "Mobile",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "home",
+    "type": "input",
+    "title": "Home",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "work",
+    "type": "input",
+    "title": "Work",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "e_mail",
+    "type": "input",
+    "title": "E-Mail",
+    "control": {
+      "input_type": "email"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "drivers_license",
+    "type": "input",
+    "title": "Drivers License #",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "state2",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "what_is_your_preferred_method_of_contact",
+    "type": "radio",
+    "title": "What Is Your Preferred Method Of Contact",
+    "control": {
+      "options": [
+        {
+          "name": "Mobile Phone",
+          "value": "Mobile Phone"
+        },
+        {
+          "name": "Home Phone",
+          "value": "Home Phone"
+        },
+        {
+          "name": "Work Phone",
+          "value": "Work Phone"
+        },
+        {
+          "name": "E-mail",
+          "value": "E-mail"
+        }
+      ]
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "ssn",
+    "type": "input",
+    "title": "Social Security No.",
+    "control": {
+      "input_type": "ssn"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "date_of_birth",
+    "type": "date",
+    "title": "Date of Birth",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "patient_employed_by",
+    "type": "input",
+    "title": "Patient Employed By",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "occupation",
+    "type": "input",
+    "title": "Occupation",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "street_2",
+    "type": "input",
+    "title": "Street",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "city_2",
+    "type": "input",
+    "title": "City",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "state3",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "zip_2",
+    "type": "input",
+    "title": "Zip",
+    "control": {
+      "input_type": "zip"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "sex",
+    "type": "radio",
+    "title": "Sex",
+    "control": {
+      "options": [
+        {
+          "name": "Male",
+          "value": "male"
+        },
+        {
+          "name": "Female",
+          "value": "female"
+        }
+      ]
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "marital_status",
+    "type": "radio",
+    "title": "Marital Status",
+    "control": {
+      "options": [
+        {
+          "name": "Married",
+          "value": "Married"
+        },
+        {
+          "name": "Single",
+          "value": "Single"
+        },
+        {
+          "name": "Divorced",
+          "value": "Divorced"
+        },
+        {
+          "name": "Separated",
+          "value": "Separated"
+        },
+        {
+          "name": "Widowed",
+          "value": "Widowed"
+        }
+      ]
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "in_case_of_emergency_who_should_be_notified",
+    "type": "input",
+    "title": "In case of emergency, who should be notified",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "relationship_to_patient",
+    "type": "input",
+    "title": "Relationship to Patient",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "mobile_phone",
+    "type": "input",
+    "title": "Mobile Phone",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "home_phone",
+    "type": "input",
+    "title": "Home Phone",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "Patient Information Form",
+    "optional": false
+  },
+  {
+    "key": "is_the_patient_a_minor",
+    "type": "radio",
+    "title": "Is the Patient a Minor?",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ]
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "full_time_student",
+    "type": "radio",
+    "title": "Full-time Student",
+    "control": {
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ]
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "name_of_school",
+    "type": "input",
+    "title": "Name of School",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "first_name_2",
+    "type": "input",
+    "title": "First Name",
+    "control": {
+      "input_type": "name",
+      "hint": "Name of Responsible Party"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "last_name_2",
+    "type": "input",
+    "title": "Last Name",
+    "control": {
+      "input_type": "name",
+      "hint": "Name of Responsible Party"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "date_of_birth_2",
+    "type": "date",
+    "title": "Date of Birth",
+    "control": {
+      "input_type": "past",
+      "hint": "Responsible Party"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "relationship_to_patient_2",
+    "type": "radio",
+    "title": "Relationship To Patient",
+    "control": {
+      "options": [
+        {
+          "name": "Self",
+          "value": "Self"
+        },
+        {
+          "name": "Spouse",
+          "value": "Spouse"
+        },
+        {
+          "name": "Parent",
+          "value": "Parent"
+        },
+        {
+          "name": "Other",
+          "value": "Other"
+        }
+      ]
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "if_patient_is_a_minor_primary_residence",
+    "type": "radio",
+    "title": "If Patient Is A Minor, Primary Residence",
+    "control": {
+      "options": [
+        {
+          "name": "Both Parents",
+          "value": "Both Parents"
+        },
+        {
+          "name": "Mom",
+          "value": "Mom"
+        },
+        {
+          "name": "Dad",
+          "value": "Dad"
+        },
+        {
+          "name": "Step Parent",
+          "value": "Step Parent"
+        },
+        {
+          "name": "Shared Custody",
+          "value": "Shared Custody"
+        },
+        {
+          "name": "Guardian",
+          "value": "Guardian"
+        }
+      ]
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "if_different_from_patient_street",
+    "type": "input",
+    "title": "Street",
+    "control": {
+      "hint": "If different from patient",
+      "input_type": "address"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "city_3",
+    "type": "input",
+    "title": "City",
+    "control": {
+      "input_type": "name",
+      "hint": "If different from patient"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "state4",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "zip_3",
+    "type": "input",
+    "title": "Zip",
+    "control": {
+      "input_type": "zip",
+      "hint": "If different from patient"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "mobile_2",
+    "type": "input",
+    "title": "Mobile",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "home_2",
+    "type": "input",
+    "title": "Home",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "work_2",
+    "type": "input",
+    "title": "Work",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "employer_if_different_from_above",
+    "type": "input",
+    "title": "Employer (if different from above)",
+    "control": {
+      "input_type": "name",
+      "hint": "(if different from above)"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "occupation_2",
+    "type": "input",
+    "title": "Occupation",
+    "control": {
+      "input_type": "name",
+      "hint": "(if different from above)"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "street_3",
+    "type": "input",
+    "title": "Street",
+    "control": {
+      "input_type": "name",
+      "hint": "(if different from above)"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "city_2_2",
+    "type": "input",
+    "title": "City",
+    "control": {
+      "input_type": "name",
+      "hint": "(if different from above)"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "state5",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "zip_4",
+    "type": "input",
+    "title": "Zip",
+    "control": {
+      "input_type": "zip",
+      "hint": "(if different from above)"
+    },
+    "section": "FOR CHILDREN/MINORS ONLY",
+    "optional": false
+  },
+  {
+    "key": "name_of_insured",
+    "type": "input",
+    "title": "Name of Insured",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Primary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "birthdate",
+    "type": "date",
+    "title": "Birthdate",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Primary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "ssn_2",
+    "type": "input",
+    "title": "Social Security No.",
+    "control": {
+      "input_type": "ssn"
+    },
+    "section": "Primary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "insurance_company",
+    "type": "input",
+    "title": "Insurance Company",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Primary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "phone",
+    "type": "input",
+    "title": "Phone",
+    "control": {
+      "input_type": "phone",
+      "hint": "Insurance Company"
+    },
+    "section": "Primary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "street_4",
+    "type": "input",
+    "title": "Street",
+    "control": {
+      "input_type": "name",
+      "hint": "Insurance Company"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "city_5",
+    "type": "input",
+    "title": "City",
+    "control": {
+      "input_type": "name",
+      "hint": "Insurance Company"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "state_6",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "zip_5",
+    "type": "input",
+    "title": "Zip",
+    "control": {
+      "input_type": "zip",
+      "hint": "Insurance Company"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "dental_plan_name",
+    "type": "input",
+    "title": "Dental Plan Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Primary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "plan_group_number",
+    "type": "input",
+    "title": "Plan/Group Number",
+    "control": {
+      "input_type": "number"
+    },
+    "section": "Primary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "id_number",
+    "type": "input",
+    "title": "ID Number",
+    "control": {
+      "input_type": "number"
+    },
+    "section": "Primary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "patient_relationship_to_insured",
+    "type": "input",
+    "title": "Patient Relationship to Insured",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Primary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "name_of_insured_2",
+    "type": "input",
+    "title": "Name of Insured",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "birthdate_2",
+    "type": "date",
+    "title": "Birthdate",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "ssn_3",
+    "type": "input",
+    "title": "Social Security No.",
+    "control": {
+      "input_type": "ssn"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "insurance_company_2",
+    "type": "input",
+    "title": "Insurance Company",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "phone_2",
+    "type": "input",
+    "title": "Phone",
+    "control": {
+      "input_type": "phone"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "street_5",
+    "type": "input",
+    "title": "Street",
+    "control": {
+      "input_type": "name",
+      "hint": "Insurance Company"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "city_6",
+    "type": "input",
+    "title": "City",
+    "control": {
+      "input_type": "name",
+      "hint": "Insurance Company"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "state_7",
+    "type": "states",
+    "title": "State",
+    "control": {},
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "zip_6",
+    "type": "input",
+    "title": "Zip",
+    "control": {
+      "input_type": "zip",
+      "hint": "Insurance Company"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "dental_plan_name_2",
+    "type": "input",
+    "title": "Dental Plan Name",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "plan_group_number_2",
+    "type": "input",
+    "title": "Plan/Group Number",
+    "control": {
+      "input_type": "number"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "id_number_2",
+    "type": "input",
+    "title": "ID Number",
+    "control": {
+      "input_type": "number"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "patient_relationship_to_insured_2",
+    "type": "input",
+    "title": "Patient Relationship to Insured",
+    "control": {
+      "input_type": "name"
+    },
+    "section": "Secondary Dental Plan",
+    "optional": false
+  },
+  {
+    "key": "text_3",
+    "type": "text",
+    "title": "",
+    "control": {
+      "temporary_html_text": "<p>-  <strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care and helping you achieve your optimum oral health.</p><p>Toward these goals, we would like to explain your financial and scheduling responsibilities with our practice. -  <strong>Payment:</strong> <strong>Payment is due at the time services are rendered</strong> .</p><p><br></p><p>Financial arrangements are discussed during the initial visit and a financial agreement is completed in advance of performing any treatment with our practice. We accept the following forms of payment: Cash (US currency only), certified check or money order, credit card (Visa, Mastercard, Amex, Discover). Personal checks are also accepted from patients who have established a positive payment history with the practice. Non-sufficient funds or returned checks may be grounds for declining future personal checks and an alternative form of payment may be requested, upon the discretion of the doctor. -  <strong>Dental Benefit Plans:</strong> Your dental insurance benefit is a contract between you or your employer and the dental benefit plan.</p><p><br></p><p>Benefits and payments received are based on the terms of the contract negotiated between you or your employer and the plan. We are happy to help our patients with dental benefit plans to understand and maximize their coverage. Our practice  IS  IS NOT (check one) a contracted provider with your dental benefit plan. <strong>If we are a contracted provider with your plan</strong> , you are responsible only for your portion of the approved fee as determined by your plan. We are required to collect the patient’s portion (deductible, co -insurance, co-pay, or any amount not covered by the dental benefit plan) in full at time of service. If our estimate of your portion is less than the amount determined by your plan, the amount billed to you will be adjusted to reflect this. <strong>If we are <u>not</u> a contracted provider</strong> with your dental benefit plan , it is the patient’s responsibility to verify with the plan whether the plan allows patients to receive reimbursement for services from out-of-network providers. If your plan allows reimbursement for services from out-of-network providers, our practice can file the claim with your plan and receive reimbursement directly from the plan if you ’assign benefits’ to us. In this circumstance, you are responsible and will be billed for any unpaid balance for services rendered upon receipt of payment from the plan to our practice, even if that amount is different than our estimated patient portion of the bill. If you choose to not ’assign benefits’ to our practice, you are responsible for filing claims and obtaining reimbursement directly from your dental benefit plan and will be responsible for payment in full to our practice before or at the time of service. -  <strong>Scheduling of Appointments:</strong> We reserve the doctor and hygienist’s time on the schedule for each patient procedure and are diligent about being on-time.</p><p><br></p><p>Because of this courtesy, when a patient cancels an appointment, it impacts the overall quality of service we are able to provide. To maintain the utmost service and care, we do require 24 hour advance notice to reschedule an appointment. <strong>With less than 24 hour notice, a cancellation fee of minimum $50 may be charged or deposit to reserve the appointment time again, may be required.</strong> To serve all of our patients in a timely manner, we may need to reschedule an appointment if a patient is ten minutes late or more arriving to our practice. To reschedule an appointment due to late arrival, a fee of minimum $50 may be charged or deposit to reserve the appointment time again, may be required. -  <strong>Authorizations:</strong> I understand that the information I have provided is correct to the best of my knowledge.</p><p><br></p><p>I authorize this dental team to perform any necessary dental services that I may need and have consented to during diagnosis and treatment. (initial)</p>",
+      "html_text": "<p><strong>Patient Responsibilities:</strong> We are committed to providing you with the best possible care and helping you achieve your optimum oral health.</p><p><br></p><p>Toward these goals, we would like to explain your financial and scheduling responsibilities with our practice. <strong>Payment:</strong> <strong>Payment is due at the time services are rendered</strong>.</p><p>Financial arrangements are discussed during the initial visit and a financial agreement is completed in advance of performing any treatment with our practice. We accept the following forms of payment: Cash (US currency only), certified check or money order, credit card (Visa, Mastercard, Amex, Discover).</p><p>Personal checks are also accepted from patients who have established a positive payment history with the practice. Non-sufficient funds or returned checks may be grounds for declining future personal checks and an alternative form of payment may be requested, upon the discretion of the doctor. <strong>Dental Benefit Plans:</strong> Your dental insurance benefit is a contract between you or your employer and the dental benefit plan.</p><p><br></p><p>Benefits and payments received are based on the terms of the contract negotiated between you or your employer and the plan. We are happy to help our patients with dental benefit plans to understand and maximize their coverage. Our practice  IS  IS NOT (check one) a contracted provider with your dental benefit plan.</p><p><strong>If we are a contracted provider with your plan</strong> , you are responsible only for your portion of the approved fee as determined by your plan. We are required to collect the patient’s portion (deductible, co -insurance, co-pay, or any amount not covered by the dental benefit plan) in full at time of service.</p><p>If our estimate of your portion is less than the amount determined by your plan, the amount billed to you will be adjusted to reflect this. <strong>If we are <u>not</u> a contracted provider</strong> with your dental benefit plan , it is the patient’s responsibility to verify with the plan whether the plan allows patients to receive reimbursement for services from out-of-network providers.</p><p>If your plan allows reimbursement for services from out-of-network providers, our practice can file the claim with your plan and receive reimbursement directly from the plan if you ’assign benefits’ to us. In this circumstance, you are responsible and will be billed for any unpaid balance for services rendered upon receipt of payment from the plan to our practice, even if that amount is different than our estimated patient portion of the bill.</p><p>If you choose to not ’assign benefits’ to our practice, you are responsible for filing claims and obtaining reimbursement directly from your dental benefit plan and will be responsible for payment in full to our practice before or at the time of service. <strong>Scheduling of Appointments:</strong> We reserve the doctor and hygienist’s time on the schedule for each patient procedure and are diligent about being on-time.</p><p><br></p><p>Because of this courtesy, when a patient cancels an appointment, it impacts the overall quality of service we are able to provide. To maintain the utmost service and care, we do require 24 hour advance notice to reschedule an appointment. <strong>With less than 24 hour notice, a cancellation fee of minimum $50 may be charged or deposit to reserve the appointment time again, may be required.</strong></p><p>To serve all of our patients in a timely manner, we may need to reschedule an appointment if a patient is ten minutes late or more arriving to our practice. To reschedule an appointment due to late arrival, a fee of minimum $50 may be charged or deposit to reserve the appointment time again, may be required.</p><p><strong>Authorizations:</strong> I understand that the information I have provided is correct to the best of my knowledge.</p><p><br></p><p>I authorize this dental team to perform any necessary dental services that I may need and have consented to during diagnosis and treatment.</p>",
+      "text": ""
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "initials",
+    "type": "input",
+    "title": "Initial",
+    "control": {
+      "input_type": "initials"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "text_4",
+    "type": "text",
+    "title": "",
+    "control": {
+      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
+      "html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
+      "text": ""
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "initials_2",
+    "type": "input",
+    "title": "Initial",
+    "control": {
+      "input_type": "initials"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "i_authorize_the_release_of_my_personal_information_necessary_to_process_my_dental_benefit_claims,_including_health_information,_",
+    "type": "radio",
+    "title": "I authorize the release of my personal information necessary to process my dental benefit claims, including health information, diagnosis, and records of any treatment or exam rendered. I hereby authorize payment of benefits directly to this dental office otherwise payable to me.",
+    "control": {
+      "temporary_html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
+      "html_text": "<p>I have read the above and agree to the financial and scheduling terms.</p>",
+      "text": "",
+      "options": [
+        {
+          "name": "Yes",
+          "value": true
+        },
+        {
+          "name": "No",
+          "value": false
+        }
+      ]
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "initials_3",
+    "type": "input",
+    "title": "Initial",
+    "control": {
+      "input_type": "initials"
+    },
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Signature",
+    "optional": false
+  }
+]
