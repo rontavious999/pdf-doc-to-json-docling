@@ -1726,12 +1726,104 @@ class DocumentFormFieldExtractor:
         # Add emphasis and handle special characters for IS/IS NOT
         text = re.sub(
             r'Our practice\s+(\uf071)?IS\s+(\uf071)?IS NOT\s+\(check one\)',
-            r'Our practice \uf071<strong>IS </strong>\uf071<strong>IS NOT (check one) </strong>',
+            'Our practice ' + chr(0xf071) + '<strong>IS </strong>' + chr(0xf071) + '<strong>IS NOT (check one) </strong>',
             text,
             flags=re.IGNORECASE
         )
         
         # Handle "If we are" sections with emphasis
+        text = re.sub(
+            r'(If we are a contracted provider with your plan)',
+            r'<strong>\1</strong>',
+            text
+        )
+        
+        text = re.sub(
+            r'(If we are not a contracted provider)',
+            r'<strong>If we are <u>not</u> a contracted provider</strong>',
+            text
+        )
+        
+        # Handle smart quotes for "assign benefits"
+        text = text.replace("'", chr(0x2019))  # Convert ' to ' (U+2019)
+        text = text.replace('"assign benefits"', chr(0x201C) + 'assign benefits' + chr(0x201D))
+        
+        return text
+        
+    def _format_text_3_temporary_html(self, text: str) -> str:
+        """Format text_3 temporary HTML preserving original bullets and structure"""
+        # Split into sentences but preserve bullet structure
+        sentences = []
+        current_sentence = ""
+        
+        for char in text:
+            current_sentence += char
+            if char in '.!?':
+                # Check if this is end of sentence (not part of abbreviation)
+                sentences.append(current_sentence.strip())
+                current_sentence = ""
+        
+        # Add remaining text
+        if current_sentence.strip():
+            sentences.append(current_sentence.strip())
+        
+        html_parts = []
+        current_paragraph = []
+        
+        for sentence in sentences:
+            sentence = sentence.strip()
+            if not sentence:
+                continue
+            
+            # Apply text formatting while preserving bullets
+            formatted_sentence = self._apply_text_formatting_preserve_bullets(sentence)
+            current_paragraph.append(formatted_sentence)
+            
+            # Create paragraph breaks at section headers
+            if any(header in sentence for header in [
+                'Patient Responsibilities:', 'Payment:', 'Dental Benefit Plans:', 
+                'Scheduling of Appointments:', 'Authorizations:'
+            ]):
+                if current_paragraph:
+                    paragraph_text = ' '.join(current_paragraph)
+                    html_parts.append(f'<p>{paragraph_text}</p>')
+                    
+                    # Add line break after section headers (except Patient Responsibilities)
+                    if not sentence.startswith('- ' + chr(0xf0b7) + ' Patient Responsibilities:'):
+                        html_parts.append('<p><br></p>')
+                    
+                    current_paragraph = []
+        
+        # Add any remaining content
+        if current_paragraph:
+            paragraph_text = ' '.join(current_paragraph)
+            html_parts.append(f'<p>{paragraph_text}</p>')
+        
+        return ''.join(html_parts)
+    
+    def _apply_text_formatting_preserve_bullets(self, text: str) -> str:
+        """Apply text formatting while preserving bullet characters"""
+        # Keep the original bullet structure for temporary HTML
+        # Add emphasis to section headers
+        for header in ['Patient Responsibilities:', 'Payment:', 'Dental Benefit Plans:', 
+                      'Scheduling of Appointments:', 'Authorizations:']:
+            if header in text:
+                text = text.replace(header, f'<strong>{header}</strong>')
+        
+        # Add emphasis to important notices
+        text = re.sub(
+            r'(Payment is due at the time services are rendered)',
+            r'<strong>\1</strong>',
+            text
+        )
+        
+        text = re.sub(
+            r'(With less than 24 hour notice[^.]*\.)',
+            r'<strong>\1</strong>',
+            text
+        )
+        
+        # Handle "If we are" sections with emphasis  
         text = re.sub(
             r'(If we are a contracted provider with your plan)',
             r'<strong>\1</strong>',
@@ -4621,7 +4713,13 @@ class DocumentFormFieldExtractor:
                     j += 1
                 
                 full_text = ' '.join(text_content)
-                html_text = self.format_text_as_html(full_text)
+                
+                # For text_3, create both temporary and final HTML versions
+                # temporary_html_text preserves the original bullets and formatting
+                temp_html = self._format_text_3_temporary_html(full_text)
+                
+                # html_text has cleaned formatting but preserves Unicode characters
+                clean_html = self.format_text_as_html(full_text)
                 
                 field = FieldInfo(
                     key="text_3",
@@ -4630,8 +4728,8 @@ class DocumentFormFieldExtractor:
                     section="Signature",
                     optional=False,
                     control={
-                        'html_text': html_text,
-                        'temporary_html_text': html_text,
+                        'html_text': clean_html,
+                        'temporary_html_text': temp_html,
                         'text': ""
                     },
                     line_idx=line_idx

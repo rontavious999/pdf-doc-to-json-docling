@@ -172,6 +172,12 @@ class FieldNormalizationManager:
                 
                 # Clean up extra spaces
                 text = ' '.join(text.split())
+                
+                # Fix specific text extraction issues for text_3 field
+                if field_key == 'text_3':
+                    # Fix "IS N OT" -> "IS NOT" spacing issue from text extraction
+                    text = text.replace('IS N OT', 'IS NOT')
+                
                 control[text_key] = text if text.startswith('<p>') else f"<p>{text}</p>"
     
     def _normalize_title(self, title: str) -> str:
