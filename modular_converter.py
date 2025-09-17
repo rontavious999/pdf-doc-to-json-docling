@@ -59,12 +59,25 @@ class ModularDocumentFormFieldExtractor:
 
 
 class ModularDocumentToJSONConverter:
-    """Modular version of DocumentToJSONConverter"""
+    """Modular version of DocumentToJSONConverter using new field processing managers"""
     
     def __init__(self):
         self.extractor = ModularDocumentFormFieldExtractor()
         self.validator = ModentoSchemaValidator()
         self.enhanced_consent_processor = None
+        
+        # Initialize field processing managers 
+        from field_processing import (
+            FieldOrderingManager, 
+            FieldNormalizationManager, 
+            ConsentShapingManager,
+            HeaderFooterManager
+        )
+        self.field_ordering_manager = FieldOrderingManager()
+        self.field_normalization_manager = FieldNormalizationManager()
+        self.consent_shaping_manager = ConsentShapingManager()
+        self.header_footer_manager = HeaderFooterManager()
+        
         self._setup_enhanced_processors()
     
     def _setup_enhanced_processors(self):
@@ -78,23 +91,202 @@ class ModularDocumentToJSONConverter:
             print("[i] Enhanced consent processing unavailable - using standard processing")
     
     def convert_document_to_json(self, document_path: Path, output_path: Optional[Path] = None) -> Dict[str, Any]:
-        """Convert a PDF or DOCX to Modento Forms JSON with modular processing"""
-        # Use the original converter logic but with modular text extraction
-        # Import and delegate to the backup converter for full logic
-        from pdf_to_json_converter_backup import DocumentToJSONConverter
-        legacy_converter = DocumentToJSONConverter()
+        """Convert a PDF or DOCX to Modento Forms JSON with truly modular processing"""
+        # Start processing message
+        document_type = "DOCX" if document_path.suffix.lower() in ['.docx', '.doc'] else "PDF"
+        print(f"[+] Processing {document_path.name} ({document_type}) ...")
         
-        # Replace the extractor with our modular one for text extraction and form classification
-        original_extractor = legacy_converter.extractor
-        legacy_converter.extractor = self.extractor
+        # For DOCX files, try enhanced consent processing first
+        if (document_type == "DOCX" and 
+            self.enhanced_consent_processor and 
+            "consent" in document_path.name.lower()):
+            
+            try:
+                # Extract text to detect form type
+                text_lines, _ = self.extractor.extract_text_from_document(document_path)
+                form_type = self.enhanced_consent_processor.detect_consent_form_type(text_lines)
+                
+                if form_type:
+                    print(f"[i] Using enhanced consent processing for {form_type}")
+                    result = self.enhanced_consent_processor.process_docx_file(document_path)
+                    
+                    # Save to file if output path provided
+                    if output_path:
+                        self._save_result_to_file(result["spec"], output_path, result)
+                    
+                    return result
+            except Exception as e:
+                print(f"[!] Enhanced consent processing failed: {e}, falling back to standard processing")
         
-        try:
-            # Use the original conversion logic
-            result = legacy_converter.convert_document_to_json(document_path, output_path)
-            return result
-        finally:
-            # Restore original extractor
-            legacy_converter.extractor = original_extractor
+        # Standard modular processing 
+        # Extract text from document using modular text extractor
+        text_lines, pipeline_info = self.extractor.extract_text_from_document(document_path)
+        if not text_lines:
+            raise ValueError(f"Could not extract text from document: {document_path}")
+        
+        # Extract form fields (this still delegates to legacy for complex logic)
+        # TODO: This could be further modularized by breaking down extract_fields_from_text
+        fields = self.extractor.extract_fields_from_text(text_lines)
+        
+        # Apply field processing using new managers (THIS IS THE KEY IMPROVEMENT)
+        fields = self._process_fields_with_managers(fields)
+        
+        # Convert to Modento format
+        json_spec = self._convert_fields_to_json_spec(fields)
+        
+        # Apply final normalizations using managers
+        json_spec = self._apply_final_normalizations(json_spec)
+        
+        # Validate and normalize
+        is_valid, errors, normalized_spec = self.validator.validate_and_normalize(json_spec)
+        
+        # Final signature validation and cleanup
+        normalized_spec = self._ensure_signature_compliance(normalized_spec)
+        
+        # Final cleanup and text normalization
+        normalized_spec = self._apply_final_cleanup(normalized_spec)
+        
+        # Count sections and remove meta fields
+        section_count = len(set(field.get("section", "Unknown") for field in normalized_spec))
+        for field in normalized_spec:
+            field.pop("meta", None)
+        
+        # Save to file if output path provided
+        if output_path:
+            self._save_result_to_file(normalized_spec, output_path, {
+                "field_count": len(normalized_spec),
+                "section_count": section_count,
+                "pipeline_info": pipeline_info
+            })
+        
+        return {
+            "spec": normalized_spec,
+            "is_valid": is_valid,
+            "errors": errors,
+            "field_count": len(normalized_spec),
+            "section_count": section_count,
+            "pipeline_info": pipeline_info
+        }
+    
+    def _process_fields_with_managers(self, fields):
+        """Process fields using the new field processing managers"""
+        from field_processing import FieldInfo
+        
+        # Ensure required signature fields are present
+        fields = self.field_ordering_manager.ensure_required_signature_fields(fields)
+        fields = self.field_ordering_manager.ensure_date_signed_field(fields)
+        
+        # Order fields properly
+        fields = self.field_ordering_manager.order_fields(fields)
+        
+        return fields
+    
+    def _convert_fields_to_json_spec(self, fields):
+        """Convert FieldInfo objects to JSON specification format"""
+        json_spec = []
+        
+        for field in fields:
+            # Normalize control structure using the normalization manager
+            normalized_control = self.field_normalization_manager._normalize_control_by_type(
+                field.control, field.field_type, field.key
+            )
+            
+            field_dict = {
+                "key": field.key,
+                "type": field.field_type,
+                "title": field.title,
+                "control": normalized_control,
+                "section": field.section,
+                "optional": field.optional
+            }
+            
+            # Transfer line_idx for ordering
+            field_dict["meta"] = {"line_idx": getattr(field, 'line_idx', len(json_spec))}
+            
+            json_spec.append(field_dict)
+        
+        return json_spec
+    
+    def _apply_final_normalizations(self, json_spec):
+        """Apply final normalizations using the managers"""
+        # Apply key normalizations
+        json_spec = self.field_normalization_manager.normalize_field_keys(json_spec)
+        
+        # Apply consent shaping if this is a consent form
+        json_spec = self.consent_shaping_manager.apply_consent_shaping(json_spec)
+        
+        # Normalize text content
+        json_spec = self.field_normalization_manager.normalize_text_content(json_spec)
+        
+        # Normalize authorization field
+        json_spec = self.field_normalization_manager.normalize_authorization_field(json_spec)
+        
+        return json_spec
+    
+    def _ensure_signature_compliance(self, normalized_spec):
+        """Ensure signature compliance with Modento schema"""
+        signature_fields = [field for field in normalized_spec if field.get('type') == 'signature']
+        
+        if len(signature_fields) > 1:
+            # Keep only the first one and set canonical key
+            first_sig = signature_fields[0]
+            first_sig['key'] = 'signature'
+            # Remove others
+            normalized_spec = [field for field in normalized_spec if not (field.get('type') == 'signature' and field != first_sig)]
+        elif len(signature_fields) == 1:
+            # Ensure canonical key
+            signature_fields[0]['key'] = 'signature'
+        elif len(signature_fields) == 0:
+            # Add missing signature field
+            normalized_spec.append({
+                "key": "signature",
+                "title": "Signature", 
+                "section": "Signature",
+                "optional": False,
+                "type": "signature",
+                "control": {}
+            })
+        
+        return normalized_spec
+    
+    def _apply_final_cleanup(self, normalized_spec):
+        """Apply final cleanup to normalized specification"""
+        for field in normalized_spec:
+            control = field.get('control', {})
+            
+            # Fix state fields - they should have empty control in reference
+            if field.get('type') == 'states':
+                field['control'] = {}
+            
+            # Fix signature fields - they should have empty control in reference  
+            if field.get('type') == 'signature':
+                field['control'] = {}
+            
+            # Clean up field titles using normalization manager
+            if 'title' in field:
+                field['title'] = self.field_normalization_manager._normalize_title(field['title'])
+        
+        return normalized_spec
+    
+    def _save_result_to_file(self, spec, output_path, result_info):
+        """Save the JSON specification to a file with proper messaging"""
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(spec, f, indent=2, ensure_ascii=False)
+        
+        # Success message with requested format
+        print(f"[✓] Wrote JSON: {output_path.parent.name}/{output_path.name}")
+        print(f"[i] Sections: {result_info.get('section_count', 0)} | Fields: {result_info.get('field_count', len(spec))}")
+        
+        pipeline_info = result_info.get('pipeline_info', {})
+        print(f"[i] Pipeline/Model/Backend used: {pipeline_info.get('pipeline', 'Unknown')}/{pipeline_info.get('backend', 'Unknown')}")
+        
+        # Show appropriate processing info based on document type
+        if pipeline_info.get('document_format') == 'DOCX':
+            print(f"[i] Document format: DOCX (native text extraction)")
+        else:
+            ocr_status = "used" if pipeline_info.get('ocr_enabled', False) else "not used"
+            print(f"[x] OCR ({pipeline_info.get('ocr_engine', 'Unknown')}): {ocr_status}")
 
 
 def main():
