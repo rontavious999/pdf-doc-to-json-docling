@@ -64,36 +64,53 @@ cd pdf-doc-to-json-docling
 pip install -r requirements.txt
 ```
 
+**Note**: This project requires Python 3.8+ and the Docling library (>=2.51.0) for full functionality.
+
+## Quick Start
+
+After installation, you can quickly test the converter with the included sample files:
+
+```bash
+# Convert a single PDF using the modular converter
+python modular_converter.py pdfs/npf.pdf --output npf_output.json --verbose
+
+# Process all files in the pdfs directory
+python modular_converter.py pdfs --output-dir output --verbose
+
+# Run the demo (requires Docling dependencies)
+python demo.py
+```
+
 ## Usage
 
 ### Convert Single PDF or DOCX
 
 ```bash
-python pdf_to_json_converter.py <path-to-file> [--output <output.json>] [--verbose]
+python modular_converter.py <path-to-file> [--output <output.json>] [--verbose]
 ```
 
 Examples:
 ```bash
 # Process a PDF document
-python pdf_to_json_converter.py pdfs/npf.pdf --output npf_form.json --verbose
+python modular_converter.py pdfs/npf.pdf --output npf_form.json --verbose
 
 # Process a DOCX document (much faster!)
-python pdf_to_json_converter.py forms/patient_form.docx --output patient_form.json --verbose
+python modular_converter.py forms/patient_form.docx --output patient_form.json --verbose
 ```
 
 ### Batch Convert Multiple Files
 
 ```bash
-python pdf_to_json_converter.py <directory-with-files> [--output-dir <output-directory>] [--verbose]
+python modular_converter.py <directory-with-files> [--output <output-directory>] [--verbose]
 ```
 
 Examples:
 ```bash
 # Process mixed directory with PDFs and DOCX files
-python pdf_to_json_converter.py documents --output-dir converted_forms --verbose
+python modular_converter.py documents --output-dir converted_forms --verbose
 
 # Process specific PDFs directory
-python pdf_to_json_converter.py pdfs --output-dir json_output --verbose
+python modular_converter.py pdfs --output-dir json_output --verbose
 ```
 
 **Batch Processing Output:**
@@ -194,33 +211,82 @@ Each generated JSON contains an array of field objects with the following struct
 The repository includes sample documents and their corresponding reference JSON files:
 
 - `pdfs/` - Sample dental form PDFs
-- `test_docs/` - Sample DOCX documents
+- `test_docs/` - Sample DOCX documents  
 - `references/Matching JSON References/` - Reference JSON outputs
 - `Modento_Forms_Schema_Guide (1).txt` - Complete schema specification
-- `starter_form_spec (1).json` - Example starter form
+- `starter_form_spec.json` - Example starter form
+- `docs/` - Implementation reports and benchmarking documentation
 
 ## Development
 
-### Project Structure
+### Modular Architecture
+
+The converter has been redesigned with a modular architecture for better maintainability and extensibility:
 
 ```
 pdf-doc-to-json-docling/
-├── pdf_to_json_converter.py    # Main conversion script (Docling-enhanced)
-├── batch_converter.py          # Batch processing script
-├── demo.py                     # Demonstration script
-├── validate_output.py          # Output validation script
-├── requirements.txt            # Python dependencies (including Docling)
-├── pdfs/                       # Sample PDF files
-├── references/                 # Reference JSON files
-└── README.md                   # This file
+├── modular_converter.py         # Main modular conversion script
+├── pdf_to_json_converter.py     # Original conversion script
+├── pdf_to_json_converter_backup.py # Legacy components
+├── demo.py                      # Demonstration script
+├── document_processing/         # Document text extraction and classification
+│   ├── text_extractor.py       # Document text extraction using Docling
+│   └── form_classifier.py      # Form type detection and classification
+├── field_detection/             # Field detection modules
+│   ├── field_detector.py       # Core field detection logic
+│   ├── input_detector.py       # Input field detection
+│   └── radio_detector.py       # Radio button detection
+├── content_processing/          # Content processing modules
+│   └── section_manager.py      # Section and content management
+├── field_validation/            # Field validation and normalization
+│   └── field_normalizer.py     # Field data normalization
+├── docs/                        # Documentation and reports
+│   ├── BENCHMARKING_REPORT.md  # Performance benchmarking results
+│   ├── DOCX_IMPLEMENTATION_SUMMARY.md # DOCX implementation details
+│   └── UNIVERSAL_PROCESSING_SUMMARY.md # Processing overview
+├── requirements.txt             # Python dependencies (including Docling)
+├── pdfs/                        # Sample PDF files
+├── references/                  # Reference JSON files
+├── Model Testing/               # OCR model testing framework
+└── README.md                    # This file
 ```
+
+### Modular Components
+
+The modular architecture provides clear separation of concerns:
+
+#### Document Processing
+- **DocumentTextExtractor**: Handles text extraction from PDF and DOCX using Docling
+- **FormClassifier**: Detects and classifies form types for optimized processing
+
+#### Field Detection
+- **FieldDetector**: Core field detection and pattern matching
+- **InputDetector**: Specialized detection for input fields (name, email, phone, etc.)
+- **RadioDetector**: Detection and processing of radio buttons and checkboxes
+
+#### Content Processing
+- **SectionManager**: Manages form sections and content organization
+
+#### Field Validation
+- **FieldNormalizer**: Normalizes and validates field data according to Modento schema
+
+### Benefits of Modular Design
+
+The modular architecture provides several advantages:
+
+✅ **Maintainability**: Each module has a single responsibility, making code easier to understand and maintain  
+✅ **Extensibility**: New field types and detection methods can be added by extending specific modules  
+✅ **Testability**: Individual modules can be tested in isolation with focused unit tests  
+✅ **Reusability**: Modules can be reused across different processing pipelines  
+✅ **Scalability**: Processing can be optimized by replacing or upgrading individual modules  
+✅ **Compatibility**: Legacy functionality is preserved through the backup converter integration  
 
 ### Key Components
 
-- **DocumentFormFieldExtractor**: Advanced field extraction supporting both PDF and DOCX formats using Docling
+- **ModularDocumentFormFieldExtractor**: Integrates all modules for comprehensive field extraction
+- **ModularDocumentToJSONConverter**: Main orchestrator using modular components
 - **ModentoSchemaValidator**: Validates and normalizes JSON output
 - **FieldInfo**: Data structure for field information
-- **DocumentToJSONConverter**: Main conversion orchestrator with pipeline reporting and format detection
 
 ## Performance & Accuracy
 
