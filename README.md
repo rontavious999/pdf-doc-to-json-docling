@@ -64,6 +64,23 @@ cd pdf-doc-to-json-docling
 pip install -r requirements.txt
 ```
 
+**Note**: This project requires Python 3.8+ and the Docling library (>=2.51.0) for full functionality.
+
+## Quick Start
+
+After installation, you can quickly test the converter with the included sample files:
+
+```bash
+# Convert a single PDF using the modular converter
+python modular_converter.py pdfs/npf.pdf --output npf_output.json --verbose
+
+# Process all files in the pdfs directory
+python modular_converter.py pdfs --output-dir output --verbose
+
+# Run the demo (requires Docling dependencies)
+python demo.py
+```
+
 ## Usage
 
 ### Convert Single PDF or DOCX
@@ -194,10 +211,11 @@ Each generated JSON contains an array of field objects with the following struct
 The repository includes sample documents and their corresponding reference JSON files:
 
 - `pdfs/` - Sample dental form PDFs
-- `test_docs/` - Sample DOCX documents
+- `test_docs/` - Sample DOCX documents  
 - `references/Matching JSON References/` - Reference JSON outputs
 - `Modento_Forms_Schema_Guide (1).txt` - Complete schema specification
-- `starter_form_spec (1).json` - Example starter form
+- `starter_form_spec.json` - Example starter form
+- `docs/` - Implementation reports and benchmarking documentation
 
 ## Development
 
@@ -222,6 +240,10 @@ pdf-doc-to-json-docling/
 │   └── section_manager.py      # Section and content management
 ├── field_validation/            # Field validation and normalization
 │   └── field_normalizer.py     # Field data normalization
+├── docs/                        # Documentation and reports
+│   ├── BENCHMARKING_REPORT.md  # Performance benchmarking results
+│   ├── DOCX_IMPLEMENTATION_SUMMARY.md # DOCX implementation details
+│   └── UNIVERSAL_PROCESSING_SUMMARY.md # Processing overview
 ├── requirements.txt             # Python dependencies (including Docling)
 ├── pdfs/                        # Sample PDF files
 ├── references/                  # Reference JSON files

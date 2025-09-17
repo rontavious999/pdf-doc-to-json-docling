@@ -5,3 +5,21 @@ composite_*.json
 crown_bridge_*.json
 dentures_*.json
 endodonti_*.json
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Development artifacts
+*.log
+*.tmp
+.DS_Store
+
+# Analysis and debug outputs
+analyze_*.txt
+debug_*.txt
+test_output_*
+comparison_*.json
