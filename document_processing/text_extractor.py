@@ -125,7 +125,7 @@ class DocumentTextExtractor:
         """Enhanced DOCX structure recognition using python-docx"""
         if not self.docx_processor:
             # Fallback to standard processing
-            return self.extract_text_from_document(document_path)
+            return self.extract_text_from_document(document_path, use_enhanced_docx=False)
         
         try:
             doc = self.docx_processor.Document(document_path)
@@ -171,17 +171,17 @@ class DocumentTextExtractor:
             
         except Exception as e:
             print(f"[!] Enhanced DOCX processing failed: {e}, falling back to standard processing")
-            return self.extract_text_from_document(document_path)
+            return self.extract_text_from_document(document_path, use_enhanced_docx=False)
 
-    def extract_text_from_document(self, document_path: Path) -> Tuple[List[str], Dict[str, Any]]:
+    def extract_text_from_document(self, document_path: Path, use_enhanced_docx: bool = True) -> Tuple[List[str], Dict[str, Any]]:
         """Extract text from PDF or DOCX using enhanced capabilities"""
         document_path = Path(document_path)
         
         if not document_path.exists():
             raise ValueError(f"Document not found: {document_path}")
         
-        # For DOCX files, try enhanced processing first
-        if document_path.suffix.lower() in ['.docx', '.doc'] and self.docx_processor:
+        # For DOCX files, try enhanced processing first (unless bypassed)
+        if document_path.suffix.lower() in ['.docx', '.doc'] and self.docx_processor and use_enhanced_docx:
             return self.extract_enhanced_docx_structure(document_path)
         
         try:
