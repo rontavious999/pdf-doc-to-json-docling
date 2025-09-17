@@ -373,44 +373,82 @@ class ModentoSchemaValidator:
     
     @staticmethod
     def apply_medical_history_grouping(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Group medical history items into a single checkbox field if needed"""
+        """Group contiguous medical history items into a single checkbox field if needed"""
         medical_section = "Medical History"
-        medical_items = []
-        other_items = []
+        
+        # Find contiguous sequences of medical history items
+        sequences = []
+        current_sequence = []
         
         for i, q in enumerate(spec):
-            if (q.get("section") == medical_section and 
-                q.get("type") in ["checkbox", "radio"] and
-                len(q.get("control", {}).get("options", [])) == 1):
-                medical_items.append((i, q))
+            is_medical_item = (q.get("section") == medical_section and 
+                              q.get("type") in ["checkbox", "radio"] and
+                              len(q.get("control", {}).get("options", [])) == 1)
+            
+            if is_medical_item:
+                current_sequence.append((i, q))
             else:
-                other_items.append(q)
+                # End of sequence - save if it has items
+                if current_sequence:
+                    sequences.append(current_sequence)
+                    current_sequence = []
         
-        # If we have 6 or more contiguous medical history items, group them
-        if len(medical_items) >= 6:
-            # Create grouped options from individual items
-            grouped_options = []
-            for _, item in medical_items:
-                title = item.get("title", "")
-                if title:
-                    grouped_options.append({"name": title, "value": title})
-            
-            # Create the grouped medical history field
-            grouped_field = {
-                "type": "checkbox",
-                "key": "medical_history",
-                "title": "Medical History", 
-                "section": medical_section,
-                "optional": True,
-                "control": {"options": grouped_options}
-            }
-            
-            # Replace medical items with grouped field
-            other_items.append(grouped_field)
-            return other_items
-        else:
-            # Keep individual items if less than 6
+        # Don't forget the last sequence if it ends at the end of spec
+        if current_sequence:
+            sequences.append(current_sequence)
+        
+        # Only group sequences of 6 or more contiguous items
+        sequences_to_group = [seq for seq in sequences if len(seq) >= 6]
+        
+        if not sequences_to_group:
+            # No sequences long enough to group
             return spec
+        
+        # Build result while preserving positions
+        result = []
+        indices_to_skip = set()
+        
+        # Mark all indices that will be replaced by grouped fields
+        for sequence in sequences_to_group:
+            for idx, _ in sequence:
+                indices_to_skip.add(idx)
+        
+        # Process the spec, replacing sequences with grouped fields
+        for i, q in enumerate(spec):
+            if i in indices_to_skip:
+                # Check if this is the first item of a sequence to group
+                for sequence in sequences_to_group:
+                    if sequence and sequence[0][0] == i:
+                        # This is the first item of a sequence - create grouped field here
+                        grouped_options = []
+                        for _, item in sequence:
+                            title = item.get("title", "")
+                            if title:
+                                grouped_options.append({"name": title, "value": title})
+                        
+                        # Preserve the original position metadata if available
+                        original_meta = sequence[0][1].get("meta", {})
+                        grouped_field = {
+                            "type": "checkbox",
+                            "key": "medical_history",
+                            "title": "Medical History", 
+                            "section": medical_section,
+                            "optional": True,
+                            "control": {"options": grouped_options}
+                        }
+                        
+                        # Preserve metadata for correct positioning
+                        if original_meta:
+                            grouped_field["meta"] = original_meta.copy()
+                        
+                        result.append(grouped_field)
+                        break
+                # Skip this item as it's part of a grouped sequence
+            else:
+                # Keep this item as-is
+                result.append(q)
+        
+        return result
     
     @staticmethod
     def apply_stable_ordering(spec: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
