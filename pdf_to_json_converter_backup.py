@@ -1777,7 +1777,7 @@ class DocumentFormFieldExtractor:
         # Add emphasis and handle special characters for IS/IS NOT
         text = re.sub(
             r'Our practice\s+(\uf071)?IS\s+(\uf071)?IS NOT\s+\(check one\)',
-            r'Our practice \uf071<strong>IS </strong>\uf071<strong>IS NOT (check one) </strong>',
+            r'Our practice \\uf071<strong>IS </strong>\\uf071<strong>IS NOT (check one) </strong>',
             text,
             flags=re.IGNORECASE
         )
@@ -4118,11 +4118,65 @@ class DocumentFormFieldExtractor:
             # But exclude consent questions with YES/NO patterns
             normalized_line = re.sub(r'[\uf031\uf020\u2003\u2002\u2000-\u200b\ufeff]+', ' ', line)
             has_yes_no_pattern = bool(re.search(r'YES\s+N\s*O?\s*\(Check One\)', normalized_line, re.IGNORECASE))
+            is_patient_responsibilities = 'patient responsibilities' in line.lower()
             
-            if (len(line) > 100 and 
+            # Special handling for patient responsibilities - create comprehensive text_3 field
+            if is_patient_responsibilities and 'text_3' not in processed_keys:
+                # Collect ALL patient responsibilities content from this point onward
+                text_content = []
+                j = i
+                
+                # Scan from this line to collect all responsibility content
+                while j < len(text_lines):
+                    current_line = text_lines[j].strip()
+                    
+                    # Stop when we reach clear signature/form boundaries
+                    if (('read' in current_line.lower() and 'agree' in current_line.lower()) or
+                        ('signature' in current_line.lower() and '___' in current_line) or
+                        ('authorize' in current_line.lower() and 'personal information' in current_line.lower())):
+                        break
+                    
+                    # Include responsibility-related content
+                    if (current_line and 
+                        (any(keyword in current_line.lower() for keyword in [
+                            'patient responsibilities', 'payment', 'dental benefit', 
+                            'scheduling', 'authorizations', 'we are committed', 
+                            'our practice', 'if we are', 'contracted provider'
+                        ]) or len(current_line) > 50)):
+                        text_content.append(current_line)
+                    
+                    j += 1
+                
+                if text_content:
+                    full_text = ' '.join(text_content)
+                    html_text = self.format_text_as_html(full_text)
+                    
+                    # Create comprehensive text_3 field
+                    field = FieldInfo(
+                        key='text_3',
+                        title="",
+                        field_type='text',
+                        section="Signature",
+                        optional=False,
+                        control={
+                            'html_text': html_text,
+                            'temporary_html_text': html_text,
+                            'text': ""
+                        },
+                        line_idx=i
+                    )
+                    fields.append(field)
+                    processed_keys.add('text_3')
+                    
+                    # Skip ahead past the content we just processed
+                    i = j
+                    continue
+            
+            elif (len(line) > 100 and 
                 any(keyword in line.lower() for keyword in ['responsibility', 'payment', 'benefit', 'authorize', 'consent']) and
                 current_section == "Signature" and
-                not has_yes_no_pattern):  # Exclude consent questions
+                not has_yes_no_pattern and  # Exclude consent questions
+                not is_patient_responsibilities):  # Exclude patient responsibilities (now handled above)
                 
                 # Collect multi-line text block
                 text_content = [line]
