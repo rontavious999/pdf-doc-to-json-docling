@@ -1,0 +1,30 @@
+[
+  {
+    "key": "form_1",
+    "type": "text",
+    "title": "",
+    "control": {
+      "html_text": "<p><div style=\"text-align:center\"><strong>Informed Consent</strong><br>To replace decayed or otherwise traumatized teeth, it is necessary to modify the existing tooth or teeth so that crowns (caps) and/or bridges may be placed upon them<br>Tooth preparation will be done as conservatively as practical, but I understand that normally at least some of my existing tooth structure will be removed<br>In preparation of teeth for crowns or bridges, anesthetics are usually needed<br>As a result of the injection or use of anesthesia, at times there may be swelling, jaw muscle tenderness or even a resultant numbness of the tongue, lips, teeth, jaws and/or facial tissues that is usually temporary; in rare instances, such numbness may be permanent<br>Often, after the preparation of teeth for the reception of either crowns or bridges, the teeth may exhibit mild to severe sensitivity<br>This sensitivity may last only for a short period of time or for a much longer period<br>If it is persistent, notify us so that we can determine the cause of the sensitivity and seek to treat that condition<br>After being crowned, teeth may develop a condition known as pulpitis or pulpal degeneration<br>The tooth or teeth may have been traumatized from an accident, deep decay, extensive preparation for the crown or bridge, or from other causes<br>It may be necessary to do root canal treatments on the affected teeth<br>If teeth remain sensitive for long periods of time following crowning, root canal treatment may be necessary<br>Infrequently, the tooth or teeth may abscess or otherwise not heal, which may require root canal treatment, root surgery or possibly extraction Crowns and bridges may chip or break<br>Many factors can contribute to this situation, including chewing excessively hard materials, change in biting forces, traumatic blows to the mouth, etc<br>Undetectable cracks may develop in crowns from these causes, but the crowns/bridges themselves may not actually break until sometime later<br>Breakage or chipping because of defective materials or construction is somewhat uncommon<br>If it does occur, it usually occurs soon after placement<br>Crowns and bridges are artificial and therefore feel different from natural teeth<br>Most patients become accustomed to this feeling over time<br>In limited situations, muscle soreness or tenderness of the temporomandibular joint (TMJ) - jaw joint - may persist for indeterminable periods of time, following placement of the prosthesis<br>Patients will be given the opportunity to observe the appearance of crowns or bridges in place, prior to final cementation<br>While satisfactory, this fact is usually acknowledged by an entry into the patient's chart, initialed by the patient<br>Many variables determine how long crowns and bridges can be expected to last<br>Among these are some of the factors mentioned in the preceding paragraphs, including the general health of the patient, oral hygiene, regular dental checkups and diet<br>As a result, no guarantees can be made or assumed to be made regarding the longevity of the crowns or bridges<br>It is a patient's responsibility to seek attention from the dentist should any undue or unexpected problems occur<br>The patient must diligently follow any and all instruction, including the scheduling of and attendance at all appointments<br>Failure to keep the cementation appointment can result in ultimate failure of the crown/bridge to fit properly, and an additional fee may be assessed Tooth No(s)<br> Date Patient signature/legally authorized representative Relationship Printed name if signed on behalf of the patient Date Witness signature</div></p>"
+    },
+    "section": "Form",
+    "optional": false
+  },
+  {
+    "key": "signature",
+    "type": "signature",
+    "title": "Signature",
+    "control": {},
+    "section": "Signature",
+    "optional": false
+  },
+  {
+    "key": "date_signed",
+    "type": "date",
+    "title": "Date Signed",
+    "control": {
+      "input_type": "past"
+    },
+    "section": "Signature",
+    "optional": false
+  }
+]
