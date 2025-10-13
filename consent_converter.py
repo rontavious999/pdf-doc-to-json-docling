@@ -532,6 +532,9 @@ class ConsentFormFieldExtractor:
                     in_bullet_list = False
                 continue
             
+            # Clean markdown formatting from the line before processing
+            line = self._clean_markdown_formatting(line)
+            
             # Check if line is a bullet point (starts with - or \uf0b7 or bullet marker)
             if re.match(r'^[-•\uf0b7]\s+', line.strip()):
                 if not in_bullet_list:
@@ -584,6 +587,26 @@ class ConsentFormFieldExtractor:
         html_content += '</div>'
         
         return html_content
+    
+    def _clean_markdown_formatting(self, text: str) -> str:
+        """Clean markdown formatting artifacts from text and convert to HTML"""
+        
+        # Remove standalone ## or ### markers (empty headers)
+        text = re.sub(r'^###+\s*$', '', text.strip())
+        
+        # Convert ### headers to strong tags
+        text = re.sub(r'^###\s+(.+)$', r'<strong>\1</strong>', text)
+        
+        # Convert ## headers to strong tags
+        text = re.sub(r'^##\s+(.+)$', r'<strong>\1</strong>', text)
+        
+        # Convert **bold** to <strong>bold</strong>
+        text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+        
+        # Clean any remaining standalone ## markers within text
+        text = re.sub(r'\s*##\s*', ' ', text)
+        
+        return text.strip()
     
     def _remove_practice_header_footer(self, content: str) -> str:
         """Remove practice header/footer information"""
