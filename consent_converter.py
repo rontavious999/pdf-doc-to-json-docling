@@ -23,9 +23,11 @@ from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 
 # Docling imports for advanced document processing
-from docling.document_converter import DocumentConverter
+from docling.document_converter import DocumentConverter, FormatOption
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.datamodel.base_models import InputFormat
+from docling.backend.docling_parse_backend import DoclingParseDocumentBackend
+from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
 
 
 @dataclass
@@ -287,9 +289,15 @@ class ConsentFormFieldExtractor:
         pipeline_options.do_ocr = True
         pipeline_options.do_table_structure = True
         
+        format_option = FormatOption(
+            pipeline_options=pipeline_options,
+            backend=DoclingParseDocumentBackend,
+            pipeline_cls=StandardPdfPipeline
+        )
+        
         self.converter = DocumentConverter(
             format_options={
-                InputFormat.PDF: pipeline_options,
+                InputFormat.PDF: format_option,
             }
         )
         
