@@ -463,6 +463,43 @@ class ConsentFormFieldExtractor:
             fields.append(date_signed_field)
             processed_keys.add('date_signed')
         
+        # REORDER FIELDS: For consent forms, order should be:
+        # 1. Form section fields
+        # 2. Primary input fields (relationship, etc.) that come BEFORE printed_name_if_signed_on_behalf
+        # 3. signature field
+        # 4. date_signed field
+        # 5. Secondary fields like printed_name_if_signed_on_behalf
+        form_fields = [f for f in fields if f.section == 'Form']
+        signature_section_fields = [f for f in fields if f.section == 'Signature']
+        
+        # Separate signature section fields
+        signature_field = next((f for f in signature_section_fields if f.field_type == 'signature'), None)
+        date_signed_field = next((f for f in signature_section_fields if f.key == 'date_signed'), None)
+        
+        # Separate primary vs secondary input fields
+        # printed_name_if_signed_on_behalf is secondary and should come after signature/date_signed
+        primary_input_fields = [f for f in signature_section_fields 
+                               if f.field_type in ['input', 'date'] 
+                               and f.key not in ['date_signed', 'printed_name_if_signed_on_behalf']]
+        secondary_input_fields = [f for f in signature_section_fields 
+                                 if f.key == 'printed_name_if_signed_on_behalf']
+        other_fields = [f for f in signature_section_fields 
+                       if f not in primary_input_fields 
+                       and f not in secondary_input_fields
+                       and f != signature_field 
+                       and f != date_signed_field]
+        
+        # Build ordered list
+        reordered_fields = form_fields + primary_input_fields
+        if signature_field:
+            reordered_fields.append(signature_field)
+        if date_signed_field:
+            reordered_fields.append(date_signed_field)
+        reordered_fields.extend(secondary_input_fields)
+        reordered_fields.extend(other_fields)
+        
+        fields = reordered_fields
+        
         return fields
     
     def _create_enhanced_consent_html(self, consent_text_lines: List[str], full_text: str, provider_patterns: List[str]) -> str:
