@@ -118,23 +118,28 @@ class ModentoSchemaValidator:
             
             ctrl = q.setdefault("control", {})
             
-            # Remove null hints
-            if 'hint' in ctrl and ctrl['hint'] is None:
-                del ctrl['hint']
+            # Keep hint as null if explicitly set (for reference parity)
+            if 'hint' not in ctrl:
+                ctrl['hint'] = None
             
             if q_type == "input":
                 t = ctrl.get("input_type")
-                if t not in cls.VALID_INPUT_TYPES:
+                if t is None:
+                    # Keep it as None if explicitly set
+                    ctrl["input_type"] = None
+                elif t not in cls.VALID_INPUT_TYPES:
                     ctrl["input_type"] = "name"
             
             if q_type == "date":
                 t = ctrl.get("input_type")
-                if t not in {"past","future"}:
-                    if "input_type" in ctrl:
-                        del ctrl["input_type"]
+                # Allow "any" as a valid date input type for consent forms
+                if t not in {"past", "future", "any"}:
+                    ctrl["input_type"] = "any"
             
             if q_type == "signature":
-                ctrl.clear()
+                # For signature fields, set hint and input_type to None
+                ctrl["hint"] = None
+                ctrl["input_type"] = None
         
         return len(errors) == 0, errors, spec
 
@@ -357,18 +362,15 @@ class ConsentFormFieldExtractor:
         ]
         
         # Universal field patterns for consent forms
+        # Order matters - more specific patterns first
         field_patterns = [
-            (r'Patient.*Name.*Print', 'patient_name_print', 'Patient Name (Print)', 'input', {'input_type': 'name'}),
-            (r'Patient.*Name(?!\s*\()', 'patient_name', 'Patient Name', 'input', {'input_type': 'name'}),
-            (r'Printed?\s+Name', 'printed_name', 'Printed Name', 'input', {'input_type': 'name'}),
-            (r'Date\s*:?\s*$', 'date_signed', 'Date Signed', 'date', {'input_type': 'past'}),
-            (r'Date\s+of\s+Birth', 'date_of_birth', 'Date of Birth', 'date', {'input_type': 'past'}),
-            (r'Relationship.*(?:minor|patient)', 'relationship', 'Relationship', 'input', {'input_type': 'name'}),
-            (r'Authorized\s+Representative', 'authorized_representative', 'Authorized Representative', 'input', {'input_type': 'name'}),
-            (r'legal\s+guardian', 'legal_guardian', 'Legal Guardian', 'input', {'input_type': 'name'}),
-            (r'tooth\s+no(?:mber)?\.?\s*:?\s*__+', 'tooth_number', 'Tooth Number', 'input', {'input_type': 'name'}),
-            (r'procedure.*follows?', 'procedure_description', 'Procedure Description', 'input', {'input_type': 'name'}),
-            (r'alternative.*treatment', 'alternative_treatment', 'Alternative Treatment', 'input', {'input_type': 'name'}),
+            (r'Printed?\s+[Nn]ame\s+if\s+signed\s+on\s+behalf', 'printed_name_if_signed_on_behalf', 'Printed name if signed on behalf of the patient', 'input', {'input_type': None, 'hint': None}),
+            (r'Patient.*Name.*Print', 'patient_name_print', 'Patient Name (Print)', 'input', {'input_type': 'name', 'hint': None}),
+            (r'Relationship\s*_+', 'relationship', 'Relationship', 'input', {'input_type': 'name', 'hint': None}),
+            (r'Date\s+of\s+Birth', 'date_of_birth', 'Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
+            (r'tooth\s+no(?:mber)?\.?\s*[:\(]?\s*_+', 'tooth_number', 'Tooth Number', 'input', {'input_type': 'name', 'hint': None}),
+            (r'procedure.*follows?', 'procedure_description', 'Procedure Description', 'input', {'input_type': 'name', 'hint': None}),
+            (r'alternative.*treatment', 'alternative_treatment', 'Alternative Treatment', 'input', {'input_type': 'name', 'hint': None}),
         ]
         
         # EXTRACT MAIN CONSENT TEXT BLOCK
@@ -377,10 +379,12 @@ class ConsentFormFieldExtractor:
         
         for i, line in enumerate(text_lines):
             line_lower = line.lower()
-            if any(sig_pattern in line_lower for sig_pattern in ['signature:', 'patient name', 'printed name:', 'date:']):
+            # Look for signature section markers - be more specific to avoid false positives
+            if re.search(r'signature\s*:', line_lower) or re.search(r'patient\s+signature', line_lower):
                 signature_start_idx = i
                 break
-            elif line.strip() and not line.startswith('#'):
+            elif line.strip():
+                # Include all non-empty lines including headers marked with ##
                 consent_text_lines.append(line.strip())
         
         if consent_text_lines:
@@ -439,33 +443,99 @@ class ConsentFormFieldExtractor:
                 field_type='signature',
                 section='Signature',
                 optional=False,
-                control={},
+                control={'hint': None, 'input_type': None},
                 line_idx=len(text_lines)
             )
             fields.append(signature_field)
             processed_keys.add('signature')
+        
+        # ENSURE DATE_SIGNED FIELD EXISTS (Modento schema requirement for consent forms)
+        if 'date_signed' not in processed_keys:
+            date_signed_field = FieldInfo(
+                key='date_signed',
+                title='Date Signed',
+                field_type='date',
+                section='Signature',
+                optional=False,
+                control={'hint': None, 'input_type': 'any'},
+                line_idx=len(text_lines) + 1
+            )
+            fields.append(date_signed_field)
+            processed_keys.add('date_signed')
         
         return fields
     
     def _create_enhanced_consent_html(self, consent_text_lines: List[str], full_text: str, provider_patterns: List[str]) -> str:
         """Create properly formatted HTML content for consent forms with provider placeholders"""
         
-        # Clean and join text
-        content = ' '.join(consent_text_lines)
-        content = re.sub(r'\s+', ' ', content).strip()
+        # Extract title from first line if it's a header
+        title = None
+        content_lines = consent_text_lines.copy()
+        
+        if content_lines and content_lines[0].startswith('## '):
+            title = content_lines[0].replace('## ', '').strip()
+            content_lines = content_lines[1:]  # Remove title from content
+        elif content_lines and re.match(r'^[A-Z\s]+CONSENT[A-Z\s]*$', content_lines[0]):
+            # Match all caps titles like "TOOTH REMOVAL CONSENT FORM"
+            title = content_lines[0].strip()
+            content_lines = content_lines[1:]
+        elif content_lines and re.match(r'^Informed\s+Consent\s+for\s+', content_lines[0], re.IGNORECASE):
+            # Match titles like "Informed Consent for Crown And Bridge Prosthetics"
+            title = content_lines[0].strip()
+            content_lines = content_lines[1:]
+        
+        # Process content to handle bullet points and structure
+        processed_lines = []
+        in_bullet_list = False
+        
+        for line in content_lines:
+            if not line.strip():
+                if in_bullet_list:
+                    processed_lines.append('</ul>')
+                    in_bullet_list = False
+                continue
+            
+            # Check if line is a bullet point (starts with - or \uf0b7 or bullet marker)
+            if re.match(r'^[-•\uf0b7]\s+', line.strip()):
+                if not in_bullet_list:
+                    processed_lines.append('<ul>')
+                    in_bullet_list = True
+                # Remove bullet marker and add as list item, also clean \uf0b7 from within the text
+                clean_line = re.sub(r'^[-•\uf0b7]\s+', '', line.strip())
+                clean_line = clean_line.replace('\uf0b7', '').strip()
+                processed_lines.append(f'<li>{clean_line}</li>')
+            else:
+                if in_bullet_list:
+                    processed_lines.append('</ul>')
+                    in_bullet_list = False
+                processed_lines.append(line.strip())
+        
+        # Close bullet list if still open
+        if in_bullet_list:
+            processed_lines.append('</ul>')
+        
+        # Join content - avoid extra <br> tags around <ul> tags
+        content_parts = []
+        for i, line in enumerate(processed_lines):
+            if i > 0 and not (line.startswith('<ul>') or line.startswith('</ul>') or 
+                             processed_lines[i-1].startswith('<ul>') or processed_lines[i-1].startswith('</ul>') or
+                             line.startswith('<li>') or line.endswith('</li>')):
+                content_parts.append('<br>')
+            content_parts.append(line)
+        content = ''.join(content_parts)
         
         # Remove practice header/footer information
         content = self._remove_practice_header_footer(content)
         
         # Apply provider placeholder substitution
         for pattern in provider_patterns:
-            content = re.sub(pattern, 'Dr. {{provider}}', content, flags=re.IGNORECASE)
+            content = re.sub(pattern, '{{provider}}', content, flags=re.IGNORECASE)
         
-        # Format consent text
-        content = self.consent_shaper.format_consent_text(content)
+        # Also replace common Dr. blank patterns
+        content = re.sub(r'Dr\.\s+_+', 'Dr. {{provider}}', content, flags=re.IGNORECASE)
         
-        # Detect form title/type
-        title = self._detect_consent_title(content)
+        # Replace tooth number/site placeholders
+        content = re.sub(r'Tooth\s+No\(s\)\.\s+_+', 'Tooth No(s). {{tooth_or_site}}', content, flags=re.IGNORECASE)
         
         # Format as HTML with proper structure
         if title:
@@ -473,9 +543,7 @@ class ConsentFormFieldExtractor:
         else:
             html_content = '<div style="text-align:center"><strong>Informed Consent</strong><br>'
         
-        # Add main content - split into logical paragraphs
-        paragraphs = self._split_into_paragraphs(content)
-        html_content += '<br>'.join(paragraphs)
+        html_content += content
         html_content += '</div>'
         
         return html_content
