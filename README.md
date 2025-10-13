@@ -16,6 +16,7 @@ This project provides advanced tools to extract form fields from PDF and DOCX do
 - **Section Organization**: Groups fields into logical sections automatically
 - **Validation**: Built-in validation and normalization of output JSON
 - **Detailed Pipeline Reporting**: Comprehensive information about processing backend and models used
+- **🆕 Consent-Only Converter**: Standalone converter specifically designed for consent forms ([See Documentation](CONSENT_CONVERTER_README.md))
 
 ## 🚀 DOCX Support - New Performance Champion
 
@@ -121,6 +122,27 @@ Found 5 files to process: 3 PDF, 2 DOCX
 [+] Processing form2.docx (DOCX) ...
 [+] Processing form3.pdf (PDF) ...
 ```
+
+### Consent-Only Converter
+
+For processing **consent forms exclusively**, use the specialized consent converter:
+
+```bash
+# Convert single consent form
+python consent_converter.py path/to/consent.pdf --output consent.json
+
+# Batch process consent forms
+python consent_converter.py consent_forms/ --output-dir json_output/
+```
+
+The consent converter includes all consent-specific rules and formatting:
+- Provider placeholder substitution (Dr. ___ → Dr. {{provider}})
+- Consent pattern detection and text formatting
+- Practice header/footer removal
+- Signature field validation
+- Modento schema compliance for consent forms
+
+**See [CONSENT_CONVERTER_README.md](CONSENT_CONVERTER_README.md) for complete documentation.**
 
 ### Demo
 
@@ -228,6 +250,8 @@ pdf-doc-to-json-docling/
 ├── modular_converter.py         # Main modular conversion script
 ├── pdf_to_json_converter.py     # Original conversion script
 ├── pdf_to_json_converter_backup.py # Legacy components
+├── consent_converter.py         # 🆕 Standalone consent-only converter
+├── example_consent_usage.py     # 🆕 Example usage of consent converter
 ├── demo.py                      # Demonstration script
 ├── document_processing/         # Document text extraction and classification
 │   ├── text_extractor.py       # Document text extraction using Docling
