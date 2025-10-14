@@ -411,6 +411,7 @@ class ConsentFormFieldExtractor:
         # Order matters - more specific patterns first
         field_patterns = [
             (r'Printed?\s+[Nn]ame\s+if\s+signed\s+on\s+behalf', 'printed_name_if_signed_on_behalf', 'Printed name if signed on behalf of the patient', 'input', {'input_type': None, 'hint': None}),
+            (r"Parent/Guardian['\u2019]s\s+Name\s*:", 'parent_guardian_name', 'Parent/Guardian Name', 'input', {'input_type': 'name', 'hint': None}),
             (r'Patient.*Name.*Print', 'patient_name_print', 'Patient Name (Print)', 'input', {'input_type': 'name', 'hint': None}),
             (r'Relationship\s*_+', 'relationship', 'Relationship', 'input', {'input_type': 'name', 'hint': None}),
             (r'Date\s+of\s+Birth', 'date_of_birth', 'Date of Birth', 'date', {'input_type': 'past', 'hint': None}),
@@ -426,7 +427,11 @@ class ConsentFormFieldExtractor:
         for i, line in enumerate(text_lines):
             line_lower = line.lower()
             # Look for signature section markers - be more specific to avoid false positives
-            if re.search(r'signature\s*:', line_lower) or re.search(r'patient\s+signature', line_lower):
+            # Also recognize parent/guardian name as a signature section marker
+            if (re.search(r'signature\s*:', line_lower) or 
+                re.search(r'patient\s+signature', line_lower) or
+                re.search(r'parent.*name\s*:', line_lower) or
+                re.search(r'guardian.*name\s*:', line_lower)):
                 signature_start_idx = i
                 break
             elif line.strip():
@@ -470,8 +475,9 @@ class ConsentFormFieldExtractor:
                 if not line_stripped or line_stripped.startswith('#'):
                     continue
                 
-                # Skip witness and doctor signature fields
-                if self._is_witness_or_doctor_signature_field(line_stripped.lower()):
+                # Skip witness and doctor signature fields, but NOT parent/guardian names
+                # (parent/guardian names should be extracted as fields)
+                if self._is_witness_or_doctor_signature_field(line_stripped.lower(), filter_parent_guardian_names=False):
                     continue
                 
                 # Apply field patterns
@@ -560,8 +566,14 @@ class ConsentFormFieldExtractor:
         
         return fields
     
-    def _is_witness_or_doctor_signature_field(self, line_lower: str) -> bool:
-        """Check if a line represents a field that should be excluded"""
+    def _is_witness_or_doctor_signature_field(self, line_lower: str, filter_parent_guardian_names: bool = True) -> bool:
+        """Check if a line represents a field that should be excluded
+        
+        Args:
+            line_lower: The line text in lowercase
+            filter_parent_guardian_names: If True, filter out parent/guardian name lines.
+                                         If False, only filter signatures (used for field extraction).
+        """
         
         # UNIVERSAL WITNESS FIELD EXCLUSION: Per requirements, we do not allow witnesses on forms or consents
         
@@ -585,6 +597,12 @@ class ConsentFormFieldExtractor:
             'legal guardian\u2019s', "legal guardian's"
         ]
         
+        # Parent/Guardian name indicators - these should be extracted as separate fields, not in HTML content
+        parent_guardian_names = [
+            'parent\u2019s name', "parent's name", 'guardian\u2019s name', "guardian's name",
+            'parent/guardian\u2019s name', "parent/guardian's name"
+        ]
+        
         # Filter out witness fields universally
         for indicator in witness_indicators:
             if indicator in line_lower:
@@ -599,6 +617,13 @@ class ConsentFormFieldExtractor:
         for indicator in parent_guardian_signatures:
             if indicator in line_lower:
                 return True
+        
+        # Filter out parent/guardian names only when filter_parent_guardian_names is True
+        # (e.g., when filtering HTML content, but not when extracting signature fields)
+        if filter_parent_guardian_names:
+            for indicator in parent_guardian_names:
+                if indicator in line_lower:
+                    return True
         
         # Filter lines mentioning "patient/parent/guardian" signature or name fields
         if 'patient/parent/guardian' in line_lower:
@@ -678,6 +703,11 @@ class ConsentFormFieldExtractor:
             match = re.match(r'^\*\*(.+)\*\*$', content_lines[0])
             if match and len(match.group(1)) < 150:  # Reasonable title length
                 title = match.group(1).strip()
+                content_lines = content_lines[1:]  # Remove title from content
+        elif content_lines and re.match(r'^.+\s+Informed\s+Consent\s*$', content_lines[0], re.IGNORECASE):
+            # Match titles like "Labial Frenectomy Informed Consent" (ending with "Informed Consent")
+            if len(content_lines[0].strip()) < 150:  # Reasonable title length
+                title = content_lines[0].strip()
                 content_lines = content_lines[1:]  # Remove title from content
         
         # Process content to handle bullet points and structure
@@ -778,6 +808,9 @@ class ConsentFormFieldExtractor:
         content = re.sub(r'Patient\s+[Nn]ame\s*:\s*_+', 'Patient Name: {{patient_name}}', content, flags=re.IGNORECASE)
         # Pattern: "Patient Name:" without underscores (avoid replacing already replaced text)
         content = re.sub(r'Patient\s+[Nn]ame\s*:(?!\s*\{\{)', 'Patient Name: {{patient_name}}', content, flags=re.IGNORECASE)
+        # Pattern: "Patient's Name:" (with apostrophe-s) - match with or without underscores/tabs
+        content = re.sub(r"Patient['\u2019]s\s+Name\s*:\s*[\s\t_]*", 'Patient\'s Name: {{patient_name}}', content, flags=re.IGNORECASE)
+        content = re.sub(r"Patient['\u2019]s\s+Name\s*:(?!\s*\{\{)", 'Patient\'s Name: {{patient_name}}', content, flags=re.IGNORECASE)
         
         # Pattern: "I, _____(print name)" or similar variations
         content = re.sub(r'\b[Ii],?\s+_+\s*\(?\s*print\s+name\s*\)?', 'I, {{patient_name}} (print name)', content, flags=re.IGNORECASE)
