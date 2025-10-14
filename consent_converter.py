@@ -424,11 +424,15 @@ class ConsentFormFieldExtractor:
                 if not line_stripped or line_stripped.startswith('#'):
                     continue
                 
+                # Skip witness and doctor signature fields
+                if self._is_witness_or_doctor_signature_field(line_stripped.lower()):
+                    continue
+                
                 # Apply field patterns
                 for pattern, key, title, field_type, control in field_patterns:
                     if re.search(pattern, line, re.IGNORECASE) and key not in processed_keys:
-                        # Skip witness fields per Modento schema rule
-                        if 'witness' in key.lower():
+                        # Skip witness fields per Modento schema rule (double check)
+                        if 'witness' in key.lower() or 'doctor' in key.lower():
                             continue
                         
                         field = FieldInfo(
@@ -509,6 +513,64 @@ class ConsentFormFieldExtractor:
         fields = reordered_fields
         
         return fields
+    
+    def _is_witness_or_doctor_signature_field(self, line_lower: str) -> bool:
+        """Check if a line represents a field that should be excluded"""
+        
+        # UNIVERSAL WITNESS FIELD EXCLUSION: Per requirements, we do not allow witnesses on forms or consents
+        
+        # Witness field indicators - these should be filtered out universally
+        witness_indicators = [
+            'witness signature', 'witness printed name', 'witness name', 'witness date',
+            'witnessed by', 'witness:', 'witness relationship'
+        ]
+        
+        # Doctor/dentist signature indicators - these are typically not patient-facing fields
+        doctor_signatures = [
+            'doctor signature', 'dentist signature', 'physician signature',
+            'dr. signature', 'practitioner signature', 'provider signature', 
+            'clinician signature'
+        ]
+        
+        # Filter out witness fields universally
+        for indicator in witness_indicators:
+            if indicator in line_lower:
+                return True
+        
+        # Filter out clear doctor/provider signatures
+        for indicator in doctor_signatures:
+            if indicator in line_lower:
+                return True
+        
+        # Special handling: "legally authorized representative" - filter if witness-related
+        if 'legally authorized representative' in line_lower:
+            return True
+        
+        # Check for printed name in context of witness/representative - filter these out
+        if 'printed name' in line_lower:
+            # Filter if it's clearly witness context
+            if any(context in line_lower for context in ['witness', 'guardian signature', 'parent signature']):
+                return True
+            
+        return False
+    
+    def _remove_witness_and_doctor_signatures(self, content: str) -> str:
+        """Remove witness and doctor signature text from HTML content"""
+        
+        # Split content into lines for processing
+        lines = content.split('<br>')
+        filtered_lines = []
+        
+        for line in lines:
+            # Strip HTML tags to check content
+            text_content = re.sub(r'<[^>]+>', '', line).strip()
+            
+            # Skip lines that contain witness or doctor signature patterns
+            if text_content and not self._is_witness_or_doctor_signature_field(text_content.lower()):
+                filtered_lines.append(line)
+        
+        # Rejoin the filtered lines
+        return '<br>'.join(filtered_lines)
     
     def _create_enhanced_consent_html(self, consent_text_lines: List[str], full_text: str, provider_patterns: List[str]) -> Tuple[str, Optional[str]]:
         """Create properly formatted HTML content for consent forms with provider placeholders
@@ -609,6 +671,27 @@ class ConsentFormFieldExtractor:
         content = re.sub(r'Date\s+of\s+Birth\s*:\s*_+', 'Date of Birth: {{patient_dob}}', content, flags=re.IGNORECASE)
         # Pattern: "Date of Birth:" without underscores (avoid replacing already replaced text)
         content = re.sub(r'Date\s+of\s+Birth\s*:(?!\s*\{\{)', 'Date of Birth: {{patient_dob}}', content, flags=re.IGNORECASE)
+        
+        # Replace Planned Procedure placeholders - match various patterns with or without underscores
+        # Pattern: "Planned Procedure: ___" with underscores first (most specific)
+        content = re.sub(r'Planned\s+Procedure\s*:\s*_+', 'Planned Procedure: {{planned_procedure}}', content, flags=re.IGNORECASE)
+        # Pattern: "Planned Procedure:" without underscores (avoid replacing already replaced text)
+        content = re.sub(r'Planned\s+Procedure\s*:(?!\s*\{\{)', 'Planned Procedure: {{planned_procedure}}', content, flags=re.IGNORECASE)
+        
+        # Replace Diagnosis placeholders - match various patterns with or without underscores
+        # Pattern: "Diagnosis: ___" with underscores first (most specific)
+        content = re.sub(r'Diagnosis\s*:\s*_+', 'Diagnosis: {{diagnosis}}', content, flags=re.IGNORECASE)
+        # Pattern: "Diagnosis:" without underscores (avoid replacing already replaced text)
+        content = re.sub(r'Diagnosis\s*:(?!\s*\{\{)', 'Diagnosis: {{diagnosis}}', content, flags=re.IGNORECASE)
+        
+        # Replace Alternative Treatment placeholders - match various patterns with or without underscores
+        # Pattern: "Alternative Treatment: ___" with underscores first (most specific)
+        content = re.sub(r'Alternative\s+Treatment\s*:\s*_+', 'Alternative Treatment: {{alternative_treatment}}', content, flags=re.IGNORECASE)
+        # Pattern: "Alternative Treatment:" without underscores (avoid replacing already replaced text)
+        content = re.sub(r'Alternative\s+Treatment\s*:(?!\s*\{\{)', 'Alternative Treatment: {{alternative_treatment}}', content, flags=re.IGNORECASE)
+        
+        # Strip witness and doctor signatures from content
+        content = self._remove_witness_and_doctor_signatures(content)
         
         # Format as HTML with proper structure
         if title:
