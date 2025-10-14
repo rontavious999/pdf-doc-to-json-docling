@@ -310,6 +310,13 @@ class ConsentFormFieldExtractor:
         self.consent_shaper = ConsentShapingManager()
         self.header_footer_manager = HeaderFooterManager()
         
+        # Try to import python-docx for enhanced DOCX formatting detection
+        try:
+            import docx
+            self.docx_available = True
+        except ImportError:
+            self.docx_available = False
+        
         # Consent-specific field patterns for better extraction
         self.consent_field_patterns = {
             'printed_name': re.compile(r'(?:printed?\\s*name|print\\s*name|name\\s*\\(print\\)|patient\\s*print)', re.IGNORECASE),
@@ -317,6 +324,36 @@ class ConsentFormFieldExtractor:
             'relationship': re.compile(r'(?:relationship|relation\\s*to|guardian|parent|spouse)', re.IGNORECASE),
             'consent_date': re.compile(r'(?:consent\\s*date|date\\s*of\\s*consent|today)', re.IGNORECASE),
         }
+    
+    def _detect_bold_lines_from_docx(self, file_path: Path) -> Dict[str, bool]:
+        """Detect which text lines are bold in a DOCX file using python-docx
+        
+        Returns a dictionary mapping line text to whether it's bold
+        """
+        if not self.docx_available or file_path.suffix.lower() not in ['.docx', '.doc']:
+            return {}
+        
+        try:
+            import docx
+            doc = docx.Document(str(file_path))
+            bold_lines = {}
+            
+            for para in doc.paragraphs:
+                text = para.text.strip()
+                if not text:
+                    continue
+                
+                # Check if paragraph has any bold runs
+                # A line is considered bold if all non-empty runs are bold
+                runs_with_text = [run for run in para.runs if run.text.strip()]
+                if runs_with_text:
+                    is_bold = all(run.bold for run in runs_with_text if run.text.strip())
+                    bold_lines[text] = is_bold
+            
+            return bold_lines
+        except Exception:
+            # If there's any error with python-docx processing, just return empty dict
+            return {}
     
     def extract_text_from_document(self, file_path: Path) -> Tuple[List[str], Dict[str, Any]]:
         """Extract text from PDF or DOCX document using Docling"""
@@ -328,23 +365,32 @@ class ConsentFormFieldExtractor:
         text_content = doc.export_to_text()
         text_lines = [line.strip() for line in text_content.split('\n') if line.strip()]
         
+        # For DOCX files, detect bold formatting
+        bold_lines = self._detect_bold_lines_from_docx(file_path)
+        
         # Get pipeline information
         pipeline_info = {
             'pipeline': result.input.format.name if result.input else 'Unknown',
             'backend': 'DoclingParseDocumentBackend',
             'document_format': file_path.suffix.upper().lstrip('.'),
             'ocr_used': file_path.suffix.lower() == '.pdf',
-            'ocr_engine': 'EasyOCR' if file_path.suffix.lower() == '.pdf' else None
+            'ocr_engine': 'EasyOCR' if file_path.suffix.lower() == '.pdf' else None,
+            'bold_lines': bold_lines  # Pass bold line info for later use
         }
         
         return text_lines, pipeline_info
     
-    def extract_consent_form_fields(self, text_lines: List[str]) -> List[FieldInfo]:
+    def extract_consent_form_fields(self, text_lines: List[str], pipeline_info: Optional[Dict[str, Any]] = None) -> List[FieldInfo]:
         """Extract fields specifically for consent forms"""
         
         fields = []
         processed_keys = set()
         current_section = "Form"
+        
+        # Get bold line information if available
+        bold_lines = {}
+        if pipeline_info and 'bold_lines' in pipeline_info:
+            bold_lines = pipeline_info['bold_lines']
         
         # Clean headers/footers
         text_lines = self.header_footer_manager.remove_practice_headers_footers(text_lines)
@@ -393,7 +439,7 @@ class ConsentFormFieldExtractor:
         if consent_text_lines:
             # Create main consent text field with provider placeholders
             # Now returns tuple (html, title)
-            consent_html, detected_title = self._create_enhanced_consent_html(consent_text_lines, full_text, provider_patterns)
+            consent_html, detected_title = self._create_enhanced_consent_html(consent_text_lines, full_text, provider_patterns, bold_lines)
             
             # Use detected title as section name if available
             if detected_title:
@@ -596,12 +642,21 @@ class ConsentFormFieldExtractor:
         # Rejoin the filtered lines
         return '<br>'.join(filtered_lines)
     
-    def _create_enhanced_consent_html(self, consent_text_lines: List[str], full_text: str, provider_patterns: List[str]) -> Tuple[str, Optional[str]]:
+    def _create_enhanced_consent_html(self, consent_text_lines: List[str], full_text: str, provider_patterns: List[str], bold_lines: Optional[Dict[str, bool]] = None) -> Tuple[str, Optional[str]]:
         """Create properly formatted HTML content for consent forms with provider placeholders
+        
+        Args:
+            consent_text_lines: Lines of consent text
+            full_text: Full text for pattern analysis
+            provider_patterns: Patterns for provider placeholder replacement
+            bold_lines: Dictionary mapping line text to whether it's bold (from DOCX)
         
         Returns:
             Tuple of (html_content, detected_title)
         """
+        
+        if bold_lines is None:
+            bold_lines = {}
         
         # Extract title from first line if it's a header
         title = None
@@ -622,6 +677,7 @@ class ConsentFormFieldExtractor:
         # Process content to handle bullet points and structure
         processed_lines = []
         in_bullet_list = False
+        prev_line_was_bold_subheader = False
         
         for line in content_lines:
             if not line.strip():
@@ -633,6 +689,24 @@ class ConsentFormFieldExtractor:
             # Clean markdown formatting from the line before processing
             line = self._clean_markdown_formatting(line)
             
+            # Check if this line is a bold subheader from DOCX
+            is_bold_subheader = False
+            line_text = line.strip()
+            if line_text in bold_lines and bold_lines[line_text]:
+                # This is a bold line from DOCX - check if it's likely a subheader
+                # Subheaders are typically short (< 100 chars), not bullet points, and not field labels
+                is_bullet = re.match(r'^[-•\uf0b7]\s+', line_text)
+                has_underscores = '_' in line_text
+                is_short = len(line_text) < 100
+                
+                if not is_bullet and not has_underscores and is_short:
+                    is_bold_subheader = True
+            
+            # Add spacing before bold subheaders (except if it's the first line or follows another subheader)
+            if is_bold_subheader and processed_lines and not prev_line_was_bold_subheader:
+                # Add extra spacing before subheader
+                processed_lines.append('<br>')
+            
             # Check if line is a bullet point (starts with - or \uf0b7 or bullet marker)
             if re.match(r'^[-•\uf0b7]\s+', line.strip()):
                 if not in_bullet_list:
@@ -642,11 +716,19 @@ class ConsentFormFieldExtractor:
                 clean_line = re.sub(r'^[-•\uf0b7]\s+', '', line.strip())
                 clean_line = clean_line.replace('\uf0b7', '').strip()
                 processed_lines.append(f'<li>{clean_line}</li>')
+                prev_line_was_bold_subheader = False
             else:
                 if in_bullet_list:
                     processed_lines.append('</ul>')
                     in_bullet_list = False
-                processed_lines.append(line.strip())
+                
+                # Apply bold formatting to subheaders
+                if is_bold_subheader:
+                    processed_lines.append(f'<strong>{line.strip()}</strong>')
+                    prev_line_was_bold_subheader = True
+                else:
+                    processed_lines.append(line.strip())
+                    prev_line_was_bold_subheader = False
         
         # Close bullet list if still open
         if in_bullet_list:
@@ -850,7 +932,7 @@ class ConsentToJSONConverter:
         text_lines, pipeline_info = self.extractor.extract_text_from_document(file_path)
         
         # Extract fields
-        fields = self.extractor.extract_consent_form_fields(text_lines)
+        fields = self.extractor.extract_consent_form_fields(text_lines, pipeline_info)
         
         # Convert to dict
         spec = []
