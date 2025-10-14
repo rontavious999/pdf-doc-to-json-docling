@@ -522,14 +522,21 @@ class ConsentFormFieldExtractor:
         # Witness field indicators - these should be filtered out universally
         witness_indicators = [
             'witness signature', 'witness printed name', 'witness name', 'witness date',
-            'witnessed by', 'witness:', 'witness relationship'
+            'witnessed by', 'witness:', 'witness relationship', "witness's", 'witness\u2019s'
         ]
         
         # Doctor/dentist signature indicators - these are typically not patient-facing fields
         doctor_signatures = [
             'doctor signature', 'dentist signature', 'physician signature',
             'dr. signature', 'practitioner signature', 'provider signature', 
-            'clinician signature'
+            'clinician signature', "doctor's", 'doctor\u2019s'
+        ]
+        
+        # Parent/Guardian signature indicators - these are typically not patient-facing fields
+        parent_guardian_signatures = [
+            'parent signature', 'guardian signature', 'parent\u2019s signature', 
+            "parent's signature", 'guardian\u2019s signature', "guardian's signature",
+            'legal guardian\u2019s', "legal guardian's"
         ]
         
         # Filter out witness fields universally
@@ -542,6 +549,15 @@ class ConsentFormFieldExtractor:
             if indicator in line_lower:
                 return True
         
+        # Filter out parent/guardian signatures
+        for indicator in parent_guardian_signatures:
+            if indicator in line_lower:
+                return True
+        
+        # Filter lines mentioning "patient/parent/guardian" signature or name fields
+        if 'patient/parent/guardian' in line_lower:
+            return True
+        
         # Special handling: "legally authorized representative" - filter if witness-related
         if 'legally authorized representative' in line_lower:
             return True
@@ -549,7 +565,15 @@ class ConsentFormFieldExtractor:
         # Check for printed name in context of witness/representative - filter these out
         if 'printed name' in line_lower:
             # Filter if it's clearly witness context
-            if any(context in line_lower for context in ['witness', 'guardian signature', 'parent signature']):
+            if any(context in line_lower for context in ['witness', 'guardian', 'parent']):
+                return True
+        
+        # Filter lines that are mostly or entirely underscores (signature lines)
+        # Strip HTML tags first to check the actual content
+        text_only = re.sub(r'<[^>]+>', '', line_lower).strip()
+        if text_only and len(text_only) >= 10:  # Only check if there's substantial content
+            underscore_count = text_only.count('_')
+            if underscore_count >= 10 and underscore_count / len(text_only) > 0.7:
                 return True
             
         return False
@@ -689,6 +713,12 @@ class ConsentFormFieldExtractor:
         content = re.sub(r'Alternative\s+Treatment\s*:\s*_+', 'Alternative Treatment: {{alternative_treatment}}', content, flags=re.IGNORECASE)
         # Pattern: "Alternative Treatment:" without underscores (avoid replacing already replaced text)
         content = re.sub(r'Alternative\s+Treatment\s*:(?!\s*\{\{)', 'Alternative Treatment: {{alternative_treatment}}', content, flags=re.IGNORECASE)
+        
+        # Replace standalone Date placeholders (not Date of Birth or Date Signed)
+        # Pattern: "Date: ___" with underscores first (most specific)
+        content = re.sub(r'(?<!of\s)(?<!Birth\s)(?<!Signed\s)Date\s*:\s*_+', 'Date: {{today_date}}', content, flags=re.IGNORECASE)
+        # Pattern: "Date:" without underscores (avoid replacing already replaced text and Date of Birth/Date Signed)
+        content = re.sub(r'(?<!of\s)(?<!Birth\s)(?<!Signed\s)Date\s*:(?!\s*\{\{)', 'Date: {{today_date}}', content, flags=re.IGNORECASE)
         
         # Strip witness and doctor signatures from content
         content = self._remove_witness_and_doctor_signatures(content)
