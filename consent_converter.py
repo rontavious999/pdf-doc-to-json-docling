@@ -672,8 +672,18 @@ class ConsentFormFieldExtractor:
         # Also replace common Dr. blank patterns
         content = re.sub(r'Dr\.\s+_+', 'Dr. {{provider}}', content, flags=re.IGNORECASE)
         
-        # Replace tooth number/site placeholders
+        # Replace tooth number/site placeholders - match various patterns with or without underscores
+        # Pattern: "Tooth Number: ___" with underscores first (most specific)
+        content = re.sub(r'Tooth\s+Number\s*:\s*_+', 'Tooth Number: {{tooth_or_site}}', content, flags=re.IGNORECASE)
+        # Pattern: "Tooth Number:" without underscores (avoid replacing already replaced text)
+        content = re.sub(r'Tooth\s+Number\s*:(?!\s*\{\{)', 'Tooth Number: {{tooth_or_site}}', content, flags=re.IGNORECASE)
+        
+        # Pattern: "Tooth No(s). ___" with underscores
         content = re.sub(r'Tooth\s+No\(s\)\.\s+_+', 'Tooth No(s). {{tooth_or_site}}', content, flags=re.IGNORECASE)
+        # Pattern: "Tooth No. ___" with underscores
+        content = re.sub(r'Tooth\s+No\.\s*:\s*_+', 'Tooth No.: {{tooth_or_site}}', content, flags=re.IGNORECASE)
+        # Pattern: "Tooth #: ___" with underscores
+        content = re.sub(r'Tooth\s*#\s*:\s*_+', 'Tooth #: {{tooth_or_site}}', content, flags=re.IGNORECASE)
         
         # Replace patient name placeholders - match various patterns with or without underscores
         # Pattern: "Patient name: ___" with underscores first (most specific)
