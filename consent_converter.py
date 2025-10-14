@@ -673,6 +673,12 @@ class ConsentFormFieldExtractor:
             # Match titles like "Informed Consent for Crown And Bridge Prosthetics"
             title = content_lines[0].strip()
             content_lines = content_lines[1:]
+        elif content_lines and re.match(r'^\*\*(.+)\*\*$', content_lines[0]):
+            # Match bold markdown titles like "**Olympia Hills Family Dental Warranty Document**"
+            match = re.match(r'^\*\*(.+)\*\*$', content_lines[0])
+            if match and len(match.group(1)) < 150:  # Reasonable title length
+                title = match.group(1).strip()
+                content_lines = content_lines[1:]  # Remove title from content
         
         # Process content to handle bullet points and structure
         processed_lines = []
