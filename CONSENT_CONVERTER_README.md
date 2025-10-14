@@ -10,6 +10,7 @@ The Consent Form Converter (`consent_converter.py`) is a standalone, focused too
 
 ### Consent-Specific Processing
 - **Consent Pattern Recognition**: Identifies consent-specific language patterns (I understand, I acknowledge, I agree, etc.)
+- **Title Detection**: Automatically detects form titles from markdown headers (##), bold markdown (**Title**), all-caps, or "Informed Consent for" patterns and uses them as section names
 - **Provider Placeholder Substitution**: Automatically replaces doctor names with `{{provider}}` placeholders
 - **Signature Section Detection**: Intelligently detects and extracts signature fields
 - **Consent Text Formatting**: Proper HTML formatting for consent narrative text
@@ -108,7 +109,7 @@ The converter generates JSON compliant with the Modento Forms schema:
   {
     "key": "form_1",
     "title": "",
-    "section": "Form",
+    "section": "Informed Consent for Treatment",
     "optional": false,
     "type": "text",
     "control": {
