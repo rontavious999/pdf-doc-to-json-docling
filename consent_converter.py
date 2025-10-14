@@ -387,15 +387,23 @@ class ConsentFormFieldExtractor:
                 # Include all non-empty lines including headers marked with ##
                 consent_text_lines.append(line.strip())
         
+        # Variable to hold the detected consent title for section naming
+        consent_section_name = "Form"
+        
         if consent_text_lines:
             # Create main consent text field with provider placeholders
-            consent_html = self._create_enhanced_consent_html(consent_text_lines, full_text, provider_patterns)
+            # Now returns tuple (html, title)
+            consent_html, detected_title = self._create_enhanced_consent_html(consent_text_lines, full_text, provider_patterns)
+            
+            # Use detected title as section name if available
+            if detected_title:
+                consent_section_name = detected_title
             
             consent_field = FieldInfo(
                 key='form_1',
                 title='',
                 field_type='text',
-                section='Form',
+                section=consent_section_name,
                 optional=False,
                 control={'html_text': consent_html},
                 line_idx=0
@@ -464,12 +472,12 @@ class ConsentFormFieldExtractor:
             processed_keys.add('date_signed')
         
         # REORDER FIELDS: For consent forms, order should be:
-        # 1. Form section fields
+        # 1. Form section fields (using the consent title as section name)
         # 2. Primary input fields (relationship, etc.) that come BEFORE printed_name_if_signed_on_behalf
         # 3. signature field
         # 4. date_signed field
         # 5. Secondary fields like printed_name_if_signed_on_behalf
-        form_fields = [f for f in fields if f.section == 'Form']
+        form_fields = [f for f in fields if f.section == consent_section_name]
         signature_section_fields = [f for f in fields if f.section == 'Signature']
         
         # Separate signature section fields
@@ -502,8 +510,12 @@ class ConsentFormFieldExtractor:
         
         return fields
     
-    def _create_enhanced_consent_html(self, consent_text_lines: List[str], full_text: str, provider_patterns: List[str]) -> str:
-        """Create properly formatted HTML content for consent forms with provider placeholders"""
+    def _create_enhanced_consent_html(self, consent_text_lines: List[str], full_text: str, provider_patterns: List[str]) -> Tuple[str, Optional[str]]:
+        """Create properly formatted HTML content for consent forms with provider placeholders
+        
+        Returns:
+            Tuple of (html_content, detected_title)
+        """
         
         # Extract title from first line if it's a header
         title = None
@@ -577,6 +589,27 @@ class ConsentFormFieldExtractor:
         # Replace tooth number/site placeholders
         content = re.sub(r'Tooth\s+No\(s\)\.\s+_+', 'Tooth No(s). {{tooth_or_site}}', content, flags=re.IGNORECASE)
         
+        # Replace patient name placeholders - match various patterns with or without underscores
+        # Pattern: "Patient name: ___" with underscores first (most specific)
+        content = re.sub(r'Patient\s+[Nn]ame\s*:\s*_+', 'Patient Name: {{patient_name}}', content, flags=re.IGNORECASE)
+        # Pattern: "Patient Name:" without underscores (avoid replacing already replaced text)
+        content = re.sub(r'Patient\s+[Nn]ame\s*:(?!\s*\{\{)', 'Patient Name: {{patient_name}}', content, flags=re.IGNORECASE)
+        
+        # Pattern: "I, _____(print name)" or similar variations
+        content = re.sub(r'\b[Ii],?\s+_+\s*\(?\s*print\s+name\s*\)?', 'I, {{patient_name}} (print name)', content, flags=re.IGNORECASE)
+        
+        # Replace DOB placeholders - match various patterns with or without underscores
+        # Pattern: "DOB: ___" with underscores first (most specific)
+        content = re.sub(r'DOB\s*:\s*_+', 'DOB: {{patient_dob}}', content, flags=re.IGNORECASE)
+        # Pattern: "DOB:" without underscores (avoid replacing already replaced text)
+        content = re.sub(r'DOB\s*:(?!\s*\{\{)', 'DOB: {{patient_dob}}', content, flags=re.IGNORECASE)
+        
+        # Replace Date of Birth placeholders - match various patterns with or without underscores
+        # Pattern: "Date of Birth: ___" with underscores first (most specific)
+        content = re.sub(r'Date\s+of\s+Birth\s*:\s*_+', 'Date of Birth: {{patient_dob}}', content, flags=re.IGNORECASE)
+        # Pattern: "Date of Birth:" without underscores (avoid replacing already replaced text)
+        content = re.sub(r'Date\s+of\s+Birth\s*:(?!\s*\{\{)', 'Date of Birth: {{patient_dob}}', content, flags=re.IGNORECASE)
+        
         # Format as HTML with proper structure
         if title:
             html_content = f'<div style="text-align:center"><strong>{title}</strong><br>'
@@ -586,7 +619,7 @@ class ConsentFormFieldExtractor:
         html_content += content
         html_content += '</div>'
         
-        return html_content
+        return html_content, title
     
     def _clean_markdown_formatting(self, text: str) -> str:
         """Clean markdown formatting artifacts from text and convert to HTML"""
