@@ -165,6 +165,43 @@ class ConsentShapingManager:
         """Initialize the consent shaping manager"""
         self.compiled_patterns = [re.compile(pattern, re.IGNORECASE) for pattern in self.CONSENT_PATTERNS]
     
+    @staticmethod
+    def to_title_case(text: str) -> str:
+        """Convert text to proper title case for section names
+        
+        Args:
+            text: The text to convert
+            
+        Returns:
+            Title-cased text with proper capitalization
+        """
+        if not text:
+            return text
+        
+        # Words that should remain lowercase in title case (except at start)
+        lowercase_words = {'a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to', 'with'}
+        
+        words = text.split()
+        result = []
+        
+        for i, word in enumerate(words):
+            # Handle hyphenated words - capitalize each part after hyphen
+            if '-' in word:
+                parts = word.split('-')
+                capitalized_parts = [part.capitalize() for part in parts]
+                result.append('-'.join(capitalized_parts))
+            # First word and words after certain punctuation should always be capitalized
+            elif i == 0 or word[0] in '("':
+                result.append(word.capitalize())
+            # Keep lowercase words lowercase unless they're the first word
+            elif word.lower() in lowercase_words:
+                result.append(word.lower())
+            # All other words should be capitalized
+            else:
+                result.append(word.capitalize())
+        
+        return ' '.join(result)
+    
     def is_consent_content(self, text: str) -> bool:
         """Check if text content represents consent information"""
         if not text:
@@ -446,9 +483,9 @@ class ConsentFormFieldExtractor:
             # Now returns tuple (html, title)
             consent_html, detected_title = self._create_enhanced_consent_html(consent_text_lines, full_text, provider_patterns, bold_lines)
             
-            # Use detected title as section name if available
+            # Use detected title as section name if available, with proper title case
             if detected_title:
-                consent_section_name = detected_title
+                consent_section_name = self.consent_shaper.to_title_case(detected_title)
             
             consent_field = FieldInfo(
                 key='form_1',
@@ -687,7 +724,21 @@ class ConsentFormFieldExtractor:
         title = None
         content_lines = consent_text_lines.copy()
         
-        if content_lines and content_lines[0].startswith('## '):
+        # First, filter out any empty header lines (standalone # or ## or ###)
+        while content_lines and re.match(r'^#+\s*$', content_lines[0]):
+            content_lines = content_lines[1:]
+        
+        if not content_lines:
+            # If all lines were empty headers, return empty
+            return '<div style="text-align:center"><strong>Informed Consent</strong><br></div>', None
+        
+        # Now check for title in various formats
+        if content_lines and content_lines[0].startswith('# '):
+            # Match single # markdown header (e.g., "# Informed refusal of necessary x-rays")
+            title = content_lines[0].replace('# ', '').strip()
+            content_lines = content_lines[1:]  # Remove title from content
+        elif content_lines and content_lines[0].startswith('## '):
+            # Match double ## markdown header
             title = content_lines[0].replace('## ', '').strip()
             content_lines = content_lines[1:]  # Remove title from content
         elif content_lines and re.match(r'^[A-Z\s]+CONSENT[A-Z\s]*$', content_lines[0]):
@@ -706,6 +757,11 @@ class ConsentFormFieldExtractor:
                 content_lines = content_lines[1:]  # Remove title from content
         elif content_lines and re.match(r'^.+\s+Informed\s+Consent\s*$', content_lines[0], re.IGNORECASE):
             # Match titles like "Labial Frenectomy Informed Consent" (ending with "Informed Consent")
+            if len(content_lines[0].strip()) < 150:  # Reasonable title length
+                title = content_lines[0].strip()
+                content_lines = content_lines[1:]  # Remove title from content
+        elif content_lines and re.match(r'^.+\s+[Rr]efusal\s*$', content_lines[0], re.IGNORECASE):
+            # Match titles ending with "refusal" (e.g., "Informed refusal of necessary x-rays")
             if len(content_lines[0].strip()) < 150:  # Reasonable title length
                 title = content_lines[0].strip()
                 content_lines = content_lines[1:]  # Remove title from content
@@ -868,8 +924,8 @@ class ConsentFormFieldExtractor:
     def _clean_markdown_formatting(self, text: str) -> str:
         """Clean markdown formatting artifacts from text and convert to HTML"""
         
-        # Remove standalone ## or ### markers (empty headers)
-        text = re.sub(r'^###+\s*$', '', text.strip())
+        # Remove standalone # or ## or ### markers (empty headers)
+        text = re.sub(r'^#+\s*$', '', text.strip())
         
         # Convert ### headers to strong tags
         text = re.sub(r'^###\s+(.+)$', r'<strong>\1</strong>', text)
@@ -880,8 +936,8 @@ class ConsentFormFieldExtractor:
         # Convert **bold** to <strong>bold</strong>
         text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
         
-        # Clean any remaining standalone ## markers within text
-        text = re.sub(r'\s*##\s*', ' ', text)
+        # Clean any remaining standalone # or ## markers within text
+        text = re.sub(r'\s*#+\s*', ' ', text)
         
         return text.strip()
     
